@@ -18,21 +18,27 @@
         <joint name="Joint_6"/>
     </group>
     <group_state name="home" group="rover_arm">
-        <joint name="Joint_1" value="0.0"/>
-        <joint name="Joint_2" value="-1.0"/>
-        <joint name="Joint_3" value="1.57"/>
-        <joint name="Joint_4" value="0.0"/>
-        <joint name="Joint_5" value="0.5"/>
-        <joint name="Joint_6" value="0.0"/>
+        <joint name="Joint_1" value="0.7239802590801152"/>
+        <joint name="Joint_2" value="0.2070287335626544"/>
+        <joint name="Joint_3" value="-0.7134373702583443"/>
+        <joint name="Joint_4" value="0.034650353389533706"/>
+        <joint name="Joint_5" value="-0.7996123733574567"/>
+        <joint name="Joint_6" value="0.2734165897564062"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="Link_7" group="rover_arm"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="Link_1" link2="Link_2" reason="Adjacent"/>
+    <disable_collisions link1="Link_1" link2="Link_3" reason="Never"/>
     <disable_collisions link1="Link_1" link2="Link_4" reason="Never"/>
+    <disable_collisions link1="Link_1" link2="Link_5" reason="Never"/>
+    <disable_collisions link1="Link_1" link2="Link_6" reason="Never"/>
     <disable_collisions link1="Link_2" link2="Link_3" reason="Adjacent"/>
     <disable_collisions link1="Link_2" link2="Link_4" reason="Never"/>
-    <disable_collisions link1="Link_3" link2="Link_4" reason="Adjacent"/>
+    <disable_collisions link1="Link_2" link2="Link_5" reason="Never"/>
+    <disable_collisions link1="Link_2" link2="Link_6" reason="Never"/>
+    <disable_collisions link1="Link_3" link2="Link_4" reason="Never"/>
+    <disable_collisions link1="Link_3" link2="Link_5" reason="Adjacent"/>
     <disable_collisions link1="Link_4" link2="Link_5" reason="Adjacent"/>
     <disable_collisions link1="Link_4" link2="Link_6" reason="Never"/>
     <disable_collisions link1="Link_4" link2="Link_7" reason="Never"/>

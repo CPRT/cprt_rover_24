@@ -63,7 +63,7 @@ leaving_singularity_threshold_multiplier: 5.0  # Multiply the hard stop limit by
 # Added as a buffer to joint variable position bounds [in that joint variable's respective units].
 # Can be of size 1, which applies the margin to all joints, or the same size as the number of degrees of freedom of the active joint group.
 # If moving quickly, make these values larger.
-joint_limit_margin: 0.001
+joint_limit_margin: 0.01
 
 ## Topic names
 cartesian_command_in_topic: ~/delta_twist_cmds  # Topic for incoming Cartesian twist commands
