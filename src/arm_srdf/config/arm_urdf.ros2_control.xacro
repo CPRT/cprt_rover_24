@@ -41,7 +41,7 @@
       </joint>
       <joint name="Joint_3">
         <param name="can_id">14</param>
-        <param name="kP">10.0</param>
+        <param name="kP">1.0</param>
         <param name="kI">0.0</param>
         <param name="kD">0.0</param>
         <param name="kF">60.0</param>
