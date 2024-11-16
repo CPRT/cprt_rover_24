@@ -1,0 +1,36 @@
+name: Lint and Format Check
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Python Formatting and Linting
+      - name: Install Python dependencies
+        run: |
+          pip install black pylint
+      - name: Run Black
+        run: black --check .
+      - name: Run Pylint
+        run: |
+          pylint $(find . -name "*.py") --exit-zero
+        env:
+          PYLINT_SCORE_THRESHOLD: 10.0  # You can implement stricter checks here
+
+      # JavaScript/TypeScript Formatting and Linting
+      - name: Install Node.js dependencies
+        run: npm install
+      - name: Run Prettier
+        run: npx prettier --check "**/*.{js,ts}"
+      - name: Run ESLint
+        run: npx eslint "**/*.{js,ts}"
