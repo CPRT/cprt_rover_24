@@ -1,0 +1,8 @@
+bool stop
+---
+float32 base
+float32 diff1
+float32 diff2
+float32 elbow
+float32 wristtilt
+float32 wristturn
