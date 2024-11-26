@@ -1,0 +1,36 @@
+[0.011s] Invoking command in '/home/darren/servo_node/build/interfaces': /usr/bin/cmake --build /home/darren/servo_node/build/interfaces -- -j8 -l8
+[0.029s] -- Found ament_cmake: 1.3.10 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.124s] -- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[0.126s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.129s] -- Found rosidl_adapter: 3.1.5 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.153s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.308s] Error parsing '/home/darren/servo_node/src/interfaces/package.xml':
+[0.345s] Traceback (most recent call last):
+[0.345s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 150, in <module>
+[0.345s]     main()
+[0.345s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 53, in main
+[0.345s]     raise e
+[0.345s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 49, in main
+[0.345s]     package = parse_package_string(
+[0.345s]   File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 788, in parse_package_string
+[0.347s]     pkg.validate(warnings=warnings)
+[0.347s]   File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 330, in validate
+[0.347s]     raise InvalidPackage('\n'.join(errors), self.filename)
+[0.347s] catkin_pkg.package.InvalidPackage: Error(s) in package '/home/darren/servo_node/src/interfaces/package.xml':
+[0.347s] The package "interfaces" must not "exec_depend" on a package with the same name as this package
+[0.359s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:95 (message):
+[0.359s]   execute_process(/usr/bin/python3
+[0.359s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py
+[0.359s]   /home/darren/servo_node/src/interfaces/package.xml
+[0.359s]   /home/darren/servo_node/build/interfaces/ament_cmake_core/package.cmake)
+[0.359s]   returned error code 1
+[0.359s] Call Stack (most recent call first):
+[0.359s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:49 (_ament_package_xml)
+[0.359s]   /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:226 (ament_package_xml)
+[0.359s]   CMakeLists.txt:16 (rosidl_generate_interfaces)
+[0.359s] 
+[0.359s] [0m
+[0.359s] -- Configuring incomplete, errors occurred!
+[0.359s] See also "/home/darren/servo_node/build/interfaces/CMakeFiles/CMakeOutput.log".
+[0.363s] gmake: *** [Makefile:747: cmake_check_build_system] Error 1
+[0.364s] Invoked command in '/home/darren/servo_node/build/interfaces' returned '2': /usr/bin/cmake --build /home/darren/servo_node/build/interfaces -- -j8 -l8

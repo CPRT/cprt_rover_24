@@ -1,0 +1,2 @@
+[console_scripts]
+servo_node = servo_pkg.servo_node:main

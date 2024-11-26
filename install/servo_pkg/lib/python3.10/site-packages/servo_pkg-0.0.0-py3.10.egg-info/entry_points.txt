@@ -1,0 +1,3 @@
+[console_scripts]
+usb_client = servo_pkg.USB_client:main
+usb_servo_service = servo_pkg.USB_Servo:main

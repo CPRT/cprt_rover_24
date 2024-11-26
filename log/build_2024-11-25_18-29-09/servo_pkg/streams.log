@@ -1,0 +1,35 @@
+[0.662s] Invoking command in '/home/darren/servo_node/src/servo_pkg': PYTHONPATH=/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/servo_node/build/servo_pkg/build install --record /home/darren/servo_node/build/servo_pkg/install.log --single-version-externally-managed install_data
+[0.803s] /home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
+[0.803s]   warnings.warn(msg)
+[0.888s] running egg_info
+[0.903s] writing ../../build/servo_pkg/servo_pkg.egg-info/PKG-INFO
+[0.903s] writing dependency_links to ../../build/servo_pkg/servo_pkg.egg-info/dependency_links.txt
+[0.903s] writing entry points to ../../build/servo_pkg/servo_pkg.egg-info/entry_points.txt
+[0.903s] writing requirements to ../../build/servo_pkg/servo_pkg.egg-info/requires.txt
+[0.904s] writing top-level names to ../../build/servo_pkg/servo_pkg.egg-info/top_level.txt
+[0.934s] reading manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.935s] writing manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.935s] running build
+[0.936s] running build_py
+[0.936s] copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.936s] copying servo_pkg/maestro.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.936s] copying servo_pkg/maestro.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.936s] copying servo_pkg/USB_Servo.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.937s] copying servo_pkg/USB_client.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.937s] copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.937s] copying servo_pkg/i2c_Servo.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.938s] running install
+[0.943s] running install_lib
+[0.959s] copying /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg/USB_client.py -> /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg
+[0.960s] byte-compiling /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg/USB_client.py to USB_client.cpython-310.pyc
+[0.960s] running install_data
+[0.961s] copying resource/servo_pkg -> /home/darren/servo_node/install/servo_pkg/share/ament_index/resource_index/packages
+[0.961s] copying package.xml -> /home/darren/servo_node/install/servo_pkg/share/servo_pkg
+[0.961s] running install_egg_info
+[0.978s] removing '/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[0.978s] Copying ../../build/servo_pkg/servo_pkg.egg-info to /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info
+[0.979s] running install_scripts
+[1.103s] Installing client script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg
+[1.103s] Installing service script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg
+[1.104s] writing list of installed files to '/home/darren/servo_node/build/servo_pkg/install.log'
+[1.131s] Invoked command in '/home/darren/servo_node/src/servo_pkg' returned '0': PYTHONPATH=/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/servo_node/build/servo_pkg/build install --record /home/darren/servo_node/build/servo_pkg/install.log --single-version-externally-managed install_data

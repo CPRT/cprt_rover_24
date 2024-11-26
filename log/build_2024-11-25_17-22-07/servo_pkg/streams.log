@@ -1,0 +1,35 @@
+[0.659s] Invoking command in '/home/darren/servo_node/src/servo_pkg': PYTHONPATH=/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/servo_node/build/servo_pkg/build install --record /home/darren/servo_node/build/servo_pkg/install.log --single-version-externally-managed install_data
+[0.801s] /home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
+[0.801s]   warnings.warn(msg)
+[0.885s] running egg_info
+[0.900s] writing ../../build/servo_pkg/servo_pkg.egg-info/PKG-INFO
+[0.901s] writing dependency_links to ../../build/servo_pkg/servo_pkg.egg-info/dependency_links.txt
+[0.901s] writing entry points to ../../build/servo_pkg/servo_pkg.egg-info/entry_points.txt
+[0.901s] writing requirements to ../../build/servo_pkg/servo_pkg.egg-info/requires.txt
+[0.901s] writing top-level names to ../../build/servo_pkg/servo_pkg.egg-info/top_level.txt
+[0.932s] reading manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.933s] writing manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.933s] running build
+[0.934s] running build_py
+[0.934s] copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.934s] copying servo_pkg/maestro.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.934s] copying servo_pkg/maestro.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.934s] copying servo_pkg/USB_Servo.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.934s] copying servo_pkg/USB_client.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.935s] copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.935s] copying servo_pkg/i2c_Servo.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.935s] running install
+[0.941s] running install_lib
+[0.956s] copying /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg/USB_Servo.py -> /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg
+[0.957s] byte-compiling /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg/USB_Servo.py to USB_Servo.cpython-310.pyc
+[0.957s] running install_data
+[0.958s] copying resource/servo_pkg -> /home/darren/servo_node/install/servo_pkg/share/ament_index/resource_index/packages
+[0.958s] copying package.xml -> /home/darren/servo_node/install/servo_pkg/share/servo_pkg
+[0.958s] running install_egg_info
+[0.976s] removing '/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[0.976s] Copying ../../build/servo_pkg/servo_pkg.egg-info to /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info
+[0.977s] running install_scripts
+[1.099s] Installing client script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg
+[1.099s] Installing service script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg
+[1.099s] writing list of installed files to '/home/darren/servo_node/build/servo_pkg/install.log'
+[1.125s] Invoked command in '/home/darren/servo_node/src/servo_pkg' returned '0': PYTHONPATH=/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/servo_node/build/servo_pkg/build install --record /home/darren/servo_node/build/servo_pkg/install.log --single-version-externally-managed install_data

@@ -1,0 +1,2 @@
+Invoking command in '/home/darren/servo_node/build/interfaces': CMAKE_PREFIX_PATH=/home/darren/servo_node/install/servo_pkg:/opt/ros/humble /usr/bin/cmake /home/darren/servo_node/src/interfaces -DCMAKE_INSTALL_PREFIX=/home/darren/servo_node/install/interfaces
+Invoked command in '/home/darren/servo_node/build/interfaces' returned '1': CMAKE_PREFIX_PATH=/home/darren/servo_node/install/servo_pkg:/opt/ros/humble /usr/bin/cmake /home/darren/servo_node/src/interfaces -DCMAKE_INSTALL_PREFIX=/home/darren/servo_node/install/interfaces

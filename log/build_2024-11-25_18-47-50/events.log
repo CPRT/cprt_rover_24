@@ -1,0 +1,248 @@
+[0.000000] (-) TimerEvent: {}
+[0.000200] (interfaces) JobQueued: {'identifier': 'interfaces', 'dependencies': OrderedDict()}
+[0.000375] (servo_pkg) JobQueued: {'identifier': 'servo_pkg', 'dependencies': OrderedDict([('interfaces', '/home/darren/servo_node/install/interfaces')])}
+[0.000392] (interfaces) JobStarted: {'identifier': 'interfaces'}
+[0.006634] (interfaces) JobProgress: {'identifier': 'interfaces', 'progress': 'cmake'}
+[0.007017] (interfaces) JobProgress: {'identifier': 'interfaces', 'progress': 'build'}
+[0.007542] (interfaces) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/darren/servo_node/build/interfaces', '--', '-j8', '-l8'], 'cwd': '/home/darren/servo_node/build/interfaces', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'en_CA:en'), ('USER', 'darren'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/darren/servo_node/install/interfaces/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/darren'), ('OLDPWD', '/home/darren'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '1313'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/darren/servo_node/install:/home/darren/servo_node/src/install:/home/darren/ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'darren'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'darren'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/darren/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/Darren-Ubuntu:@/tmp/.ICE-unix/1281,unix/Darren-Ubuntu:/tmp/.ICE-unix/1281'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/e3c12558_a6f3_48a1_9cf0_86eda348198a'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.GO5OX2'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.1527'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/darren/servo_node/install/servo_pkg:/home/darren/servo_node/install/interfaces:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/darren/servo_node/build/interfaces'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:/home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages:/home/darren/ros2_ws/build/DW_DarrensController:/home/darren/ros2_ws/install/DW_DarrensController/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/darren/servo_node/install/interfaces:/home/darren/servo_node/install/servo_pkg:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble')]), 'shell': False}
+[0.027978] (interfaces) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.10 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.099830] (-) TimerEvent: {}
+[0.125530] (interfaces) StdoutLine: {'line': b'-- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)\n'}
+[0.126577] (interfaces) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.128750] (interfaces) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.5 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.154719] (interfaces) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.199949] (-) TimerEvent: {}
+[0.300220] (-) TimerEvent: {}
+[0.370689] (interfaces) StdoutLine: {'line': b'-- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)\n'}
+[0.400395] (-) TimerEvent: {}
+[0.500690] (-) TimerEvent: {}
+[0.521455] (interfaces) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.600782] (-) TimerEvent: {}
+[0.701040] (-) TimerEvent: {}
+[0.711560] (interfaces) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.729071] (interfaces) StdoutLine: {'line': b'-- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)\n'}
+[0.747160] (interfaces) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.747570] (interfaces) StdoutLine: {'line': b'-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10\n'}
+[0.747702] (interfaces) StdoutLine: {'line': b'-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so\n'}
+[0.755980] (interfaces) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.11 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[0.762544] (interfaces) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[0.763697] (interfaces) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[0.765195] (interfaces) StdoutLine: {'line': b'-- Configuring done\n'}
+[0.787240] (interfaces) StdoutLine: {'line': b'-- Generating done\n'}
+[0.789974] (interfaces) StdoutLine: {'line': b'-- Build files have been written to: /home/darren/servo_node/build/interfaces\n'}
+[0.801177] (-) TimerEvent: {}
+[0.813260] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_generator_c\x1b[0m\n'}
+[0.825101] (interfaces) StdoutLine: {'line': b'[  3%] Built target interfaces__cpp\n'}
+[0.825996] (interfaces) StdoutLine: {'line': b'[ 12%] Built target interfaces__rosidl_generator_c\n'}
+[0.846364] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_cpp\x1b[0m\n'}
+[0.846705] (interfaces) StdoutLine: {'line': b'[ 12%] Built target ament_cmake_python_copy_interfaces\n'}
+[0.848195] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_introspection_cpp\x1b[0m\n'}
+[0.848477] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_fastrtps_c\x1b[0m\n'}
+[0.848629] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_introspection_c\x1b[0m\n'}
+[0.848756] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_fastrtps_cpp\x1b[0m\n'}
+[0.851552] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_c\x1b[0m\n'}
+[0.869673] (interfaces) StdoutLine: {'line': b'[ 22%] Built target interfaces__rosidl_typesupport_introspection_c\n'}
+[0.870190] (interfaces) StdoutLine: {'line': b'[ 32%] Built target interfaces__rosidl_typesupport_cpp\n'}
+[0.873341] (interfaces) StdoutLine: {'line': b'[ 51%] Built target interfaces__rosidl_typesupport_fastrtps_c\n'}
+[0.873609] (interfaces) StdoutLine: {'line': b'[ 51%] Built target interfaces__rosidl_typesupport_c\n'}
+[0.873705] (interfaces) StdoutLine: {'line': b'[ 61%] Built target interfaces__rosidl_typesupport_introspection_cpp\n'}
+[0.879489] (interfaces) StdoutLine: {'line': b'[ 70%] Built target interfaces__rosidl_typesupport_fastrtps_cpp\n'}
+[0.901257] (interfaces) StdoutLine: {'line': b'[ 70%] Built target interfaces\n'}
+[0.901566] (-) TimerEvent: {}
+[0.924010] (interfaces) StdoutLine: {'line': b'[ 74%] Built target interfaces__py\n'}
+[0.934877] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_generator_py\x1b[0m\n'}
+[0.947419] (interfaces) StdoutLine: {'line': b'[ 80%] Built target interfaces__rosidl_generator_py\n'}
+[0.961726] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_introspection_c__pyext\x1b[0m\n'}
+[0.962042] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_c__pyext\x1b[0m\n'}
+[0.966321] (interfaces) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target interfaces__rosidl_typesupport_fastrtps_c__pyext\x1b[0m\n'}
+[0.978823] (interfaces) StdoutLine: {'line': b'[ 87%] Built target interfaces__rosidl_typesupport_introspection_c__pyext\n'}
+[0.980714] (interfaces) StdoutLine: {'line': b'[ 93%] Built target interfaces__rosidl_typesupport_c__pyext\n'}
+[0.986864] (interfaces) StdoutLine: {'line': b'[100%] Built target interfaces__rosidl_typesupport_fastrtps_c__pyext\n'}
+[1.001667] (-) TimerEvent: {}
+[1.100140] (interfaces) StdoutLine: {'line': b'running egg_info\n'}
+[1.101737] (-) TimerEvent: {}
+[1.114463] (interfaces) StdoutLine: {'line': b'writing interfaces.egg-info/PKG-INFO\n'}
+[1.114927] (interfaces) StdoutLine: {'line': b'writing dependency_links to interfaces.egg-info/dependency_links.txt\n'}
+[1.115199] (interfaces) StdoutLine: {'line': b'writing top-level names to interfaces.egg-info/top_level.txt\n'}
+[1.163348] (interfaces) StdoutLine: {'line': b"reading manifest file 'interfaces.egg-info/SOURCES.txt'\n"}
+[1.164363] (interfaces) StdoutLine: {'line': b"writing manifest file 'interfaces.egg-info/SOURCES.txt'\n"}
+[1.191698] (interfaces) StdoutLine: {'line': b'[100%] Built target ament_cmake_python_build_interfaces_egg\n'}
+[1.201868] (-) TimerEvent: {}
+[1.202181] (interfaces) CommandEnded: {'returncode': 0}
+[1.252114] (interfaces) JobProgress: {'identifier': 'interfaces', 'progress': 'install'}
+[1.259644] (interfaces) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/darren/servo_node/build/interfaces'], 'cwd': '/home/darren/servo_node/build/interfaces', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'en_CA:en'), ('USER', 'darren'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/darren/servo_node/install/interfaces/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/darren'), ('OLDPWD', '/home/darren'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '1313'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/darren/servo_node/install:/home/darren/servo_node/src/install:/home/darren/ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'darren'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'darren'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/darren/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/Darren-Ubuntu:@/tmp/.ICE-unix/1281,unix/Darren-Ubuntu:/tmp/.ICE-unix/1281'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/e3c12558_a6f3_48a1_9cf0_86eda348198a'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.GO5OX2'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.1527'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/darren/servo_node/install/servo_pkg:/home/darren/servo_node/install/interfaces:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/darren/servo_node/build/interfaces'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:/home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages:/home/darren/ros2_ws/build/DW_DarrensController:/home/darren/ros2_ws/install/DW_DarrensController/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/darren/servo_node/install/interfaces:/home/darren/servo_node/install/servo_pkg:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble')]), 'shell': False}
+[1.266868] (interfaces) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[1.267022] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/ament_index/resource_index/rosidl_interfaces/interfaces\n'}
+[1.267070] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces\n'}
+[1.267115] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg\n'}
+[1.267156] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg/rosidl_generator_c__visibility_control.h\n'}
+[1.267225] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv\n'}
+[1.267264] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/move_servo.h\n'}
+[1.267301] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail\n'}
+[1.267346] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__functions.h\n'}
+[1.267391] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__functions.c\n'}
+[1.267437] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__struct.h\n'}
+[1.267516] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__type_support.h\n'}
+[1.267581] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/environment/library_path.sh\n'}
+[1.267625] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/interfaces/environment/library_path.dsv\n'}
+[1.267670] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_generator_c.so\n'}
+[1.267715] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces\n'}
+[1.267761] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg\n'}
+[1.267807] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[1.267852] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv\n'}
+[1.267898] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail\n'}
+[1.267943] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__rosidl_typesupport_fastrtps_c.h\n'}
+[1.268007] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_typesupport_fastrtps_c.so\n'}
+[1.268091] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces\n'}
+[1.268153] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg\n'}
+[1.268212] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[1.268286] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv\n'}
+[1.268358] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail\n'}
+[1.268432] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__rosidl_typesupport_introspection_c.h\n'}
+[1.268588] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__type_support.c\n'}
+[1.268692] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_typesupport_introspection_c.so\n'}
+[1.268761] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_typesupport_c.so\n'}
+[1.268832] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces\n'}
+[1.268905] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv\n'}
+[1.268977] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/move_servo.hpp\n'}
+[1.269047] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail\n'}
+[1.269118] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__struct.hpp\n'}
+[1.269190] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__builder.hpp\n'}
+[1.269262] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__traits.hpp\n'}
+[1.269336] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces\n'}
+[1.269399] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg\n'}
+[1.269463] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[1.269573] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv\n'}
+[1.269659] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail\n'}
+[1.269730] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[1.269822] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/dds_fastrtps\n'}
+[1.269909] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_typesupport_fastrtps_cpp.so\n'}
+[1.270001] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces\n'}
+[1.270094] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv\n'}
+[1.270159] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail\n'}
+[1.270259] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__type_support.cpp\n'}
+[1.270322] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/include/interfaces/interfaces/srv/detail/move_servo__rosidl_typesupport_introspection_cpp.hpp\n'}
+[1.270386] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_typesupport_introspection_cpp.so\n'}
+[1.270447] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_typesupport_cpp.so\n'}
+[1.270552] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/environment/pythonpath.sh\n'}
+[1.270612] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/interfaces/environment/pythonpath.dsv\n'}
+[1.270670] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces-0.0.0-py3.10.egg-info\n'}
+[1.270729] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces-0.0.0-py3.10.egg-info/top_level.txt\n'}
+[1.270789] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces-0.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[1.270845] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces-0.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[1.270903] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces-0.0.0-py3.10.egg-info/PKG-INFO\n'}
+[1.270959] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces\n'}
+[1.271096] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.271219] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.271284] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/libinterfaces__rosidl_generator_py.so\n'}
+[1.271345] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/_interfaces_s.ep.rosidl_typesupport_introspection_c.c\n'}
+[1.271402] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/_interfaces_s.ep.rosidl_typesupport_c.c\n'}
+[1.271461] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/__init__.py\n'}
+[1.271537] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/srv\n'}
+[1.271610] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/srv/_move_servo_s.c\n'}
+[1.271668] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/srv/__init__.py\n'}
+[1.271724] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/srv/_move_servo.py\n'}
+[1.271789] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/_interfaces_s.ep.rosidl_typesupport_fastrtps_c.c\n'}
+[1.271846] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.300295] (interfaces) StdoutLine: {'line': b"Listing '/home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces'...\n"}
+[1.300445] (interfaces) StdoutLine: {'line': b"Compiling '/home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/__init__.py'...\n"}
+[1.300516] (interfaces) StdoutLine: {'line': b"Listing '/home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/srv'...\n"}
+[1.301948] (-) TimerEvent: {}
+[1.304041] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.304251] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.304475] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages/interfaces/interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.304685] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/lib/libinterfaces__rosidl_generator_py.so\n'}
+[1.304823] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/srv/MoveServo.idl\n'}
+[1.304923] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/srv/MoveServo.srv\n'}
+[1.304998] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/srv/MoveServo_Request.msg\n'}
+[1.305092] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/srv/MoveServo_Response.msg\n'}
+[1.305162] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/ament_index/resource_index/package_run_dependencies/interfaces\n'}
+[1.305230] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/ament_index/resource_index/parent_prefix_path/interfaces\n'}
+[1.305320] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/environment/ament_prefix_path.sh\n'}
+[1.305435] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/interfaces/environment/ament_prefix_path.dsv\n'}
+[1.305586] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/environment/path.sh\n'}
+[1.305728] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/interfaces/environment/path.dsv\n'}
+[1.305872] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/local_setup.bash\n'}
+[1.306006] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/local_setup.sh\n'}
+[1.306155] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/local_setup.zsh\n'}
+[1.306269] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/interfaces/local_setup.dsv\n'}
+[1.306412] (interfaces) StdoutLine: {'line': b'-- Installing: /home/darren/servo_node/install/interfaces/share/interfaces/package.dsv\n'}
+[1.306595] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/ament_index/resource_index/packages/interfaces\n'}
+[1.306760] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_generator_cExport.cmake\n'}
+[1.306918] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_generator_cExport-noconfig.cmake\n'}
+[1.307084] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_typesupport_fastrtps_cExport.cmake\n'}
+[1.307207] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_typesupport_fastrtps_cExport-noconfig.cmake\n'}
+[1.307354] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_introspection_cExport.cmake\n'}
+[1.307477] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[1.307617] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_cExport.cmake\n'}
+[1.307726] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[1.307869] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_generator_cppExport.cmake\n'}
+[1.307995] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_typesupport_fastrtps_cppExport.cmake\n'}
+[1.308116] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake\n'}
+[1.308226] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[1.308375] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[1.308488] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_cppExport.cmake\n'}
+[1.308641] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfaces__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[1.308761] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_generator_pyExport.cmake\n'}
+[1.308864] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/export_interfaces__rosidl_generator_pyExport-noconfig.cmake\n'}
+[1.308979] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/rosidl_cmake-extras.cmake\n'}
+[1.309078] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[1.309176] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[1.309277] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[1.309422] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[1.309532] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[1.309617] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[1.309700] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfacesConfig.cmake\n'}
+[1.309793] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/cmake/interfacesConfig-version.cmake\n'}
+[1.309870] (interfaces) StdoutLine: {'line': b'-- Up-to-date: /home/darren/servo_node/install/interfaces/share/interfaces/package.xml\n'}
+[1.311562] (interfaces) CommandEnded: {'returncode': 0}
+[1.374560] (interfaces) JobEnded: {'identifier': 'interfaces', 'rc': 0}
+[1.375383] (servo_pkg) JobStarted: {'identifier': 'servo_pkg'}
+[1.402147] (-) TimerEvent: {}
+[1.502500] (-) TimerEvent: {}
+[1.602812] (-) TimerEvent: {}
+[1.703147] (-) TimerEvent: {}
+[1.803439] (-) TimerEvent: {}
+[1.903757] (-) TimerEvent: {}
+[2.004121] (-) TimerEvent: {}
+[2.023308] (servo_pkg) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../build/servo_pkg', 'build', '--build-base', '/home/darren/servo_node/build/servo_pkg/build', 'install', '--record', '/home/darren/servo_node/build/servo_pkg/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/darren/servo_node/src/servo_pkg', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'LANGUAGE': 'en_CA:en', 'USER': 'darren', 'XDG_SESSION_TYPE': 'wayland', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/home/darren/servo_node/install/interfaces/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/darren', 'OLDPWD': '/home/darren', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'SYSTEMD_EXEC_PID': '1313', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/darren/servo_node/install:/home/darren/servo_node/src/install:/home/darren/ros2_ws/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'darren', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'darren', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/opt/ros/humble/bin:/home/darren/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/Darren-Ubuntu:@/tmp/.ICE-unix/1281,unix/Darren-Ubuntu:/tmp/.ICE-unix/1281', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/e3c12558_a6f3_48a1_9cf0_86eda348198a', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.GO5OX2', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'GNOME_TERMINAL_SERVICE': ':1.1527', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/darren/servo_node/install/servo_pkg:/home/darren/servo_node/install/interfaces:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/darren/servo_node/build/servo_pkg', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:/home/darren/servo_node/install/interfaces/local/lib/python3.10/dist-packages:/home/darren/ros2_ws/build/DW_DarrensController:/home/darren/ros2_ws/install/DW_DarrensController/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'VTE_VERSION': '6800', 'CMAKE_PREFIX_PATH': '/home/darren/servo_node/install/interfaces'}, 'shell': False}
+[2.104231] (-) TimerEvent: {}
+[2.165639] (servo_pkg) StderrLine: {'line': b"/home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'\n"}
+[2.165881] (servo_pkg) StderrLine: {'line': b'  warnings.warn(msg)\n'}
+[2.204337] (-) TimerEvent: {}
+[2.253121] (servo_pkg) StdoutLine: {'line': b'running egg_info\n'}
+[2.266612] (servo_pkg) StdoutLine: {'line': b'writing ../../build/servo_pkg/servo_pkg.egg-info/PKG-INFO\n'}
+[2.267149] (servo_pkg) StdoutLine: {'line': b'writing dependency_links to ../../build/servo_pkg/servo_pkg.egg-info/dependency_links.txt\n'}
+[2.267337] (servo_pkg) StdoutLine: {'line': b'writing entry points to ../../build/servo_pkg/servo_pkg.egg-info/entry_points.txt\n'}
+[2.267535] (servo_pkg) StdoutLine: {'line': b'writing requirements to ../../build/servo_pkg/servo_pkg.egg-info/requires.txt\n'}
+[2.267680] (servo_pkg) StdoutLine: {'line': b'writing top-level names to ../../build/servo_pkg/servo_pkg.egg-info/top_level.txt\n'}
+[2.297690] (servo_pkg) StdoutLine: {'line': b"reading manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'\n"}
+[2.299030] (servo_pkg) StdoutLine: {'line': b"writing manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'\n"}
+[2.299226] (servo_pkg) StdoutLine: {'line': b'running build\n'}
+[2.299361] (servo_pkg) StdoutLine: {'line': b'running build_py\n'}
+[2.299504] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.299722] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/maestro.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.300121] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/maestro.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.300329] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/USB_Servo.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.300611] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/USB_client.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.300883] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.301059] (servo_pkg) StdoutLine: {'line': b'copying servo_pkg/i2c_Servo.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg\n'}
+[2.301555] (servo_pkg) StdoutLine: {'line': b'running install\n'}
+[2.304412] (-) TimerEvent: {}
+[2.307541] (servo_pkg) StdoutLine: {'line': b'running install_lib\n'}
+[2.322510] (servo_pkg) StdoutLine: {'line': b'copying /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg/USB_Servo.py -> /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg\n'}
+[2.323240] (servo_pkg) StdoutLine: {'line': b'byte-compiling /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg/USB_Servo.py to USB_Servo.cpython-310.pyc\n'}
+[2.323974] (servo_pkg) StdoutLine: {'line': b'running install_data\n'}
+[2.324342] (servo_pkg) StdoutLine: {'line': b'copying resource/servo_pkg -> /home/darren/servo_node/install/servo_pkg/share/ament_index/resource_index/packages\n'}
+[2.324657] (servo_pkg) StdoutLine: {'line': b'copying package.xml -> /home/darren/servo_node/install/servo_pkg/share/servo_pkg\n'}
+[2.324841] (servo_pkg) StdoutLine: {'line': b'running install_egg_info\n'}
+[2.344444] (servo_pkg) StdoutLine: {'line': b"removing '/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info' (and everything under it)\n"}
+[2.344842] (servo_pkg) StdoutLine: {'line': b'Copying ../../build/servo_pkg/servo_pkg.egg-info to /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info\n'}
+[2.345705] (servo_pkg) StdoutLine: {'line': b'running install_scripts\n'}
+[2.404607] (-) TimerEvent: {}
+[2.466808] (servo_pkg) StdoutLine: {'line': b'Installing usb_client script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg\n'}
+[2.467029] (servo_pkg) StdoutLine: {'line': b'Installing usb_servo_service script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg\n'}
+[2.467227] (servo_pkg) StdoutLine: {'line': b"writing list of installed files to '/home/darren/servo_node/build/servo_pkg/install.log'\n"}
+[2.493042] (servo_pkg) CommandEnded: {'returncode': 0}
+[2.499022] (servo_pkg) JobEnded: {'identifier': 'servo_pkg', 'rc': 0}
+[2.499732] (-) EventReactorShutdown: {}

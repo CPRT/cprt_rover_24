@@ -1,0 +1,23 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from interfaces/srv/MoveServo.srv
+// generated code does not contain a copyright notice
+
+
+module interfaces {
+  module srv {
+    @verbatim (language="comment", text=
+      "Request: Two integers, port and position")
+    struct MoveServo_Request {
+      int64 port;
+
+      int64 pos;
+    };
+    @verbatim (language="comment", text=
+      "Response: status and status message")
+    struct MoveServo_Response {
+      boolean status;
+
+      string status_msg;
+    };
+  };
+};
