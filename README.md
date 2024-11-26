@@ -17,7 +17,7 @@ This project provides a Python-based interface to control servos using the Polol
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone ...
+   git clone https://github.com/TheWalrus368/Servo_Controllers.git
 
 2. Install Python dependencies:
     ```bash
