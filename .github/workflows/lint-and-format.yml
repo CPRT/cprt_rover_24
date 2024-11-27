@@ -26,10 +26,6 @@ jobs:
           PYLINT_SCORE_THRESHOLD: 10.0  # You can implement stricter checks here
       - name: Run Black
         run: black --fast .
-
-      # JavaScript/TypeScript Formatting and Linting
-      - name: Install Node.js dependencies
-        run: npm install
       - name: Run Prettier
         run: npx prettier --check "**/*.{js,ts}"
       - name: Run ESLint
