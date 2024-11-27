@@ -19,13 +19,13 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install black pylint
-      - name: Run Black
-        run: black --check .
       - name: Run Pylint
         run: |
           pylint $(find . -name "*.py") --exit-zero
         env:
           PYLINT_SCORE_THRESHOLD: 10.0  # You can implement stricter checks here
+      - name: Run Black
+        run: black --check .
 
       # JavaScript/TypeScript Formatting and Linting
       - name: Install Node.js dependencies
