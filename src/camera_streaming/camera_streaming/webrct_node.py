@@ -32,7 +32,6 @@ class WebRTCStreamer(Node):
         self.source_list = {}
         for i in range(0, len(camera_name)):
             self.source_list[camera_name[i]] = camera_path[i]
-        print(self.source_list)
 
     def start_video_cb(self, request, response):
         pipeline_str = self.create_pipeline(request)
@@ -45,7 +44,7 @@ class WebRTCStreamer(Node):
 
     def create_pipeline(self, request):
         pipeline = ""
-        compositor = "nvcompositor name=mix"
+        compositor = "compositor name=mix"
         total_width = request.width
         total_height = request.height
         i = 0
@@ -55,7 +54,7 @@ class WebRTCStreamer(Node):
             width = int(input.width * total_width / 100)
             origin_x = int(input.origin_x * total_width / 100) 
             origin_y = int(input.origin_y * total_height / 100)
-            pipeline += f"v4l2src device={self.source_list[name]} ! nvvidconv ! mix.sink_{i} "
+            pipeline += f"v4l2src device={self.source_list[name]} ! nvvideoconvert ! mix.sink_{i} "
             compositor += f" sink_{i}::xpos={origin_x} sink_{i}::ypos={origin_y} sink_{i}::height={height} sink_{i}::width={width}"
             i = i+1
         videoOut = f"webrtcsink run-signalling-server=true web-server-directory={self.web_server_path}/gstwebrtc-api/dist"
