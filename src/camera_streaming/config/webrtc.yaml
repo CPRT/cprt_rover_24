@@ -1,0 +1,10 @@
+webrtc_node:
+  ros__parameters:
+    camera_name:
+    - "Drive"
+    - "Arm"
+    camera_path:
+    - "/dev/v4l/by-id/usb-e-con_systems_See3CAM_CU27_3B1519112B010900-video-index0"
+    - "/dev/video2"
+    web_server: true
+    web_server_path: "/home/cprt/gst-plugins-rs/net/webrtc"
