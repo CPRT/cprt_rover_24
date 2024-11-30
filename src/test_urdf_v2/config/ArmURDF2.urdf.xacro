@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ArmURDF2">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+
+    <!-- Import ArmURDF2 urdf file -->
+    <xacro:include filename="$(find rover_urdf2)/urdf/ArmURDF2.urdf" />
+
+    <!-- Import control_xacro -->
+    <xacro:include filename="ArmURDF2.ros2_control.xacro" />
+
+
+    <xacro:ArmURDF2_ros2_control name="RealSystem" initial_positions_file="$(arg initial_positions_file)"/>
+
+</robot>

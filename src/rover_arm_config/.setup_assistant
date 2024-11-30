@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: test_urdf_tool
+    relative_path: urdf/urdf_ARM-3000.urdf
+  srdf:
+    relative_path: config/urdf_ARM-3000.srdf
+  package_settings:
+    author_name: ""
+    author_email: ""
+    generated_timestamp: 1706378431
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity

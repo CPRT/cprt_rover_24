@@ -26,6 +26,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArmCmd.msg"
   "msg/VideoSource.msg"
   "srv/ArmPos.srv"
+  "srv/ArmCmd.srv"
   "msg/GPIOmsg.msg" #ik its goofy the actual gpio package is GPIO
   "msg/GasSensorReading.msg"
   "srv/NavToGPSGeopose.srv"
@@ -34,6 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   builtin_interfaces
   geometry_msgs 
   geographic_msgs # Add packages that above messages depend on
+  DEPENDENCIES builtin_interfaces geometry_msgs
  )
 
 ament_export_dependencies(rosidl_default_runtime)

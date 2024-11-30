@@ -75,26 +75,23 @@ def generate_launch_description():
         output="screen",
     )
 
-    return launch.LaunchDescription(
-        [
-            container,
-            launch_ros.actions.Node(
-                package="arm_interface",
-                executable="trajectory_interpreter",
-                name="trajectory_interpreter_node",
-            ),
-            launch_ros.actions.Node(
-                package="arm_interface",
-                executable="joystick_arm_controller",
-                name="joystick_arm_controller_node",
-            ),
-            launch_ros.actions.Node(
-                package="joy", executable="joy_node", name="joystick"
-            ),
-            launch_ros.actions.Node(
-                package="drive",
-                executable="joystick_breakout",
-                name="joystick_breakout_node",
-            ),
-        ]
-    )
+    return launch.LaunchDescription([container,
+        launch_ros.actions.Node(
+            package='arm_interface',
+            executable='trajectory_interpreter',
+            name='trajectory_interpreter_node'),
+        launch_ros.actions.Node(
+            package='arm_interface',
+            executable='joystick_arm_controller',
+            name='joystick_arm_controller_node'),            
+        launch_ros.actions.Node(
+            package='joy',
+            executable='joy_node',
+            name='joystick'),
+        launch_ros.actions.Node(
+            package='drive',
+            executable='joystick_breakout',
+            name='joystick_breakout_node'),
+            
+            
+            ])
