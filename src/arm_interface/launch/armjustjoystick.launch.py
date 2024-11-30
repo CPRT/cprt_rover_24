@@ -25,5 +25,4 @@ def generate_launch_description():
             package='drive',
             executable='joystick_breakout',
             name='joystick_breakout_node'),
-            ]
-            )
+            ])
