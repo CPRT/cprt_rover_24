@@ -25,7 +25,6 @@ sudo apt upgrade -y
 
 sudo apt install -y \
 ros-humble-desktop \
-ros-humble-ros-base \
 ros-dev-tools \
 python3-dev \
 python3-pip \
@@ -54,12 +53,16 @@ echo "Starting Gstreamer upgrade..."
 sudo apt-get update && sudo apt-get install -y zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip flex bison libglib2.0-dev libmount-dev
 python3 -m pip install --upgrade pip
 pip3 install meson
-PATH=$PATH:~/.local/bin
+export PATH=$PATH:~/.local/bin
+if ! grep -q "export PATH=\$PATH:~/.local/bin" ~/.bashrc; then
+  echo "export PATH=\$PATH:~/.local/bin" >> ~/.bashrc
+  echo "meson exported in bashrc"
+fi
 
 cd ~
 git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git
-git checkout 1.24
 cd gstreamer
+git checkout 1.24
 meson setup builddir
 meson compile -C builddir
 
