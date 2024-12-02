@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'usb_servo_service = servo_pkg.USB_Servo:main',
-            'servo_client = servo_pkg.USB_client:main',
+            'servo_client = servo_pkg.servo_client:main',
             'i2c_servo_service = servo_pkg.i2c_Servo:main'
         ],
     },

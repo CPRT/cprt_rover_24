@@ -2,6 +2,8 @@ import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
 
+import time
+
 
 class Servo_Client(Node):
     def __init__(self):
@@ -25,8 +27,8 @@ class Servo_Client(Node):
         servo1.port = 0
         servo1.pos = 2432
         
-        response = Servo_Client.send_request(servo1.port, servo1.pos)
-        Servo_Client.get_logger().info(
+        response = Servo_Client.send_request(self, servo1.port, servo1.pos)
+        Servo_Client.get_logger(self).info(
             'Results: %s, status: %s' %
             (response.status, response.status_msg))
         
@@ -36,8 +38,8 @@ class Servo_Client(Node):
         servo2.port = 5
         servo2.pos = 9600
         
-        response = Servo_Client.send_request(servo2.port, servo2.pos)
-        Servo_Client.get_logger().info(
+        response = Servo_Client.send_request(self, servo2.port, servo2.pos)
+        Servo_Client.get_logger(self).info(
             'Results: %s, status: %s' %
             (response.status, response.status_msg))
         
@@ -47,8 +49,19 @@ class Servo_Client(Node):
         servo1.port = 15
         servo1.pos = 0
         
-        response = Servo_Client.send_request(servo1.port, servo1.pos)
-        Servo_Client.get_logger().info(
+        response = Servo_Client.send_request(self, servo1.port, servo1.pos)
+        Servo_Client.get_logger(self).info(
+            'Results: %s, status: %s' %
+            (response.status, response.status_msg))
+        
+        time.sleep(2)
+        
+        #Move servo on port 15 to minimum position
+        servo1.port = 15
+        servo1.pos = 180
+        
+        response = Servo_Client.send_request(self, servo1.port, servo1.pos)
+        Servo_Client.get_logger(self).info(
             'Results: %s, status: %s' %
             (response.status, response.status_msg))
         
@@ -58,8 +71,8 @@ class Servo_Client(Node):
         #servo2.port = 5
         #servo2.pos = 180
         
-        #response = Servo_Client.send_request(servo2.port, servo2.pos)
-        #Servo_Client.get_logger().info(
+        #response = Servo_Client.send_request(self, servo2.port, servo2.pos)
+        #Servo_Client.get_logger(self).info(
         #    'Results: %s, status: %s' %
         #    (response.status, response.status_msg))
             
@@ -71,7 +84,7 @@ def main(args=None):
     
     Servo_Client.USB_request()
     
-    Servo_Client.i2c_request()
+    Servo_Client.i2c_request(servo_Client)
     
 
     servo_Client.destroy_node()
