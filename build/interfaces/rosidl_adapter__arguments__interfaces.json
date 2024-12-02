@@ -1,6 +1,0 @@
-{
-  "package_name": "interfaces",
-  "non_idl_tuples": [
-    "/home/darren/Servo_Controllers/src/interfaces:srv/MoveServo.srv"
-  ]
-}
