@@ -21,7 +21,10 @@ This project provides a Python-based interface to control servos using the Polol
 
 2. Install Python dependencies:
     ```bash
-    pip install pyserial
+    pip3 install pyserial
+    pip3 install adafruit-circuitpython-lis3dh
+    pip3 install adafruit-circuitpython-pca9685
+    pip3 install adafruit-circuitpython-motorkit 
 
 ## How to Use
 1. Setup:
