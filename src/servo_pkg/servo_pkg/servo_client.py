@@ -15,8 +15,8 @@ class Servo_Client(Node):
         self.req = MoveServo.Request()
 
     def send_request(self, port: int, pos: int) -> MoveServo:
-        self.req.port = int[port]
-        self.req.pos = int[pos]
+        self.req.port = port
+        self.req.pos = pos
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
@@ -24,8 +24,8 @@ class Servo_Client(Node):
     def USB_request(self) -> None:
         # Move servo on port 0 to minimum position
         servo1 = MoveServo.Request()
-        servo1.port = int[0]
-        servo1.pos = int[2432]
+        servo1.port = 0
+        servo1.pos = 2432
 
         response = Servo_Client.send_request(self, servo1.port, servo1.pos)
         Servo_Client.get_logger(self).info(
@@ -34,8 +34,8 @@ class Servo_Client(Node):
 
         # Move servo on port 5 to maximum position
         servo2 = MoveServo.Request()
-        servo2.port = int[5]
-        servo2.pos = int[9600]
+        servo2.port = 5
+        servo2.pos = 9600
 
         response = Servo_Client.send_request(self, servo2.port, servo2.pos)
         Servo_Client.get_logger(self).info(
@@ -45,8 +45,8 @@ class Servo_Client(Node):
     def i2c_request(self) -> None:
         # Move servo on port 15 to minimum position
         servo1 = MoveServo.Request()
-        servo1.port = int[15]
-        servo1.pos = int[0]
+        servo1.port = 15
+        servo1.pos = 0
 
         response = Servo_Client.send_request(self, servo1.port, servo1.pos)
         Servo_Client.get_logger(self).info(
@@ -56,14 +56,13 @@ class Servo_Client(Node):
         time.sleep(2)
 
         # Move servo on port 15 to minimum position
-        servo1.port = int[15]
-        servo1.pos = int[180]
+        servo1.port = 15
+        servo1.pos = 180
 
         response = Servo_Client.send_request(self, servo1.port, servo1.pos)
         Servo_Client.get_logger(self).info(
             "Results: %s, status: %s" % (response.status, response.status_msg)
         )
-
 
 
 def main(args=None):

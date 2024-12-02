@@ -16,18 +16,18 @@ class i2c_Servo(Node):
 
         self.i2c = board.I2C()
         self.pca = PCA9685(self.i2c)
-        self.pca.frequency = int[50]
+        self.pca.frequency = 50
 
-        self.MAXROM = int[180]  # max range of motion of the servo, assuming 180 for now
+        self.MAXROM = 180  # max range of motion of the servo, assuming 180 for now
 
     def set_position(self, request, response) -> MoveServo:
         s = servo.Servo(self.pca.channels[request.port], actuation_range=self.MAXROM)
-        s.angle = int[request.pos]
+        s.angle = request.pos
 
-        response.status = bool[True]
-        response.status_msg = str[(
+        response.status = True
+        response.status_msg = (
             f"Servo {request.port} moving to {request.pos} degrees"
-            )]
+            )
 
         return response
 
