@@ -33,9 +33,13 @@ This project provides a Python-based interface to control servos using the Polol
     ```bash
     ros2 run servo_pkg usb_servo_service
 
-3. Starting the USB client
-    The USB_client.py contains some sample code that sets a servo in port 1 to its minumim and port 5 to its max.
-    This min and max is based off the Turbo Pro Micro servo.
-
+3. OR Starting the i2c service
     ```bash
-    ros2 run servo_pkg usb_client 
+    ros2 run servo_pkg i2c_servo_service
+
+4. Starting the client
+    The servo_client.py contains some sample code that controls the servo with the USB or the i2c controllers
+
+    If one of the controllers is not connected don't try to use the method in main, it will make the other not work.
+    ```bash
+    ros2 run servo_pkg servo_client 
