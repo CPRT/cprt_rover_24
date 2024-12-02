@@ -5,7 +5,7 @@ import rclpy.time
 from interfaces.srv import MoveServo
 
 import board
-#from adafruit_motor import servo
+from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
 
 class i2c_Servo(Node):
@@ -21,8 +21,8 @@ class i2c_Servo(Node):
 
 
     def set_position(self, request, response):
-        servo = servo.Servo(self.pca.request.port, actuation_range=self.MAXROM)
-        servo.angle = request.pos
+        s = servo.Servo(self.pca.request.port, actuation_range=self.MAXROM)
+        s.angle = request.pos
         
         response.status = True
         response.status_msg = (f"Servo {self.pca.request.port} moving to {self.pca.request.pos} degrees")

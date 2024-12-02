@@ -42,9 +42,9 @@ class Servo_Client(Node):
             (response.status, response.status_msg))
         
     def i2c_request(self):
-        #Move servo on port 0 to minimum position
+        #Move servo on port 15 to minimum position
         servo1 = MoveServo.Request()
-        servo1.port = 0
+        servo1.port = 15
         servo1.pos = 0
         
         response = Servo_Client.send_request(servo1.port, servo1.pos)
@@ -54,14 +54,14 @@ class Servo_Client(Node):
         
         
         #Move servo on port 5 to maximum position
-        servo2 = MoveServo.Request()
-        servo2.port = 5
-        servo2.pos = 180
+        #servo2 = MoveServo.Request()
+        #servo2.port = 5
+        #servo2.pos = 180
         
-        response = Servo_Client.send_request(servo2.port, servo2.pos)
-        Servo_Client.get_logger().info(
-            'Results: %s, status: %s' %
-            (response.status, response.status_msg))
+        #response = Servo_Client.send_request(servo2.port, servo2.pos)
+        #Servo_Client.get_logger().info(
+        #    'Results: %s, status: %s' %
+        #    (response.status, response.status_msg))
             
     
     
