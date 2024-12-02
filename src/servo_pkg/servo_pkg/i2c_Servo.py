@@ -25,9 +25,7 @@ class i2c_Servo(Node):
         s.angle = request.pos
 
         response.status = True
-        response.status_msg = (
-            f"Servo {request.port} moving to {request.pos} degrees"
-            )
+        response.status_msg = f"Servo {request.port} moving to {request.pos} degrees"
 
         return response
 

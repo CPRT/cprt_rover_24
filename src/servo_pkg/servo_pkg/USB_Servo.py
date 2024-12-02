@@ -16,16 +16,14 @@ class USB_Servo(Node):
     def set_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
         self.servo = maestro.Controller()
         min = 608 * 4
-        max = 2400 * 4 
+        max = 2400 * 4
 
         self.servo.setRange(request.port, min, max)
 
         if request.pos > max or request.pos < min:
             response.status = False
             current_position = int[self.servo.getPosition(request.port)]
-            response.status_msg = (
-                f"Servo {request.port} input out of range\ncurrent position: {current_position}"
-                )
+            response.status_msg = f"Servo {request.port} input out of range\ncurrent position: {current_position}"
 
         else:
             self.servo.setTarget(request.port, request.pos)
