@@ -175,7 +175,6 @@ CMakeFiles/interfaces_uninstall.dir/clean:
 # Target rules for target CMakeFiles/interfaces.dir
 
 # All Build rule for target.
-CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_introspection_cpp.dir/all
 CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_cpp.dir/all
 CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_generator_c.dir/all
 CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_fastrtps_c.dir/all
@@ -183,6 +182,7 @@ CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_introsp
 CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_c.dir/all
 CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__cpp.dir/all
 CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_fastrtps_cpp.dir/all
+CMakeFiles/interfaces.dir/all: CMakeFiles/interfaces__rosidl_typesupport_introspection_cpp.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/interfaces.dir/build.make CMakeFiles/interfaces.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/interfaces.dir/build.make CMakeFiles/interfaces.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/darren/Servo_Controllers/build/interfaces/CMakeFiles --progress-num= "Built target interfaces"

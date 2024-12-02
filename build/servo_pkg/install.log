@@ -17,6 +17,6 @@
 /home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info/SOURCES.txt
 /home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info/PKG-INFO
 /home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info/zip-safe
-/home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg/i2c_client
-/home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg/usb_client
+/home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg/i2c_servo_service
+/home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg/servo_client
 /home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg/usb_servo_service

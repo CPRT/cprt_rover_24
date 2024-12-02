@@ -82,7 +82,7 @@ def main(args=None):
     rclpy.init(args=args)
     servo_Client = Servo_Client()
     
-    Servo_Client.USB_request()
+    Servo_Client.USB_request(servo_Client)
     
     Servo_Client.i2c_request(servo_Client)
     
