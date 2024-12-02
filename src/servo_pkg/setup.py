@@ -22,7 +22,7 @@ setup(
         'console_scripts': [
             'usb_servo_service = servo_pkg.USB_Servo:main',
             'usb_client = servo_pkg.USB_client:main',
-            'i2c_client = servo_pkg.i2c_Servo:main'
+            'i2c_servo_service = servo_pkg.i2c_Servo:main'
         ],
     },
     py_modules=[
