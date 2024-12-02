@@ -13,26 +13,28 @@ class USB_Servo(Node):
         self.srv = self.create_service(MoveServo, "turn_servo", self.set_position)
 
     # Set target within valid range (min to max quarter-microseconds) example: servo.setTarget(0, 6000)
-    def set_position(self, request, response):
+    def set_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
         self.servo = maestro.Controller()
-        min = 608 * 4
-        max = 2400 * 4
+        min = int[608 * 4]
+        max = int[2400 * 4] 
 
         self.servo.setRange(request.port, min, max)
 
         if request.pos > max or request.pos < min:
             response.status = False
-            current_position = self.servo.getPosition(request.port)
-            response.status_msg = f"Servo {request.port} input out of range\ncurrent position: {current_position}"
+            current_position = int[self.servo.getPosition(request.port)]
+            response.status_msg = str[(
+                f"Servo {request.port} input out of range\ncurrent position: {current_position}"
+                )]
 
         else:
             self.servo.setTarget(request.port, request.pos)
 
             response.status = True
-            current_position = self.servo.getPosition(request.port)
-            response.status_msg = (
+            current_position = int[self.servo.getPosition(request.port)]
+            response.status_msg = str[(
                 f"Servo {request.port} current position: {current_position}"
-            )
+            )]
 
         self.servo.close()
         return response
