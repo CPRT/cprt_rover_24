@@ -1,4 +1,0 @@
-[console_scripts]
-i2c_servo_service = servo_pkg.i2c_Servo:main
-servo_client = servo_pkg.servo_client:main
-usb_servo_service = servo_pkg.USB_Servo:main

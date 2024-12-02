@@ -1,7 +1,0 @@
-# Request: Two integers, port and position
-int64 port
-int64 pos
----
-# Response: status and status message
-bool status
-string status_msg
