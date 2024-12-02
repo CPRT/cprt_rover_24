@@ -1,0 +1,33 @@
+[0.527s] Invoking command in '/home/darren/Servo_Controllers/src/servo_pkg': PYTHONPATH=/home/darren/Servo_Controllers/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/Servo_Controllers/build/servo_pkg/build install --record /home/darren/Servo_Controllers/build/servo_pkg/install.log --single-version-externally-managed install_data
+[0.640s] /home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
+[0.640s]   warnings.warn(msg)
+[0.714s] running egg_info
+[0.725s] writing ../../build/servo_pkg/servo_pkg.egg-info/PKG-INFO
+[0.725s] writing dependency_links to ../../build/servo_pkg/servo_pkg.egg-info/dependency_links.txt
+[0.725s] writing entry points to ../../build/servo_pkg/servo_pkg.egg-info/entry_points.txt
+[0.725s] writing requirements to ../../build/servo_pkg/servo_pkg.egg-info/requires.txt
+[0.725s] writing top-level names to ../../build/servo_pkg/servo_pkg.egg-info/top_level.txt
+[0.753s] reading manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.754s] writing manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.754s] running build
+[0.754s] running build_py
+[0.754s] copying servo_pkg/__init__.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.754s] copying servo_pkg/maestro.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.754s] copying servo_pkg/maestro.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.754s] copying servo_pkg/USB_Servo.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.754s] copying servo_pkg/servo_client.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.754s] copying servo_pkg/__init__.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.754s] copying servo_pkg/i2c_Servo.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+[0.755s] running install
+[0.760s] running install_lib
+[0.773s] running install_data
+[0.773s] copying resource/servo_pkg -> /home/darren/Servo_Controllers/install/servo_pkg/share/ament_index/resource_index/packages
+[0.774s] copying package.xml -> /home/darren/Servo_Controllers/install/servo_pkg/share/servo_pkg
+[0.774s] running install_egg_info
+[0.788s] removing '/home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[0.788s] Copying ../../build/servo_pkg/servo_pkg.egg-info to /home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info
+[0.788s] running install_scripts
+[0.887s] Installing usb_client script to /home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg
+[0.887s] Installing usb_servo_service script to /home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg
+[0.887s] writing list of installed files to '/home/darren/Servo_Controllers/build/servo_pkg/install.log'
+[0.907s] Invoked command in '/home/darren/Servo_Controllers/src/servo_pkg' returned '0': PYTHONPATH=/home/darren/Servo_Controllers/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/Servo_Controllers/build/servo_pkg/build install --record /home/darren/Servo_Controllers/build/servo_pkg/install.log --single-version-externally-managed install_data

@@ -1,9 +1,9 @@
 {
   "package_name": "interfaces",
-  "output_dir": "/home/darren/servo_node/build/interfaces/rosidl_typesupport_fastrtps_cpp/interfaces",
+  "output_dir": "/home/darren/Servo_Controllers/build/interfaces/rosidl_typesupport_fastrtps_cpp/interfaces",
   "template_dir": "/opt/ros/humble/share/rosidl_typesupport_fastrtps_cpp/resource",
   "idl_tuples": [
-    "/home/darren/servo_node/build/interfaces/rosidl_adapter/interfaces:srv/MoveServo.idl"
+    "/home/darren/Servo_Controllers/build/interfaces/rosidl_adapter/interfaces:srv/MoveServo.idl"
   ],
   "target_dependencies": [
     "/opt/ros/humble/lib/rosidl_typesupport_fastrtps_cpp/rosidl_typesupport_fastrtps_cpp",
@@ -14,6 +14,6 @@
     "/opt/ros/humble/share/rosidl_typesupport_fastrtps_cpp/resource/msg__type_support.cpp.em",
     "/opt/ros/humble/share/rosidl_typesupport_fastrtps_cpp/resource/srv__rosidl_typesupport_fastrtps_cpp.hpp.em",
     "/opt/ros/humble/share/rosidl_typesupport_fastrtps_cpp/resource/srv__type_support.cpp.em",
-    "/home/darren/servo_node/build/interfaces/rosidl_adapter/interfaces/srv/MoveServo.idl"
+    "/home/darren/Servo_Controllers/build/interfaces/rosidl_adapter/interfaces/srv/MoveServo.idl"
   ]
 }

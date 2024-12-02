@@ -1,0 +1,31 @@
+/home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
+  warnings.warn(msg)
+running egg_info
+writing ../../build/servo_pkg/servo_pkg.egg-info/PKG-INFO
+writing dependency_links to ../../build/servo_pkg/servo_pkg.egg-info/dependency_links.txt
+writing entry points to ../../build/servo_pkg/servo_pkg.egg-info/entry_points.txt
+writing requirements to ../../build/servo_pkg/servo_pkg.egg-info/requires.txt
+writing top-level names to ../../build/servo_pkg/servo_pkg.egg-info/top_level.txt
+reading manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+writing manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+running build
+running build_py
+copying servo_pkg/__init__.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+copying servo_pkg/maestro.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+copying servo_pkg/maestro.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+copying servo_pkg/USB_Servo.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+copying servo_pkg/servo_client.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+copying servo_pkg/__init__.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+copying servo_pkg/i2c_Servo.py -> /home/darren/Servo_Controllers/build/servo_pkg/build/lib/servo_pkg
+running install
+running install_lib
+running install_data
+copying resource/servo_pkg -> /home/darren/Servo_Controllers/install/servo_pkg/share/ament_index/resource_index/packages
+copying package.xml -> /home/darren/Servo_Controllers/install/servo_pkg/share/servo_pkg
+running install_egg_info
+removing '/home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../../build/servo_pkg/servo_pkg.egg-info to /home/darren/Servo_Controllers/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info
+running install_scripts
+Installing usb_client script to /home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg
+Installing usb_servo_service script to /home/darren/Servo_Controllers/install/servo_pkg/lib/servo_pkg
+writing list of installed files to '/home/darren/Servo_Controllers/build/servo_pkg/install.log'

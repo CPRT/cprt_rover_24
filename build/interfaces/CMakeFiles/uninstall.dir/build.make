@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/darren/servo_node/src/interfaces
+CMAKE_SOURCE_DIR = /home/darren/Servo_Controllers/src/interfaces
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/darren/servo_node/build/interfaces
+CMAKE_BINARY_DIR = /home/darren/Servo_Controllers/build/interfaces
 
 # Utility rule file for uninstall.
 
@@ -78,6 +78,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /home/darren/servo_node/build/interfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/darren/servo_node/src/interfaces /home/darren/servo_node/src/interfaces /home/darren/servo_node/build/interfaces /home/darren/servo_node/build/interfaces /home/darren/servo_node/build/interfaces/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/darren/Servo_Controllers/build/interfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/darren/Servo_Controllers/src/interfaces /home/darren/Servo_Controllers/src/interfaces /home/darren/Servo_Controllers/build/interfaces /home/darren/Servo_Controllers/build/interfaces /home/darren/Servo_Controllers/build/interfaces/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

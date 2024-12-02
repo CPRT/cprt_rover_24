@@ -17,7 +17,7 @@ setup(
     maintainer_email='darrenwallace368@gmail.com',
     description='Servo Node',
     license='Apache-2.0',
-    tests_require=['pytest'],
+    #tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'usb_servo_service = servo_pkg.USB_Servo:main',

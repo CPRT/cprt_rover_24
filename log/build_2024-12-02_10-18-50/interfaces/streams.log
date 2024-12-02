@@ -1,0 +1,6 @@
+[0.011s] Invoking command in '/home/darren/Servo_Controllers/build/interfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/darren/Servo_Controllers/install/servo_pkg:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble /usr/bin/cmake --build /home/darren/Servo_Controllers/build/interfaces -- -j8 -l8
+[0.029s] [0mCMake Error: The current CMakeCache.txt directory /home/darren/Servo_Controllers/build/interfaces/CMakeCache.txt is different than the directory /home/darren/servo_node/build/interfaces where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt[0m
+[0.041s] [0mCMake Error: The source directory "/home/darren/servo_node/src/interfaces" does not exist.
+[0.041s] Specify --help for usage, or press the help button on the CMake GUI.[0m
+[0.043s] gmake: *** [Makefile:747: cmake_check_build_system] Error 1
+[0.045s] Invoked command in '/home/darren/Servo_Controllers/build/interfaces' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/darren/Servo_Controllers/install/servo_pkg:/home/darren/ros2_ws/install/DW_DarrensController:/opt/ros/humble /usr/bin/cmake --build /home/darren/Servo_Controllers/build/interfaces -- -j8 -l8

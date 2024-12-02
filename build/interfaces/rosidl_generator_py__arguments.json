@@ -1,9 +1,9 @@
 {
   "package_name": "interfaces",
-  "output_dir": "/home/darren/servo_node/build/interfaces/rosidl_generator_py/interfaces",
+  "output_dir": "/home/darren/Servo_Controllers/build/interfaces/rosidl_generator_py/interfaces",
   "template_dir": "/opt/ros/humble/share/rosidl_generator_py/cmake/../resource",
   "idl_tuples": [
-    "/home/darren/servo_node/build/interfaces/rosidl_adapter/interfaces:srv/MoveServo.idl"
+    "/home/darren/Servo_Controllers/build/interfaces/rosidl_adapter/interfaces:srv/MoveServo.idl"
   ],
   "target_dependencies": [
     "/opt/ros/humble/share/rosidl_generator_py/cmake/../../../lib/rosidl_generator_py/rosidl_generator_py",
@@ -19,6 +19,6 @@
     "/opt/ros/humble/share/rosidl_generator_py/cmake/../resource/_msg.py.em",
     "/opt/ros/humble/share/rosidl_generator_py/cmake/../resource/_srv_pkg_typesupport_entry_point.c.em",
     "/opt/ros/humble/share/rosidl_generator_py/cmake/../resource/_srv.py.em",
-    "/home/darren/servo_node/build/interfaces/rosidl_adapter/interfaces/srv/MoveServo.idl"
+    "/home/darren/Servo_Controllers/build/interfaces/rosidl_adapter/interfaces/srv/MoveServo.idl"
   ]
 }

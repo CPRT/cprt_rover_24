@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = -DRCUTILS_ENABLE_FAULT_INJECTION -DROS_PACKAGE_NAME=\"interfaces\" -Dinterfaces__rosidl_typesupport_introspection_c__pyext_EXPORTS
 
-C_INCLUDES = -I/home/darren/servo_node/build/interfaces/rosidl_generator_c -I/home/darren/servo_node/build/interfaces/rosidl_generator_py -I/usr/include/python3.10 -I/opt/ros/humble/include/rmw -I/home/darren/servo_node/build/interfaces/rosidl_typesupport_introspection_c -isystem /opt/ros/humble/include/rosidl_runtime_c -isystem /opt/ros/humble/include/rosidl_typesupport_c -isystem /opt/ros/humble/include/rosidl_typesupport_interface -isystem /opt/ros/humble/include/rcutils -isystem /opt/ros/humble/include/rosidl_typesupport_introspection_c
+C_INCLUDES = -I/home/darren/Servo_Controllers/build/interfaces/rosidl_generator_c -I/home/darren/Servo_Controllers/build/interfaces/rosidl_generator_py -I/usr/include/python3.10 -I/opt/ros/humble/include/rmw -I/home/darren/Servo_Controllers/build/interfaces/rosidl_typesupport_introspection_c -isystem /opt/ros/humble/include/rosidl_runtime_c -isystem /opt/ros/humble/include/rosidl_typesupport_c -isystem /opt/ros/humble/include/rosidl_typesupport_interface -isystem /opt/ros/humble/include/rcutils -isystem /opt/ros/humble/include/rosidl_typesupport_introspection_c
 
 C_FLAGS = -fPIC -Wall -Wextra
 

@@ -1,9 +1,9 @@
 {
   "package_name": "interfaces",
-  "output_dir": "/home/darren/servo_node/build/interfaces/rosidl_generator_c/interfaces",
+  "output_dir": "/home/darren/Servo_Controllers/build/interfaces/rosidl_generator_c/interfaces",
   "template_dir": "/opt/ros/humble/share/rosidl_generator_c/cmake/../resource",
   "idl_tuples": [
-    "/home/darren/servo_node/build/interfaces/rosidl_adapter/interfaces:srv/MoveServo.idl"
+    "/home/darren/Servo_Controllers/build/interfaces/rosidl_adapter/interfaces:srv/MoveServo.idl"
   ],
   "target_dependencies": [
     "/opt/ros/humble/share/rosidl_generator_c/cmake/../../../lib/rosidl_generator_c/rosidl_generator_c",
@@ -19,6 +19,6 @@
     "/opt/ros/humble/share/rosidl_generator_c/cmake/../resource/msg__struct.h.em",
     "/opt/ros/humble/share/rosidl_generator_c/cmake/../resource/msg__type_support.h.em",
     "/opt/ros/humble/share/rosidl_generator_c/cmake/../resource/srv__type_support.h.em",
-    "/home/darren/servo_node/build/interfaces/rosidl_adapter/interfaces/srv/MoveServo.idl"
+    "/home/darren/Servo_Controllers/build/interfaces/rosidl_adapter/interfaces/srv/MoveServo.idl"
   ]
 }
