@@ -1,4 +1,0 @@
-[0.000000] (-) TimerEvent: {}
-[0.000250] (-) JobUnselected: {'identifier': 'interfaces'}
-[0.000294] (-) JobUnselected: {'identifier': 'servo_pkg'}
-[0.000406] (-) EventReactorShutdown: {}

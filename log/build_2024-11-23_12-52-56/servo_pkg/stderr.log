@@ -1,3 +1,0 @@
-/home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
-  warnings.warn(msg)
-error: package directory 'my_ros2_package' does not exist

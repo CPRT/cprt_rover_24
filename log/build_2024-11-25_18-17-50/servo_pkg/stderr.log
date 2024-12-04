@@ -1,7 +1,0 @@
-/home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
-  warnings.warn(msg)
-  File "/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg/USB_client.py", line 29
-    servo1.port = 0, servo1.pos = 8000
-    ^^^^^^^^^^^
-SyntaxError: cannot assign to attribute here. Maybe you meant '==' instead of '='?
-
