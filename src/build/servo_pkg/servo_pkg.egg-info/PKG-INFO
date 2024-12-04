@@ -1,8 +1,0 @@
-Metadata-Version: 2.1
-Name: servo_pkg
-Version: 0.0.0
-Summary: TODO: Package description
-Maintainer: darren
-Maintainer-email: darrenwallace368@gmail.com
-License: Apache-2.0
-Requires-Dist: setuptools

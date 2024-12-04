@@ -1,6 +1,5 @@
 # Servo Controller
-Control multiple servos using the Pololu Maestro controller with ROS2 and Python.
-i2c Will be included soon.
+Control multiple servos using motor controllers with ROS2 and Python.
 
 ## Description
 This project provides a Python-based interface to control servos using the Pololu Maestro controller. 
