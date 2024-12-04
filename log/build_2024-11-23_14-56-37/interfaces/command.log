@@ -1,0 +1,2 @@
+Invoking command in '/home/darren/servo_node/build/interfaces': /usr/bin/cmake --build /home/darren/servo_node/build/interfaces -- -j8 -l8
+Invoked command in '/home/darren/servo_node/build/interfaces' returned '2': /usr/bin/cmake --build /home/darren/servo_node/build/interfaces -- -j8 -l8

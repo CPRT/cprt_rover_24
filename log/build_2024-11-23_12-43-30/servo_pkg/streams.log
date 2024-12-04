@@ -1,0 +1,33 @@
+[0.592s] Invoking command in '/home/darren/servo_node/src/servo_pkg': PYTHONPATH=/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/servo_node/build/servo_pkg/build install --record /home/darren/servo_node/build/servo_pkg/install.log --single-version-externally-managed install_data
+[0.704s] /home/darren/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
+[0.704s]   warnings.warn(msg)
+[0.774s] running egg_info
+[0.785s] writing ../../build/servo_pkg/servo_pkg.egg-info/PKG-INFO
+[0.785s] writing dependency_links to ../../build/servo_pkg/servo_pkg.egg-info/dependency_links.txt
+[0.785s] writing entry points to ../../build/servo_pkg/servo_pkg.egg-info/entry_points.txt
+[0.785s] writing requirements to ../../build/servo_pkg/servo_pkg.egg-info/requires.txt
+[0.785s] writing top-level names to ../../build/servo_pkg/servo_pkg.egg-info/top_level.txt
+[0.809s] reading manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.810s] writing manifest file '../../build/servo_pkg/servo_pkg.egg-info/SOURCES.txt'
+[0.810s] running build
+[0.810s] running build_py
+[0.810s] creating /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.810s] copying servo_pkg/__init__.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.810s] copying servo_pkg/servo_node.py -> /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg
+[0.811s] running install
+[0.816s] running install_lib
+[0.829s] creating /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg
+[0.829s] copying /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg/__init__.py -> /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg
+[0.829s] copying /home/darren/servo_node/build/servo_pkg/build/lib/servo_pkg/servo_node.py -> /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg
+[0.829s] byte-compiling /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg/__init__.py to __init__.cpython-310.pyc
+[0.829s] byte-compiling /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg/servo_node.py to servo_node.cpython-310.pyc
+[0.830s] running install_data
+[0.830s] creating /home/darren/servo_node/install/servo_pkg/share/ament_index/resource_index/packages
+[0.830s] copying resource/servo_pkg -> /home/darren/servo_node/install/servo_pkg/share/ament_index/resource_index/packages
+[0.831s] copying package.xml -> /home/darren/servo_node/install/servo_pkg/share/servo_pkg
+[0.831s] running install_egg_info
+[0.847s] Copying ../../build/servo_pkg/servo_pkg.egg-info to /home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages/servo_pkg-0.0.0-py3.10.egg-info
+[0.847s] running install_scripts
+[0.941s] Installing servo_node script to /home/darren/servo_node/install/servo_pkg/lib/servo_pkg
+[0.941s] writing list of installed files to '/home/darren/servo_node/build/servo_pkg/install.log'
+[0.962s] Invoked command in '/home/darren/servo_node/src/servo_pkg' returned '0': PYTHONPATH=/home/darren/servo_node/build/servo_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/darren/servo_node/install/servo_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/servo_pkg build --build-base /home/darren/servo_node/build/servo_pkg/build install --record /home/darren/servo_node/build/servo_pkg/install.log --single-version-externally-managed install_data
