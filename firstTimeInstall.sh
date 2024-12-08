@@ -40,6 +40,7 @@ if ! grep -q "source /opt/ros/humble/setup.bash" ~/.bashrc; then
 fi
 
 pip3 install black
+pip3 install pylint
 
 sudo rosdep init
 rosdep update

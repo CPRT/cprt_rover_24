@@ -7,4 +7,4 @@ webrtc_node:
     - "/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
     - "/dev/video2"
     web_server: true
-    web_server_path: "/home/cprt/gstreamer/webrtc"
+    web_server_path: "/home/cprt/gstreamer/webrtc/gstwebrtc-api/dist"
