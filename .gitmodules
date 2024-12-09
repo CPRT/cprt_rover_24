@@ -1,0 +1,10 @@
+[submodule "src/kindr_ros"]
+	path = src/kindr_ros
+	url = https://github.com/SivertHavso/kindr_ros.git
+	branch = ros2
+[submodule "src/elevation_mapping"]
+	path = src/elevation_mapping
+	url = https://github.com/ErikCald/elevation_mapping.git
+[submodule "src/zed-ros2-wrapper"]
+	path = src/zed-ros2-wrapper
+	url = https://github.com/stereolabs/zed-ros2-wrapper.git
