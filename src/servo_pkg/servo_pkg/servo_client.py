@@ -21,57 +21,19 @@ class Servo_Client(Node):
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
 
-    def USB_request(self) -> None:
-        # Move servo on port 0 to minimum position
-        servo1 = MoveServo.Request()
-        servo1.port = 0
-        servo1.pos = 512
-
-        response = Servo_Client.send_request(self, servo1.port, servo1.pos)
+    def servo_request(self, con_type: str, req_port, req_pos) -> None:
+        response = self.send_request(port=req_port, pos=req_pos)
         Servo_Client.get_logger(self).info(
             "Results: %s, status: %s" % (response.status, response.status_msg)
         )
-
-        # Move servo on port 5 to maximum position
-        servo2 = MoveServo.Request()
-        servo2.port = 5
-        servo2.pos = 2400
-
-        response = Servo_Client.send_request(self, servo2.port, servo2.pos)
-        Servo_Client.get_logger(self).info(
-            "Results: %s, status: %s" % (response.status, response.status_msg)
-        )
-
-    def i2c_request(self) -> None:
-        # Move servo on port 15 to minimum position
-        servo1 = MoveServo.Request()
-        servo1.port = 15
-        servo1.pos = 0
-
-        response = Servo_Client.send_request(self, servo1.port, servo1.pos)
-        Servo_Client.get_logger(self).info(
-            "Results: %s, status: %s" % (response.status, response.status_msg)
-        )
-
-        time.sleep(2)
-
-        # Move servo on port 15 to minimum position
-        servo1.port = 15
-        servo1.pos = 180
-
-        response = Servo_Client.send_request(self, servo1.port, servo1.pos)
-        Servo_Client.get_logger(self).info(
-            "Results: %s, status: %s" % (response.status, response.status_msg)
-        )
-
 
 def main(args=None):
     rclpy.init(args=args)
     servo_Client = Servo_Client()
 
-    Servo_Client.USB_request(servo_Client)
-
-    Servo_Client.i2c_request(servo_Client)
+    Servo_Client.servo_request(servo_Client, 0, 500)
+    time.sleep(2)
+    Servo_Client.servo_request(servo_Client, 0, 2400)
 
     servo_Client.destroy_node()
     rclpy.shutdown()
