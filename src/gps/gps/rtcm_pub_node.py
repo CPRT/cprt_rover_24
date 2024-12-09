@@ -2,6 +2,7 @@ import rclpy
 import threading
 from rclpy.node import Node
 from rtcm_msgs.msg import Message as Rtcm
+from pyubx2 import UBXReader
 
 # Defines
 TMODE_SVIN = 1
@@ -18,10 +19,15 @@ class IoManager:
         except serial.SerialException as e:
             raise RuntimeError(f"Failed to open serial port {port}: {e}")
         self.lock = threading.Lock()
+        self.ubr = UBXReader(
+            self.worker,
+            protfilter=RTCM3_PROTOCOL,
+            validate=VALCKSUM,
+        )
 
-    def read(self) -> bytes:
+    def read(self) -> tuple:
         with self.lock:
-            return self.worker.read(self.worker.in_waiting())
+            return self.ubr.read()
 
     def write(self, data: bytes):
         with self.lock:
@@ -111,11 +117,11 @@ class Rtcm_Node(Node):
     
     def timer_callback(self):
         if self.serial_conn.data_availible():
-            data = self.serial_conn.read()
+            (raw, parsed_data) = self.serial_conn.read()
             msg = RTCM()
             msg.message = list(data)
-            self.publisher_.publish(msg)
-            self.get_logger().info(f'Published RTCM message: {len(msg.data)} bytes')
+            self.publisher_.publish(raw)
+            self.get_logger().info(f'Published RTCM message: {len(parsed_data)}')
 
 def main(args=None):
     rclpy.init(args=args)
