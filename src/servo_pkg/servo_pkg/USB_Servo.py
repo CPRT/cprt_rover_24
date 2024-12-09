@@ -10,7 +10,7 @@ from servo_pkg import maestro
 class USB_Servo(Node):
     def __init__(self):
         super().__init__("usb_servo")
-        self.srv = self.create_service(MoveServo, "turn_servo", self.set_position)
+        self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
         
         self.servo = maestro.Controller()
         #self tested min and max of the Tower Pro 9g micro servos. Values are positions represented in micro seconds.
@@ -35,6 +35,16 @@ class USB_Servo(Node):
             response.status_msg = (
                 f"Servo {request.port} current position: {current_position}"
             )
+
+        self.servo.close()
+        return response
+    
+    def get_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
+        response.status = True
+        current_position = self.servo.getPosition(request.port)
+        response.status_msg = (
+            f"{current_position}"
+        )
 
         self.servo.close()
         return response

@@ -12,7 +12,7 @@ from adafruit_pca9685 import PCA9685
 class i2c_Servo(Node):
     def __init__(self):
         super().__init__("i2c_servo")
-        self.srv = self.create_service(MoveServo, "turn_servo", self.set_position)
+        self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
 
         self.i2c = board.I2C()
         self.pca = PCA9685(self.i2c)
