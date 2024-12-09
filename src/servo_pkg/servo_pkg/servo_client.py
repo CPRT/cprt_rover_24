@@ -25,7 +25,7 @@ class Servo_Client(Node):
         # Move servo on port 0 to minimum position
         servo1 = MoveServo.Request()
         servo1.port = 0
-        servo1.pos = 2432
+        servo1.pos = 512
 
         response = Servo_Client.send_request(self, servo1.port, servo1.pos)
         Servo_Client.get_logger(self).info(
@@ -35,7 +35,7 @@ class Servo_Client(Node):
         # Move servo on port 5 to maximum position
         servo2 = MoveServo.Request()
         servo2.port = 5
-        servo2.pos = 9600
+        servo2.pos = 2400
 
         response = Servo_Client.send_request(self, servo2.port, servo2.pos)
         Servo_Client.get_logger(self).info(
