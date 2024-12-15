@@ -102,3 +102,20 @@ echo GST_PLUGIN_PATH=$GST_PLUGIN_PATH >> $GSTREAMER_DIR/setupGstreamer.sh
 echo "Finished building GStreamer"
 
 source ~/.bashrc
+
+echo "Downloading ZED SDK ..."
+cd /tmp
+curl -L https://download.stereolabs.com/zedsdk/4.2/l4t36.4/jetsons?_gl=1*1x76wtq*_gcl_au*MTkzMjE2NTcwLjE3MzQyOTE5OTg -o zed_sdk_installer.run
+chmod +x zed_sdk_installer.run
+./zed_sdk_installer.run -- silent
+echo "Finished downloading ZED SDK ..."
+
+echo "Building Kindr ..."
+cd /tmp
+git clone https://github.com/ANYbotics/kindr.git
+cd kindr/
+mkdir build
+cd build
+cmake .. -DUSE_CMAKE=true
+sudo make install
+echo "Finished building Kindr ..."
