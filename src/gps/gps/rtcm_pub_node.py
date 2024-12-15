@@ -3,6 +3,7 @@ import serial
 import threading
 from rclpy.node import Node
 from rtcm_msgs.msg import Message as Rtcm
+from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH
 from pyubx2 import (
     RTCM3_PROTOCOL,
     UBXMessage,
@@ -11,11 +12,11 @@ from pyubx2 import (
     UBXReader,
     VALCKSUM,
 )
-from pyubx2.ubxtypes_configdb import (SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH)
 
 # Defines
 TMODE_SVIN = 1
 TMODE_FIXED = 2
+
 
 class IoManager:
     def __init__(self, port="/dev/ttyACM0", baud=38400):
@@ -50,7 +51,6 @@ class IoManager:
             return self.worker.in_waiting() > 0
 
 
-
 class Rtcm_Node(Node):
     def __init__(self):
         super().__init__("rtcm_node")
@@ -58,10 +58,10 @@ class Rtcm_Node(Node):
         self.rtcm_pub = self.create_publisher(Rtcm, "/rtcm", 1)
         self.serial_conn = IoManager(port=self.dev, baud=self.baudrate)
         self.layers = SET_LAYER_RAM | SET_LAYER_BBR
-        if (self.persistent):
+        if self.persistent:
             self.layers |= SET_LAYER_FLASH
         self.config_rtcm()
-        self.timer = self.create_timer(1/self.freq, self.timer_callback)
+        self.timer = self.create_timer(1 / self.freq, self.timer_callback)
 
     def load_params(self):
         self.declare_parameter("TimingMode", TMODE_SVIN)
@@ -69,24 +69,22 @@ class Rtcm_Node(Node):
             self.get_parameter("TimingMode").get_parameter_value().integer_value
         )
         if self.time_mode not in (TMODE_SVIN, TMODE_FIXED):
-            self.get_logger().warn(f"Unknown timing mode {self.time_mode}. Defaulting ...")
+            self.get_logger().warn(
+                f"Unknown timing mode {self.time_mode}. Defaulting ..."
+            )
             self.time_mode = TMODE_SVIN
         self.declare_parameter("MinTime", 600)
         self.min_time = (
             self.get_parameter("MinTime").get_parameter_value().integer_value
         )
         self.declare_parameter("MinAcc", 0.5)
-        self.min_acc = (
-            self.get_parameter("MinAcc").get_parameter_value().double_value
-        )
+        self.min_acc = self.get_parameter("MinAcc").get_parameter_value().double_value
         self.declare_parameter("Persistent", False)
         self.persistent = (
             self.get_parameter("Persistent").get_parameter_value().bool_value
         )
         self.declare_parameter("Freq", 2.0)
-        self.freq = (
-            self.get_parameter("Freq").get_parameter_value().double_value
-        )
+        self.freq = self.get_parameter("Freq").get_parameter_value().double_value
         if self.freq <= 0:
             self.get_logger().warn("Frequency must be positive. Defaulting to 2.0 Hz.")
             self.freq = 2.0
@@ -96,11 +94,8 @@ class Rtcm_Node(Node):
             self.get_parameter("Baudrate").get_parameter_value().integer_value
         )
         self.declare_parameter("Device", "/dev/ttyACM0")
-        self.dev = (
-            self.get_parameter("Device").get_parameter_value().string_value
-        )
-        
-    
+        self.dev = self.get_parameter("Device").get_parameter_value().string_value
+
     def config_rtcm(self, port_type: str = "USB") -> UBXMessage:
         transaction = 0
         cfg_data = []
@@ -133,7 +128,7 @@ class Rtcm_Node(Node):
                 self.get_logger().error(f"Error setting survey-in mode: {e}")
         else:
             self.get_logger().warn("Fixed mode is not implemented yet.")
-    
+
     def timer_callback(self):
         if self.serial_conn.data_available():
             try:
@@ -144,9 +139,12 @@ class Rtcm_Node(Node):
                 msg = Rtcm()
                 msg.message = list(raw)
                 self.rtcm_pub.publish(msg)
-                self.get_logger().info(f"Published RTCM message of length {len(raw)}. Parsed message: {parsed_data}")
+                self.get_logger().info(
+                    f"Published RTCM message of length {len(raw)}. Parsed message: {parsed_data}"
+                )
             except Exception as e:
                 self.get_logger().error(f"Error reading or publishing RTCM data: {e}")
+
 
 def main(args=None):
     rclpy.init(args=args)
