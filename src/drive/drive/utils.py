@@ -19,10 +19,8 @@ ROBOCLAW_ERRORS = {
         diagnostic_msgs.msg.DiagnosticStatus.ERROR,
         "Logic batt voltage low",
     ),
-    0x0100: (diagnostic_msgs.msg.DiagnosticStatus.WARN,
-             "M1 driver fault"),
-    0x0200: (diagnostic_msgs.msg.DiagnosticStatus.WARN,
-             "M2 driver fault"),
+    0x0100: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "M1 driver fault"),
+    0x0200: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "M2 driver fault"),
     0x0400: (
         diagnostic_msgs.msg.DiagnosticStatus.WARN,
         "Main batt voltage high",
