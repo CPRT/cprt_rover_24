@@ -20,6 +20,7 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+
 def generate_launch_description():
 
     pkg_localization = get_package_share_directory("localization")
@@ -28,46 +29,41 @@ def generate_launch_description():
     pkg_drive = get_package_share_directory("drive")
     pkg_ouster = get_package_share_directory("ouster_ros")
     pkg_camera_processing = get_package_share_directory("camera_processing")
-    
+
     localization_launch_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_localization,
-                         "launch", "localization.launch.py")
+            os.path.join(pkg_localization, "launch", "localization.launch.py")
         )
     )
 
     ouster_launch_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_ouster,
-                         "launch", "driver.launch.py")
+            os.path.join(pkg_ouster, "launch", "driver.launch.py")
         )
     )
 
     description_launch_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_description,
-                         "launch", "robot_state_publisher.launch.py")
+            os.path.join(pkg_description, "launch", "robot_state_publisher.launch.py")
         )
     )
 
     drive_launch_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_drive,
-                         "launch", "roverdrivewithoutjoystick.launch.py")
+            os.path.join(pkg_drive, "launch", "roverdrivewithoutjoystick.launch.py")
         )
     )
 
     zed_node_launch_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_camera_processing,
-                         "launch", "zed.launch.py")
+            os.path.join(pkg_camera_processing, "launch", "zed.launch.py")
         ),
-        launch_arguments={"profile": "night"}.items()
+        launch_arguments={"profile": "night"}.items(),
     )
 
     ld = LaunchDescription()
 
-    #ld.add_action(nav_launch_cmd)
+    # ld.add_action(nav_launch_cmd)
     ld.add_action(localization_launch_cmd)
     ld.add_action(ouster_launch_cmd)
     ld.add_action(description_launch_cmd)
