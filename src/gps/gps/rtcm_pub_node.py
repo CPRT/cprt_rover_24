@@ -13,6 +13,8 @@ from pyubx2 import (
     VALCKSUM,
 )
 
+#TODO (CN): Add 'pip3 install pyubx2' to first time install
+
 # Defines
 TMODE_SVIN = 1
 TMODE_FIXED = 2
@@ -48,7 +50,7 @@ class IoManager:
 
     def data_available(self) -> bool:
         with self.lock:
-            return self.worker.in_waiting() > 0
+            return (self.worker.in_waiting > 0)
 
 
 class Rtcm_Node(Node):
@@ -130,7 +132,7 @@ class Rtcm_Node(Node):
             self.get_logger().warn("Fixed mode is not implemented yet.")
 
     def timer_callback(self):
-        if self.serial_conn.data_available():
+        while self.serial_conn.data_available():
             try:
                 raw, parsed_data = self.serial_conn.read()
                 if not raw:
