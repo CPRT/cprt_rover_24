@@ -1,6 +1,6 @@
+import threading
 import rclpy
 import serial
-import threading
 from rclpy.node import Node
 from rtcm_msgs.msg import Message as Rtcm
 from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH
@@ -13,21 +13,38 @@ from pyubx2 import (
     VALCKSUM,
 )
 
-#TODO (CN): Add 'pip3 install pyubx2' to first time install
-
 # Defines
 TMODE_SVIN = 1
 TMODE_FIXED = 2
 
 
 class IoManager:
+    """
+    Manages serial I/O operations, ensuring thread safety for reading and writing data.
+
+    Attributes:
+        lock (threading.Lock): Ensures thread-safe access to the serial port.
+        worker (serial.Serial): Serial connection instance.
+        ubr (UBXReader): UBXReader instance for parsing RTCM/UBX data.
+    """
+
     def __init__(self, port="/dev/ttyACM0", baud=38400):
+        """
+        Initializes the serial connection and UBXReader.
+
+        Args:
+            port (str): Serial port to connect to.
+            baud (int): Baud rate for the serial connection.
+
+        Raises:
+            RuntimeError: If the serial port cannot be opened.
+        """
         self.lock = threading.Lock()
         with self.lock:
             try:
                 self.worker = serial.Serial(port, baud, timeout=1)
             except serial.SerialException as e:
-                raise RuntimeError(f"Failed to open serial port {port}: {e}")
+                raise RuntimeError(f"Failed to open serial port {port}: {e}") from e
             self.ubr = UBXReader(
                 self.worker,
                 protfilter=RTCM3_PROTOCOL,
@@ -35,26 +52,64 @@ class IoManager:
             )
 
     def read(self) -> tuple:
+        """
+        Reads data from the serial port using UBXReader.
+
+        Returns:
+            tuple: Raw data and parsed data from UBXReader.
+
+        Raises:
+            RuntimeError: If reading from the serial port fails.
+        """
         with self.lock:
             try:
                 return self.ubr.read()
             except Exception as e:
-                raise RuntimeError(f"Error reading from serial port: {e}")
+                raise RuntimeError(f"Error reading from serial port: {e}") from e
 
     def write(self, data: bytes):
+        """
+        Writes data to the serial port.
+
+        Args:
+            data (bytes): Data to write to the serial port.
+
+        Raises:
+            RuntimeError: If writing to the serial port fails.
+        """
         with self.lock:
             try:
                 self.worker.write(data)
             except Exception as e:
-                raise RuntimeError(f"Error writing to serial port: {e}")
+                raise RuntimeError(f"Error writing to serial port: {e}") from e
 
     def data_available(self) -> bool:
+        """
+        Checks if there is data available to read from the serial port.
+
+        Returns:
+            bool: True if data is available, False otherwise.
+        """
         with self.lock:
-            return (self.worker.in_waiting > 0)
+            return self.worker.in_waiting > 0
 
 
-class Rtcm_Node(Node):
+class RtcmNode(Node):
+    """
+    ROS 2 node for managing RTCM data via serial communication.
+
+    Attributes:
+        rtcm_pub (Publisher): Publishes RTCM messages to the /rtcm topic.
+        serial_conn (IoManager): Manages serial I/O operations.
+        layers (int): Configuration layers for the UBXMessage.
+        timer (Timer): Timer for periodically reading and publishing RTCM data.
+    """
+
     def __init__(self):
+        """
+        Initializes the RTCM node, loads parameters, sets up serial communication,
+        configures RTCM output, and starts a periodic timer callback.
+        """
         super().__init__("rtcm_node")
         self.load_params()
         self.rtcm_pub = self.create_publisher(Rtcm, "/rtcm", 1)
@@ -66,6 +121,11 @@ class Rtcm_Node(Node):
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
 
     def load_params(self):
+        """
+        Loads parameters from the ROS 2 parameter server with default values.
+        Parameters include timing mode, survey-in settings, persistence, frequency,
+        baud rate, and serial device.
+        """
         self.declare_parameter("TimingMode", TMODE_SVIN)
         self.time_mode = (
             self.get_parameter("TimingMode").get_parameter_value().integer_value
@@ -99,6 +159,18 @@ class Rtcm_Node(Node):
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
 
     def config_rtcm(self, port_type: str = "USB") -> UBXMessage:
+        """
+        Configures the output of RTCM messages on the receiver.
+
+        Args:
+            port_type (str): Port type for RTCM messages (e.g., "USB").
+
+        Returns:
+            UBXMessage: The configuration message sent to the receiver.
+
+        Raises:
+            UBXMessageError, UBXParseError, RuntimeError: If configuration fails.
+        """
         transaction = 0
         cfg_data = []
         rtcm_types = ("1005", "1077", "1087", "1097", "1127", "1230")
@@ -132,25 +204,36 @@ class Rtcm_Node(Node):
             self.get_logger().warn("Fixed mode is not implemented yet.")
 
     def timer_callback(self):
+        """
+        Periodic callback to read RTCM data from the receiver and publish it to the /rtcm topic.
+        If data is available, it publishes the raw data and logs the parsed message.
+        """
         while self.serial_conn.data_available():
             try:
                 raw, parsed_data = self.serial_conn.read()
-                if not raw:
-                    self.get_logger().warn("No data read from serial port.")
-                    return
-                msg = Rtcm()
-                msg.message = list(raw)
-                self.rtcm_pub.publish(msg)
-                self.get_logger().info(
-                    f"Published RTCM message of length {len(raw)}. Parsed message: {parsed_data}"
-                )
             except Exception as e:
                 self.get_logger().error(f"Error reading or publishing RTCM data: {e}")
+                return
+
+            if not raw:
+                self.get_logger().warn("No data read from serial port.")
+                return
+            msg = Rtcm()
+            msg.message = list(raw)
+            self.rtcm_pub.publish(msg)
+            self.get_logger().info(
+                f"Published RTCM message of length {len(raw)}. Parsed message: {parsed_data}"
+            )
 
 
 def main(args=None):
+    """
+    Main entry point for the RTCM node.
+
+    Initializes the ROS 2 system, creates the RTCM node, and starts spinning the event loop.
+    """
     rclpy.init(args=args)
-    rtcm_node = Rtcm_Node()
+    rtcm_node = RtcmNode()
     rclpy.spin(rtcm_node)
     rtcm_node.destroy_node()
     rclpy.shutdown()
