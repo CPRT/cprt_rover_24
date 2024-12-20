@@ -1,97 +1,17 @@
-import threading
 import rclpy
-import serial
 from rclpy.node import Node
 from rtcm_msgs.msg import Message as Rtcm
 from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH
 from pyubx2 import (
-    RTCM3_PROTOCOL,
     UBXMessage,
     UBXMessageError,
     UBXParseError,
-    UBXReader,
-    VALCKSUM,
 )
+from .ubx_io_manager import UbxIoManager
 
 # Defines
 TMODE_SVIN = 1
 TMODE_FIXED = 2
-
-
-class IoManager:
-    """
-    Manages serial I/O operations, ensuring thread safety for reading and writing data.
-
-    Attributes:
-        lock (threading.Lock): Ensures thread-safe access to the serial port.
-        worker (serial.Serial): Serial connection instance.
-        ubr (UBXReader): UBXReader instance for parsing RTCM/UBX data.
-    """
-
-    def __init__(self, port="/dev/ttyACM0", baud=38400):
-        """
-        Initializes the serial connection and UBXReader.
-
-        Args:
-            port (str): Serial port to connect to.
-            baud (int): Baud rate for the serial connection.
-
-        Raises:
-            RuntimeError: If the serial port cannot be opened.
-        """
-        self.lock = threading.Lock()
-        with self.lock:
-            try:
-                self.worker = serial.Serial(port, baud, timeout=1)
-            except serial.SerialException as e:
-                raise RuntimeError(f"Failed to open serial port {port}: {e}") from e
-            self.ubr = UBXReader(
-                self.worker,
-                protfilter=RTCM3_PROTOCOL,
-                validate=VALCKSUM,
-            )
-
-    def read(self) -> tuple:
-        """
-        Reads data from the serial port using UBXReader.
-
-        Returns:
-            tuple: Raw data and parsed data from UBXReader.
-
-        Raises:
-            RuntimeError: If reading from the serial port fails.
-        """
-        with self.lock:
-            try:
-                return self.ubr.read()
-            except Exception as e:
-                raise RuntimeError(f"Error reading from serial port: {e}") from e
-
-    def write(self, data: bytes):
-        """
-        Writes data to the serial port.
-
-        Args:
-            data (bytes): Data to write to the serial port.
-
-        Raises:
-            RuntimeError: If writing to the serial port fails.
-        """
-        with self.lock:
-            try:
-                self.worker.write(data)
-            except Exception as e:
-                raise RuntimeError(f"Error writing to serial port: {e}") from e
-
-    def data_available(self) -> bool:
-        """
-        Checks if there is data available to read from the serial port.
-
-        Returns:
-            bool: True if data is available, False otherwise.
-        """
-        with self.lock:
-            return self.worker.in_waiting > 0
 
 
 class RtcmNode(Node):
@@ -112,8 +32,9 @@ class RtcmNode(Node):
         """
         super().__init__("rtcm_node")
         self.load_params()
-        self.rtcm_pub = self.create_publisher(Rtcm, "/rtcm", 1)
-        self.serial_conn = IoManager(port=self.dev, baud=self.baudrate)
+        queue_depth = self.get_parameter("QueueDepth").get_parameter_value().integer_value
+        self.rtcm_pub = self.create_publisher(Rtcm, "/rtcm", queue_depth)
+        self.serial_conn = UbxIoManager(port=self.dev, baud=self.baudrate)
         self.layers = SET_LAYER_RAM | SET_LAYER_BBR
         if self.persistent:
             self.layers |= SET_LAYER_FLASH
@@ -157,6 +78,7 @@ class RtcmNode(Node):
         )
         self.declare_parameter("Device", "/dev/ttyACM0")
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
+        self.declare_parameter("QueueDepth", 1)
 
     def config_rtcm(self, port_type: str = "USB") -> UBXMessage:
         """
@@ -209,11 +131,7 @@ class RtcmNode(Node):
         If data is available, it publishes the raw data and logs the parsed message.
         """
         while self.serial_conn.data_available():
-            try:
-                raw, parsed_data = self.serial_conn.read()
-            except Exception as e:
-                self.get_logger().error(f"Error reading or publishing RTCM data: {e}")
-                return
+            raw, parsed_data = self.serial_conn.read()
 
             if not raw:
                 self.get_logger().warn("No data read from serial port.")
