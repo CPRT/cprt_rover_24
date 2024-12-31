@@ -40,6 +40,7 @@ if ! grep -q "source /opt/ros/humble/setup.bash" ~/.bashrc; then
 fi
 
 pip3 install black
+pip3 install pylint
 
 sudo rosdep init
 rosdep update
@@ -68,6 +69,7 @@ meson compile -C builddir
 
 export GSTREAMER_DIR=$PWD
 ./gst-env.py --only-environment > setupGstreamer.sh
+sed -i '/PWD/d' setupGstreamer.sh
 sudo chmod +x setupGstreamer.sh
 source setupGstreamer.sh
 if ! grep -q "source $GSTREAMER_DIR/setupGstreamer.sh" ~/.bashrc; then
@@ -79,6 +81,8 @@ cd /tmp
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "$HOME/.cargo/env"
 git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git
+
+# Webrtc
 cd gst-plugins-rs/net/webrtc
 cargo build --release --target-dir build
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
@@ -92,12 +96,18 @@ npm install
 npm run build
 cd ../..
 cp -r webrtc $GSTREAMER_DIR
-
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$GSTREAMER_DIR/webrtc/build/release
 
-export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:/usr/lib/aarch64-linux-gnu/gstreamer-1.0/deepstream
+# Rtp and congestion controll
+cd /tmp/gst-plugins-rs/net/rtp
+cargo build --release --target-dir build
+cd ..
+cp -r rtp $GSTREAMER_DIR
+export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$GSTREAMER_DIR/rtp/build/release
 
-echo GST_PLUGIN_PATH=$GST_PLUGIN_PATH >> $GSTREAMER_DIR/setupGstreamer.sh
+export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:/usr/lib/aarch64-linux-gnu/gstreamer-1.0/deepstream:/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
+
+echo "export GST_PLUGIN_PATH=$GST_PLUGIN_PATH" >> $GSTREAMER_DIR/setupGstreamer.sh
 
 echo "Finished building GStreamer"
 

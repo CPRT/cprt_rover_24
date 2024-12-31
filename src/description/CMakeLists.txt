@@ -10,7 +10,7 @@ find_package(velocity_controllers REQUIRED)
 find_package(xacro REQUIRED)
 
 install(
-  DIRECTORY config launch meshes urdf robots
+  DIRECTORY config launch robots
   DESTINATION share/${PROJECT_NAME}
 )
 
