@@ -10,38 +10,34 @@ from interfaces.msg import LiveTune
 from interfaces.msg import SixFloats
 from interfaces.msg import PIDmsg
 
+
 class driveStation(Node):
     def __init__(self):
         super().__init__("drivestation")
-        self.liveTunePub = self.create_publisher(
-                LiveTune, "drive_liveTune", 10)
-        self.statePub = self.create_publisher(
-            Int8, "cmd_drive_state", 10)
+        self.liveTunePub = self.create_publisher(LiveTune, "drive_liveTune", 10)
+        self.statePub = self.create_publisher(Int8, "cmd_drive_state", 10)
 
-        self.cmddrivePub = self.create_publisher(
-            SixFloats, "cmd_move", 10)
+        self.cmddrivePub = self.create_publisher(SixFloats, "cmd_move", 10)
 
-        self.setVoltsPub = self.create_publisher(
-            SixFloats, "cmd_voltage_drive", 10)
+        self.setVoltsPub = self.create_publisher(SixFloats, "cmd_voltage_drive", 10)
 
-        self.setTwistPub = self.create_publisher(
-            Twist, "/cmd_vel", 10)
+        self.setTwistPub = self.create_publisher(Twist, "/cmd_vel", 10)
 
-        self.setPid = self.create_publisher(
-            PIDmsg, "pid_update", 10)
+        self.setPid = self.create_publisher(PIDmsg, "pid_update", 10)
 
         self.create_timer(0.2, self.loopRun)
+
     def loopRun(self):
         print("Enter command: ")
-        u = input("Enter command: ").lower().split(' ')
+        u = input("Enter command: ").lower().split(" ")
 
-        if (u[0] == "t"):
+        if u[0] == "t":
             twist = Twist()
             twist.linear.x = float(u[1])
             twist.angular.z = float(u[2])
             self.setTwistPub.publish(twist)
-            return 
-        elif(u[0] == 'v'):
+            return
+        elif u[0] == "v":
             volts = SixFloats()
             volts.m0 = float(u[1])
             volts.m1 = float(u[2])
@@ -51,8 +47,8 @@ class driveStation(Node):
             volts.m5 = float(u[6])
             self.setVoltsPub.publish(volts)
             return
-        
-        elif(u[0] == 'p'):
+
+        elif u[0] == "p":
             pid = PIDmsg()
             pid.p = float(u[1])
             pid.i = float(u[2])
@@ -60,21 +56,21 @@ class driveStation(Node):
             self.setPid.publish(pid)
             return
 
-        elif (u[0] == 'y'):
+        elif u[0] == "y":
             self.get_logger().info("Turning PID on")
             temp = Int8()
             temp.data = 1
             self.statePub.publish(temp)
             return
 
-        elif (u[0] == 'n'):
+        elif u[0] == "n":
             self.get_logger().info("Turning PID off")
             temp = Int8()
             temp.data = 0
             self.statePub.publish(temp)
             return
 
-        elif(u[0] == "stop"):
+        elif u[0] == "stop":
             volts = SixFloats()
             volts.m0 = 0
             volts.m1 = 0
@@ -84,8 +80,6 @@ class driveStation(Node):
             volts.m5 = 0
             self.setVoltsPub.publish(volts)
             return
-        
-
 
 
 def main(args=None):
@@ -94,6 +88,7 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-    
+
+
 if __name__ == "__main__":
     main()

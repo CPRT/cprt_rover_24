@@ -12,6 +12,7 @@ from . import utils as u
 from .electrical_wrapper import ElectricalWrapper
 from .encoder_wrapper import EncoderWrapper
 
+
 class Movement:
     """Movement class - responsible of running the RoboClaw"""
 
@@ -38,7 +39,7 @@ class Movement:
         self.vl_ticks = 0
         self.stopped = True
 
-    def run(self): #DRIVE LOGIC
+    def run(self):  # DRIVE LOGIC
         if self.stopped is True:
             try:
                 roboclaw.ForwardM1(self.address, 0)
@@ -56,19 +57,18 @@ class Movement:
             roboclaw.ForwardM2(self.address, 0)
             return
 
-
         linear_x = self.twist.linear.x
-        if linear_x > self.MAX_SPEED: #check for messages above speed limit
+        if linear_x > self.MAX_SPEED:  # check for messages above speed limit
             linear_x = self.MAX_SPEED
         if linear_x < -self.MAX_SPEED:
             linear_x = -self.MAX_SPEED
 
-        #vr and vl are how fast the velocity on the left and right side is in m/s
-        vr = linear_x - self.twist.angular.z * self.BASE_WIDTH / 2 # m/s
+        # vr and vl are how fast the velocity on the left and right side is in m/s
+        vr = linear_x - self.twist.angular.z * self.BASE_WIDTH / 2  # m/s
         vl = linear_x + self.twist.angular.z * self.BASE_WIDTH / 2
         self.twist = None
 
-        #ticks convert the speed the wheel needs to go into encoder ticks per second
+        # ticks convert the speed the wheel needs to go into encoder ticks per second
         vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
         vl_ticks = int(vl * self.TICKS_PER_METER)
 
@@ -82,7 +82,9 @@ class Movement:
             ####### PID DRIVE #######
             else:
                 roboclaw.SpeedM1M2(self.address, -vr_ticks, vl_ticks)
-            self.logger.info("tryng PID vr = " + str(-vr_ticks) + " vl = " + str(vl_ticks))
+            self.logger.info(
+                "tryng PID vr = " + str(-vr_ticks) + " vl = " + str(vl_ticks)
+            )
 
             ####### VOLTAGE DRIVE #######
             # else:
@@ -108,7 +110,7 @@ class RoboclawNode(Node):
 
         self.get_logger().info("Connecting to roboclaw")
 
-        #initialzie default connection params
+        # initialzie default connection params
         self.declare_parameter("dev", "/dev/ttyACM0")
         dev_name = self.get_parameter("dev").get_parameter_value().string_value
         self.get_logger().info(dev_name)
@@ -147,10 +149,10 @@ class RoboclawNode(Node):
         else:
             self.get_logger().debug(repr(version[1]))
 
-        roboclaw.SpeedM1M2(self.address, 0, 0) #set roboclaws to default
+        roboclaw.SpeedM1M2(self.address, 0, 0)  # set roboclaws to default
         roboclaw.ResetEncoders(self.address)
 
-        #Get launch parameters
+        # Get launch parameters
         self.declare_parameter("max_speed", 2.0)
         self.MAX_SPEED = (
             self.get_parameter("max_speed").get_parameter_value().double_value
@@ -187,10 +189,12 @@ class RoboclawNode(Node):
             )
             self.electr = ElectricalWrapper(self)
 
-        if self.PUB_ODOM: #publish odometry
-            self.odom_pub = self.create_publisher(Odometry, dev_name + "/odom_roboclaw", 1)
+        if self.PUB_ODOM:  # publish odometry
+            self.odom_pub = self.create_publisher(
+                Odometry, dev_name + "/odom_roboclaw", 1
+            )
             self.left_encoder_pub = self.create_publisher(
-                Float64,  dev_name + "/left_encoder_angular_velocity", 1
+                Float64, dev_name + "/left_encoder_angular_velocity", 1
             )
             self.right_encoder_pub = self.create_publisher(
                 Float64, dev_name + "/right_encoder_angular_velocity", 1
@@ -201,7 +205,7 @@ class RoboclawNode(Node):
                 self.BASE_WIDTH,
                 self,
             )
-        self.movement = Movement( #create movement class with parameters
+        self.movement = Movement(  # create movement class with parameters
             self.address,
             self.MAX_SPEED,
             self.BASE_WIDTH,
@@ -211,7 +215,7 @@ class RoboclawNode(Node):
             self.get_logger(),
         )
         self.last_set_speed_time = self.get_clock().now().nanoseconds
-        #subscriptions
+        # subscriptions
         self.cmd_vel_sub = self.create_subscription(
             Twist, "/drive/cmd_vel", self.cmd_vel_callback, 1
         )
@@ -220,7 +224,7 @@ class RoboclawNode(Node):
         )
         self.get_clock().sleep_for(rclpy.duration.Duration(seconds=1.0))
 
-    def run(self): #Roboclaw run loop
+    def run(self):  # Roboclaw run loop
         # stop movement if robot doesn't recieve commands for 1 sec
         if (
             self.STOP_MOVEMENT
@@ -242,7 +246,7 @@ class RoboclawNode(Node):
         status1, enc1, crc1 = None, None, None
         status2, enc2, crc2 = None, None, None
 
-        #log and publish
+        # log and publish
         try:
             status1, enc1, crc1 = roboclaw.ReadEncM1(self.address)
         except ValueError:
@@ -287,9 +291,7 @@ class RoboclawNode(Node):
 
         # self.get_logger().info("Update done moving if cmd")
 
-
-
-        self.movement.run() #run movement loop
+        self.movement.run()  # run movement loop
 
     def poll_elec(self) -> dict:
         """Read motors electrical data"""
