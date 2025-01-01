@@ -6,6 +6,7 @@ from pyubx2 import (
     VALCKSUM,
 )
 
+
 class UbxIoManager:
     """
     Manages serial I/O operations, ensuring thread safety for reading and writing data.

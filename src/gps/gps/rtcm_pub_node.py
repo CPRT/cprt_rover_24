@@ -32,7 +32,9 @@ class RtcmNode(Node):
         """
         super().__init__("rtcm_node")
         self.load_params()
-        queue_depth = self.get_parameter("QueueDepth").get_parameter_value().integer_value
+        queue_depth = (
+            self.get_parameter("QueueDepth").get_parameter_value().integer_value
+        )
         self.rtcm_pub = self.create_publisher(Rtcm, "/rtcm", queue_depth)
         self.serial_conn = UbxIoManager(port=self.dev, baud=self.baudrate)
         self.layers = SET_LAYER_RAM | SET_LAYER_BBR
