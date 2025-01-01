@@ -115,7 +115,11 @@ source ~/.bashrc
 
 echo "Downloading ZED SDK ..."
 cd /tmp
-curl -L https://download.stereolabs.com/zedsdk/4.2/l4t36.4/jetsons?_gl=1*1x76wtq*_gcl_au*MTkzMjE2NTcwLjE3MzQyOTE5OTg -o zed_sdk_installer.run
+if [ "$(uname -m)" == "aarch64" ]; then
+curl -L https://stereolabs.sfo2.cdn.digitaloceanspaces.com/zedsdk/4.2/ZED_SDK_Tegra_L4T36.4_v4.2.2.zstd.run -o zed_sdk_installer.run
+else
+curl -L https://download.stereolabs.com/zedsdk/4.2/cu12/ubuntu22 -o zed_sdk_installer.run
+fi
 chmod +x zed_sdk_installer.run
 ./zed_sdk_installer.run -- silent
 echo "Finished downloading ZED SDK ..."
