@@ -19,7 +19,7 @@ class i2c_Servo(Node):
         self.pca.frequency = 50
 
         self.MAXROM = 180  # max range of motion of the servo, assuming 180 for now
-        
+
         self.servo_list = self.instantiate_servos()
 
     def set_position(self, request, response) -> MoveServo:
@@ -30,13 +30,16 @@ class i2c_Servo(Node):
         response.status_msg = f"Servo {request.port} moving to {request.pos} degrees"
 
         return response
-    
+
     def instantiate_servos(self) -> list:
         servo_list = []
-        for i in range(0, 15):  #i2c controller has 16 channels
-            servo_list[i] = servo.Servo(self.pca.channels[i], actuation_range=self.MAXROM)
-            
+        for i in range(0, 15):  # i2c controller has 16 channels
+            servo_list[i] = servo.Servo(
+                self.pca.channels[i], actuation_range=self.MAXROM
+            )
+
         return servo_list
+
 
 def main(args=None):
     rclpy.init(args=args)

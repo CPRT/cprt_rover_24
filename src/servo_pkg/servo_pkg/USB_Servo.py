@@ -11,13 +11,13 @@ class USB_Servo(Node):
     def __init__(self):
         super().__init__("usb_servo")
         self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
-        
+
         self.servo = maestro.Controller()
-        #self tested min and max of the Tower Pro 9g micro servos. Values are positions represented in micro seconds.
+        # self tested min and max of the Tower Pro 9g micro servos. Values are positions represented in micro seconds.
         self.min = 512
         self.max = 2400
 
-        for i in range (0, 11): #usb controller has 12 channels
+        for i in range(0, 11):  # usb controller has 12 channels
             self.servo.setRange(i, min, max)
 
     # Set target within valid range (min to max quarter-microseconds) example: servo.setTarget(0, 2400)
@@ -38,13 +38,11 @@ class USB_Servo(Node):
 
         self.servo.close()
         return response
-    
+
     def get_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
         response.status = True
         current_position = self.servo.getPosition(request.port)
-        response.status_msg = (
-            f"{current_position}"
-        )
+        response.status_msg = f"{current_position}"
 
         self.servo.close()
         return response
