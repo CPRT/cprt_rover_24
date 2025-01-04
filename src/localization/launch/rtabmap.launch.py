@@ -24,8 +24,7 @@ from launch.conditions import IfCondition
 
 
 def generate_launch_description():
-    config_dir = os.path.join(get_package_share_directory(
-        "localization"), "config")
+    config_dir = os.path.join(get_package_share_directory("localization"), "config")
 
     params_file = os.path.join(config_dir, "rtabmap.yaml")
 
@@ -33,39 +32,40 @@ def generate_launch_description():
     use_sim_time_cmd = DeclareLaunchArgument(
         "use_sim_time",
         default_value="False",
-        description="Use simulation (Gazebo) clock if True")
+        description="Use simulation (Gazebo) clock if True",
+    )
 
     launch_rtabmapviz = LaunchConfiguration("launch_rtabmapviz")
     launch_rtabmapviz_cmd = DeclareLaunchArgument(
         "launch_rtabmapviz",
         default_value="False",
-        description="Whether to launch rtabmapviz")
+        description="Whether to launch rtabmapviz",
+    )
 
-    parameters = [{
-        "frame_id": "base_link",
-        "subscribe_depth": False,
-        "subscribe_rgb": False,
-        "subscribe_scan_cloud": True,
-        "approx_sync": True,
-        "publish_tf": False,
-        "use_sim_time": use_sim_time,
-        "qos_imu": 2,
-
-        "Grid/DepthDecimation": "2",
-        "Grid/RangeMin": "1.5",
-        "Grid/RangeMax": "10.0",
-        "Grid/MinClusterSize": "20",
-        "Grid/MaxGroundAngle": "35",
-        "Grid/NormalK": "20",
-        "Grid/CellSize": "0.05",
-        "Grid/FlatObstacleDetected": "false",
-        #"Grid/Sensor": "True",
-
-        "GridGlobal/UpdateError": "0.01",
-        "GridGlobal/MinSize": "200",
-
-        "Reg/Strategy": "1"
-    }]
+    parameters = [
+        {
+            "frame_id": "base_link",
+            "subscribe_depth": False,
+            "subscribe_rgb": False,
+            "subscribe_scan_cloud": True,
+            "approx_sync": True,
+            "publish_tf": False,
+            "use_sim_time": use_sim_time,
+            "qos_imu": 2,
+            "Grid/DepthDecimation": "2",
+            "Grid/RangeMin": "1.5",
+            "Grid/RangeMax": "10.0",
+            "Grid/MinClusterSize": "20",
+            "Grid/MaxGroundAngle": "35",
+            "Grid/NormalK": "20",
+            "Grid/CellSize": "0.05",
+            "Grid/FlatObstacleDetected": "false",
+            # "Grid/Sensor": "True",
+            "GridGlobal/UpdateError": "0.01",
+            "GridGlobal/MinSize": "200",
+            "Reg/Strategy": "1",
+        }
+    ]
     remappings = [
         ("scan_cloud", "ouster/points"),
         ("rgb/camera_info", "camera/camera_info"),
@@ -76,24 +76,31 @@ def generate_launch_description():
         ("map", "map"),
     ]
 
-    return LaunchDescription([
-        use_sim_time_cmd,
-        launch_rtabmapviz_cmd,
-
-        Node(
-            package="rtabmap_slam",
-            executable="rtabmap",
-            output="screen",
-            parameters=parameters,
-            remappings=remappings,
-            arguments=["-d", "--delete_db_on_start",
-                       "--ros-args", "--log-level", "Warn"]),
-
-        Node(
-            condition=IfCondition(launch_rtabmapviz),
-            package="rtabmap_viz",
-            executable="rtabmap_viz",
-            output="screen",
-            parameters=[params_file],
-            remappings=remappings),
-    ])
+    return LaunchDescription(
+        [
+            use_sim_time_cmd,
+            launch_rtabmapviz_cmd,
+            Node(
+                package="rtabmap_slam",
+                executable="rtabmap",
+                output="screen",
+                parameters=parameters,
+                remappings=remappings,
+                arguments=[
+                    "-d",
+                    "--delete_db_on_start",
+                    "--ros-args",
+                    "--log-level",
+                    "Warn",
+                ],
+            ),
+            Node(
+                condition=IfCondition(launch_rtabmapviz),
+                package="rtabmap_viz",
+                executable="rtabmap_viz",
+                output="screen",
+                parameters=[params_file],
+                remappings=remappings,
+            ),
+        ]
+    )

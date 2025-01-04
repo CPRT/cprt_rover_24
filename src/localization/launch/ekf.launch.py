@@ -29,25 +29,29 @@ def generate_launch_description():
     use_sim_time_cmd = DeclareLaunchArgument(
         "use_sim_time",
         default_value="False",
-        description="Use simulation (Gazebo) clock if True")
+        description="Use simulation (Gazebo) clock if True",
+    )
 
-    local_params_file = os.path.join(get_package_share_directory(
-        "localization"), "config", "ekf_local.yaml")
-    global_params_file = os.path.join(get_package_share_directory(
-        "localization"), "config", "ekf_global.yaml")
+    local_params_file = os.path.join(
+        get_package_share_directory("localization"), "config", "ekf_local.yaml"
+    )
+    global_params_file = os.path.join(
+        get_package_share_directory("localization"), "config", "ekf_global.yaml"
+    )
 
-    param_substitutions = {
-        "use_sim_time": use_sim_time}
+    param_substitutions = {"use_sim_time": use_sim_time}
 
     configured_local_params = RewrittenYaml(
         source_file=local_params_file,
         param_rewrites=param_substitutions,
-        convert_types=True)
+        convert_types=True,
+    )
 
     configured_global_params = RewrittenYaml(
         source_file=global_params_file,
         param_rewrites=param_substitutions,
-        convert_types=True)
+        convert_types=True,
+    )
 
     local_ekf_cmd = Node(
         package="robot_localization",
@@ -55,19 +59,21 @@ def generate_launch_description():
         name="local_ekf",
         output="log",
         parameters=[configured_local_params],
-        remappings=[("odometry/filtered", "odometry/filtered/local"),
-                    ("accel/filtered", "/accel")])
+        remappings=[
+            ("odometry/filtered", "odometry/filtered/local"),
+            ("accel/filtered", "/accel"),
+        ],
+    )
     global_ekf_cmd = Node(
         package="robot_localization",
         executable="ekf_node",
         name="global_ekf",
         output="log",
         parameters=[configured_global_params],
-        remappings=[("odometry/filtered", "odometry/filtered/global"),
-                    ("accel/filtered", "/accel")])
+        remappings=[
+            ("odometry/filtered", "odometry/filtered/global"),
+            ("accel/filtered", "/accel"),
+        ],
+    )
 
-    return LaunchDescription([
-        use_sim_time_cmd,
-        local_ekf_cmd,
-        global_ekf_cmd
-    ])
+    return LaunchDescription([use_sim_time_cmd, local_ekf_cmd, global_ekf_cmd])
