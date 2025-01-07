@@ -64,8 +64,6 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     }
   }
   
-  /*subscription_ = this->create_subscription<std::string>(
-  "random_topic", 10, std::bind(&RoverArmHardwareInterface::subscription_callback, this, std::placeholders::_1));*/
   node = rclcpp::Node::make_shared("get_angle_client");
   client = node->create_client<interfaces::srv::ArmPos>("arm_pos");
 
@@ -178,11 +176,11 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
     //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading %f for elbow", resultCopy->elbow);
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading %f %f %f %f for elbow %f %f", resultCopy->base, resultCopy->diff1, resultCopy->diff2, resultCopy->elbow, resultCopy->wristtilt, resultCopy->wristturn);
     hw_position_states_[0] = resultCopy->base;
-		hw_position_states_[1] = resultCopy->diff1;
-		hw_position_states_[2] = resultCopy->diff2;
-		hw_position_states_[3] = resultCopy->elbow;
-		hw_position_states_[4] = resultCopy->wristtilt;
-		hw_position_states_[5] = resultCopy->wristturn;
+    hw_position_states_[1] = resultCopy->diff1;
+    hw_position_states_[2] = resultCopy->diff2;
+    hw_position_states_[3] = resultCopy->elbow;
+    hw_position_states_[4] = resultCopy->wristtilt;
+    hw_position_states_[5] = resultCopy->wristturn;
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service add_two_ints");
   }
