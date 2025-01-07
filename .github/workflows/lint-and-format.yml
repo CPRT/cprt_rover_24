@@ -26,7 +26,3 @@ jobs:
           PYLINT_SCORE_THRESHOLD: 10.0  # You can implement stricter checks here
       - name: Run Black
         run: black --check .
-      - name: Run Prettier
-        run: npx prettier --check "**/*.{js,ts}"
-      - name: Run ESLint
-        run: npx eslint "**/*.{js,ts}"

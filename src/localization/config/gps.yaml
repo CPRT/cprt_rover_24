@@ -1,0 +1,24 @@
+ublox_gps_node:
+  ros__parameters:
+    debug: 1                    # Range 0-4 (0 means no debug statements will print)
+    device: /dev/ublox/gnss-receiver
+    frame_id: gps_link
+    config_on_startup: false
+    uart1:
+      baudrate: 115200
+    
+    publish:
+      all: true
+
+
+navsat_transform_node:
+  ros__parameters:
+    frequency: 10.0
+    delay: 0.0
+    magnetic_declination_radians: 0.226893 # 0.226893 for Drumheller, 0.20944 for Ottawa
+    yaw_offset: 0.0 # 1.5707963 IMU reads 0 facing magnetic east = 0
+    zero_altitude: True
+    broadcast_utm_transform: False
+    publish_filtered_gps: False
+    use_odometry_yaw: False
+    wait_for_datum: False

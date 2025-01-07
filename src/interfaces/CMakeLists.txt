@@ -24,10 +24,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArucoMarkers.msg"
   "msg/PointArray.msg"
   "msg/ArmCmd.msg"
+  "msg/VideoSource.msg"
   "srv/ArmPos.srv"
   "srv/ArmCmd.srv"
   "msg/GPIOmsg.msg" #ik its goofy the actual gpio package is GPIO
   "srv/NavToGPSGeopose.srv"
+  "srv/VideoOut.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 
