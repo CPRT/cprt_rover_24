@@ -9,7 +9,7 @@ from launch.actions import DeclareLaunchArgument
 
 
 def generate_launch_description():
-    config_dir = os.path.join(get_package_share_directory("localization"), "config")
+    config_dir = os.path.join(get_package_share_directory("gps"), "config")
 
     params_file = os.path.join(config_dir, "gps.yaml")
 
