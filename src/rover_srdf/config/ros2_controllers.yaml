@@ -7,10 +7,6 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
 
 
-    rover_hand_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
-
-
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -21,14 +17,6 @@ rover_arm_controller:
       - Joint_2
       - Joint_3
       - Joint_4
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
-rover_hand_controller:
-  ros__parameters:
-    joints:
       - Joint_5
       - Joint_6
     command_interfaces:
