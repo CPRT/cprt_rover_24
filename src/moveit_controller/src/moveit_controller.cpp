@@ -36,7 +36,7 @@ TestNode::TestNode(const rclcpp::NodeOptions &options)
   
   publisher_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("arm_trajectory", 11);
   
-  move_group_ptr = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "rover_arm2"); //used to be rover_arm
+  move_group_ptr = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "rover_arm3"); //used to be rover_arm, then rover_arm2
   
   executor_ptr->add_node(node_ptr);
   executor_thread = std::thread([this]() {this->executor_ptr->spin(); });
