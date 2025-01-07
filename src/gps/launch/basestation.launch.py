@@ -11,20 +11,12 @@ def generate_launch_description():
                 name="gps_basestation_node",
                 parameters=[
                     {"TimingMode": 1},  # Survey In mode
-                    {"MinTime": 60},  # Survey in time (s)
-                    {"MinAcc": 10.0},  # Survey In minimum accuracy (m)
-                    {"Freq": 2.0},  # Publish rate (hz)
+                    {"MinTime": 600},  # Survey in time (s)
+                    {"MinAcc": 2.0},  # Survey In minimum accuracy (m)
+                    {"Freq": 5.0},  # Publish rate (hz)
                     {"Baudrate": 9600},
                     {"Device": "/dev/ttyACM0"},
                 ],
-            ),
-            launch_ros.actions.Node(
-                package="joy", executable="joy_node", name="joystick"
-            ),
-            launch_ros.actions.Node(
-                package="drive",
-                executable="joystick_breakout",
-                name="joystick_breakout_node",
             ),
         ]
     )
