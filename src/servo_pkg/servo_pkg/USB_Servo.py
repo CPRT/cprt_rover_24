@@ -10,11 +10,14 @@ from servo_pkg import maestro
 class USB_Servo(Node):
     def __init__(self):
         super().__init__("usb_servo")
+        
+        self.declare_parameter("serial_port", "/dev/ttyACM0")   #default to "/dev/ttyACM0" port
+        self.servo = maestro.Controller(self.get_parameter("serial_port").get_parameter_value().string_value)
+        
         self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
 
-        self.servo = maestro.Controller()
         # self tested min and max of the Tower Pro 9g micro servos. Values are positions represented in micro seconds.
-        self.min = 512
+        self.min = 512  #default values
         self.max = 2400
 
         for i in range(0, 11):  # usb controller has 12 channels
@@ -50,7 +53,7 @@ class USB_Servo(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = USB_Servo()
+    node = USB_Servo()      #include serial port to change, default is "/dev/ttyACM0"
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
