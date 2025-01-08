@@ -29,7 +29,9 @@ class Controller:
     # assumes.  If two or more controllers are connected to different serial
     # ports, or you are using a Windows OS, you can provide the tty port.  For
     # example, '/dev/ttyACM2' or for Windows, something like 'COM3'.
-    def __init__(self, ttyStr="/dev/ttyACM0", device=0x0C):
+    def __init__(self, ttyStr, device=0x0C):
+        #Parameter for which port the device is connected to
+        self.ttyStr=ttyStr
         # Open the command port
         self.usb = serial.Serial(ttyStr)
         # Command lead-in and device number are sent for each Pololu serial command.
