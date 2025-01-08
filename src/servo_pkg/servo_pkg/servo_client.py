@@ -30,12 +30,12 @@ class Servo_Client(Node):
         )
 
     def servo_tester(self) -> None:
-        random_pos_usb = random.randint(512, 2400)
+        random_pos_usb = random.randint(0, 180)
         random_pos_i2c = random.randint(0, 180)
 
-        self.servo_request(self, 0, random_pos_usb)
+        self.servo_request(self, 0, random_pos_usb, 0, 180)
 
-        self.servo_request(self, 0, random_pos_i2c)
+        self.servo_request(self, 0, random_pos_i2c, None, 180)
 
 
 def main(args=None):
