@@ -41,6 +41,7 @@ fi
 
 pip3 install black
 pip3 install pylint
+pip3 install pyubx2
 
 sudo rosdep init
 rosdep update

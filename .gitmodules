@@ -8,3 +8,7 @@
 [submodule "src/zed-ros2-wrapper"]
 	path = src/zed-ros2-wrapper
 	url = https://github.com/stereolabs/zed-ros2-wrapper.git
+[submodule "ublox"]
+	path = src/ublox
+	url = https://github.com/KumarRobotics/ublox.git
+	branch = ros2

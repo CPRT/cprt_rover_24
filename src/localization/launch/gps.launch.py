@@ -9,24 +9,22 @@ from launch.actions import DeclareLaunchArgument
 
 
 def generate_launch_description():
+    pkg_gps = get_package_share_directory("gps")
+
     config_dir = os.path.join(get_package_share_directory("localization"), "config")
 
-    params_file = os.path.join(config_dir, "gps.yaml")
+    params_file = os.path.join(config_dir, "navsat.yaml")
 
-    ublox_remappings = [("fix", "gps/fix"), ("/navheading", "gps/heading")]
-
-    ublox_gps_node = launch_ros.actions.Node(
-        package="ublox_gps",
-        executable="ublox_gps_node",
-        output="both",
-        remappings=ublox_remappings,
-        parameters=[params_file],
+    ublox_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_gps, "launch", "rover.launch.py")
+        )
     )
 
     navsat_remappings = [
         ("imu", "zed/imu_data"),
         ("gps/fix", "gps/fix"),
-        ("odometry/filtered", "odometry/filtered/global"),
+        ("odometry/filtered", "odometry/filtered/globaousterl"),
         ("odometry/gps", "gps/odom"),
     ]
 
