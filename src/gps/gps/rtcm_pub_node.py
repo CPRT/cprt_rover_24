@@ -82,18 +82,12 @@ class RtcmNode(Node):
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
         self.declare_parameter("QueueDepth", 1)
 
-    def config_rtcm(self, port_type: str = "USB") -> UBXMessage:
+    def config_rtcm(self, port_type: str = "USB"):
         """
         Configures the output of RTCM messages on the receiver.
 
         Args:
             port_type (str): Port type for RTCM messages (e.g., "USB").
-
-        Returns:
-            UBXMessage: The configuration message sent to the receiver.
-
-        Raises:
-            UBXMessageError, UBXParseError, RuntimeError: If configuration fails.
         """
         transaction = 0
         cfg_data = []
