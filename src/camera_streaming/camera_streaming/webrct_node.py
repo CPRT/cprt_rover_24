@@ -116,7 +116,7 @@ class WebRTCStreamer(Node):
             str: The GStreamer pipeline string ready for launch.
         """
         pipeline = ""
-        compositor = "compositor name=mix"
+        compositor = "nvcompositor name=mix"
         total_width = request.width
         total_height = request.height
         i = 0
@@ -126,10 +126,11 @@ class WebRTCStreamer(Node):
             width = int(source.width * total_width / 100)
             origin_x = int(source.origin_x * total_width / 100)
             origin_y = int(source.origin_y * total_height / 100)
-            pipeline += f'{self.create_source(name)} ! nvvidconv ! capsfilter caps="video/x-raw,height={height},width={width}" ! mix.sink_{i} '
+            pipeline += f'{self.create_source(name)} ! nvvidconv ! mix.sink_{i} '
             compositor += f" sink_{i}::xpos={origin_x} sink_{i}::ypos={origin_y} sink_{i}::height={height} sink_{i}::width={width}"
             i = i + 1
-        video_out = "webrtcsink run-signalling-server=true"
+        video_out = 'queue silent=true ! nvvidconv ! capsfilter caps="video/x-raw" ! webrtcsink run-signalling-server=true'
+
         if self.web_server:
             video_out += f" run-web-server=true web-server-host-addr=http://0.0.0.0:8080/ web-server-directory={self.web_server_path}"
         pipeline += compositor + " ! " + video_out
