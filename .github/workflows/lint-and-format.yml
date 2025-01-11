@@ -26,3 +26,10 @@ jobs:
           PYLINT_SCORE_THRESHOLD: 10.0  # You can implement stricter checks here
       - name: Run Black
         run: black --check .
+
+      # C++ Formatting
+      - name: Install Clang-format
+        run: sudo apt-get install -y clang-format
+      - name: Run Clang-format
+        run: |
+          find . -name "*.h" -o -name "*.hpp" -o -name "*.cpp" -print | xargs clang-format --dry-run --Werror
