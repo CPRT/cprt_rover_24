@@ -41,35 +41,27 @@
 
 #include "gridmap_layer.hpp"
 
-#include <algorithm>
-#include <string>
-
-#include <pluginlib/class_list_macros.hpp>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_listener.h>
 
+#include <algorithm>
+#include <pluginlib/class_list_macros.hpp>
+#include <string>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 PLUGINLIB_EXPORT_CLASS(nav2_costmap_2d::GridmapLayer, nav2_costmap_2d::Layer)
 
-using nav2_costmap_2d::NO_INFORMATION;
-using nav2_costmap_2d::LETHAL_OBSTACLE;
 using nav2_costmap_2d::FREE_SPACE;
+using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::NO_INFORMATION;
 
-namespace nav2_costmap_2d
-{
+namespace nav2_costmap_2d {
 
-GridmapLayer::GridmapLayer()
-{
-}
+GridmapLayer::GridmapLayer() {}
 
-GridmapLayer::~GridmapLayer()
-{
-}
+GridmapLayer::~GridmapLayer() {}
 
-void
-GridmapLayer::onInitialize()
-{
+void GridmapLayer::onInitialize() {
   global_frame_ = layered_costmap_->getGlobalFrameID();
 
   getParameters();
@@ -81,11 +73,9 @@ GridmapLayer::onInitialize()
     map_qos.keep_last(1);
   }
 
-  RCLCPP_INFO(
-    logger_,
-    "Subscribing to the map topic (%s) with %s durability",
-    map_topic_.c_str(),
-    map_subscribe_transient_local_ ? "transient local" : "volatile");
+  RCLCPP_INFO(logger_, "Subscribing to the map topic (%s) with %s durability",
+              map_topic_.c_str(),
+              map_subscribe_transient_local_ ? "transient local" : "volatile");
 
   auto node = node_.lock();
   if (!node) {
@@ -96,35 +86,26 @@ GridmapLayer::onInitialize()
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   map_sub_ = node->create_subscription<grid_map_msgs::msg::GridMap>(
-    map_topic_, map_qos,
-    std::bind(&GridmapLayer::incomingMap, this, std::placeholders::_1));
+      map_topic_, map_qos,
+      std::bind(&GridmapLayer::incomingMap, this, std::placeholders::_1));
 }
 
-void
-GridmapLayer::activate()
-{
-}
+void GridmapLayer::activate() {}
 
-void
-GridmapLayer::deactivate()
-{
-}
+void GridmapLayer::deactivate() {}
 
-void
-GridmapLayer::reset()
-{
+void GridmapLayer::reset() {
   has_updated_data_ = true;
   current_ = false;
 }
 
-void
-GridmapLayer::getParameters()
-{
+void GridmapLayer::getParameters() {
   int temp_lethal_threshold = 0;
   double temp_tf_tol = 0.0;
 
   declareParameter("enabled", rclcpp::ParameterValue(true));
-  declareParameter("map_subscribe_transient_local", rclcpp::ParameterValue(true));
+  declareParameter("map_subscribe_transient_local",
+                   rclcpp::ParameterValue(true));
   declareParameter("transform_tolerance", rclcpp::ParameterValue(0.0));
   declareParameter("map_topic", rclcpp::ParameterValue("map"));
   declareParameter("footprint_clearing_enabled", rclcpp::ParameterValue(false));
@@ -135,11 +116,11 @@ GridmapLayer::getParameters()
   }
 
   node->get_parameter(name_ + "." + "enabled", enabled_);
-  node->get_parameter(name_ + "." + "footprint_clearing_enabled", footprint_clearing_enabled_);
+  node->get_parameter(name_ + "." + "footprint_clearing_enabled",
+                      footprint_clearing_enabled_);
   node->get_parameter(name_ + "." + "map_topic", map_topic_);
-  node->get_parameter(
-    name_ + "." + "map_subscribe_transient_local",
-    map_subscribe_transient_local_);
+  node->get_parameter(name_ + "." + "map_subscribe_transient_local",
+                      map_subscribe_transient_local_);
   node->get_parameter("track_unknown_space", track_unknown_space_);
   node->get_parameter("use_maximum", use_maximum_);
   node->get_parameter("lethal_cost_threshold", temp_lethal_threshold);
@@ -154,14 +135,14 @@ GridmapLayer::getParameters()
   transform_tolerance_ = tf2::durationFromSec(temp_tf_tol);
 }
 
-void
-GridmapLayer::processMap(const grid_map::GridMap & new_map)
-{
+void GridmapLayer::processMap(const grid_map::GridMap& new_map) {
   // Get the transform from the grid map frame to the costmap frame
   geometry_msgs::msg::TransformStamped transform;
   try {
-    transform = tf_buffer_->lookupTransform(layered_costmap_->getGlobalFrameID(), new_map.getFrameId(), tf2::TimePointZero);
-  } catch (tf2::TransformException & ex) {
+    transform =
+        tf_buffer_->lookupTransform(layered_costmap_->getGlobalFrameID(),
+                                    new_map.getFrameId(), tf2::TimePointZero);
+  } catch (tf2::TransformException& ex) {
     RCLCPP_WARN(logger_, "Gridmap layer: %s", ex.what());
     return;
   }
@@ -193,9 +174,7 @@ GridmapLayer::processMap(const grid_map::GridMap & new_map)
   }
 }
 
-unsigned char
-GridmapLayer::interpretValue(unsigned char value)
-{
+unsigned char GridmapLayer::interpretValue(unsigned char value) {
   // check if the static value is above the unknown or lethal thresholds
   if (track_unknown_space_ && value == unknown_cost_value_) {
     return NO_INFORMATION;
@@ -211,9 +190,8 @@ GridmapLayer::interpretValue(unsigned char value)
   return scale * LETHAL_OBSTACLE;
 }
 
-void
-GridmapLayer::incomingMap(const grid_map_msgs::msg::GridMap::SharedPtr new_map)
-{
+void GridmapLayer::incomingMap(
+    const grid_map_msgs::msg::GridMap::SharedPtr new_map) {
   grid_map::GridMap inputMap;
   grid_map::GridMapRosConverter::fromMessage(*new_map, inputMap);
 
@@ -225,16 +203,12 @@ GridmapLayer::incomingMap(const grid_map_msgs::msg::GridMap::SharedPtr new_map)
   processMap(inputMap);
 }
 
-void
-GridmapLayer::updateBounds(
-  double robot_x, double robot_y, double robot_yaw, double * min_x,
-  double * min_y,
-  double * max_x,
-  double * max_y)
-{
+void GridmapLayer::updateBounds(double robot_x, double robot_y,
+                                double robot_yaw, double* min_x, double* min_y,
+                                double* max_x, double* max_y) {
   std::lock_guard<Costmap2D::mutex_t> guard(*getMutex());
 
-  if (!layered_costmap_->isRolling() ) {
+  if (!layered_costmap_->isRolling()) {
     if (!(has_updated_data_ || has_extra_bounds_)) {
       return;
     }
@@ -257,27 +231,25 @@ GridmapLayer::updateBounds(
   updateFootprint(robot_x, robot_y, robot_yaw, min_x, min_y, max_x, max_y);
 }
 
-void
-GridmapLayer::updateFootprint(
-  double robot_x, double robot_y, double robot_yaw,
-  double * min_x, double * min_y,
-  double * max_x,
-  double * max_y)
-{
-  if (!footprint_clearing_enabled_) {return;}
+void GridmapLayer::updateFootprint(double robot_x, double robot_y,
+                                   double robot_yaw, double* min_x,
+                                   double* min_y, double* max_x,
+                                   double* max_y) {
+  if (!footprint_clearing_enabled_) {
+    return;
+  }
 
-  transformFootprint(robot_x, robot_y, robot_yaw, getFootprint(), transformed_footprint_);
+  transformFootprint(robot_x, robot_y, robot_yaw, getFootprint(),
+                     transformed_footprint_);
 
   for (unsigned int i = 0; i < transformed_footprint_.size(); i++) {
-    touch(transformed_footprint_[i].x, transformed_footprint_[i].y, min_x, min_y, max_x, max_y);
+    touch(transformed_footprint_[i].x, transformed_footprint_[i].y, min_x,
+          min_y, max_x, max_y);
   }
 }
 
-void
-GridmapLayer::updateCosts(
-  nav2_costmap_2d::Costmap2D & master_grid,
-  int min_i, int min_j, int max_i, int max_j)
-{
+void GridmapLayer::updateCosts(nav2_costmap_2d::Costmap2D& master_grid,
+                               int min_i, int min_j, int max_i, int max_j) {
   std::lock_guard<Costmap2D::mutex_t> guard(*getMutex());
   if (!enabled_) {
     return;
@@ -286,7 +258,8 @@ GridmapLayer::updateCosts(
     static int count = 0;
     // throttle warning down to only 1/10 message rate
     if (++count == 10) {
-      RCLCPP_WARN(logger_, "Can't update static costmap layer, no map received");
+      RCLCPP_WARN(logger_,
+                  "Can't update static costmap layer, no map received");
       count = 0;
     }
     return;

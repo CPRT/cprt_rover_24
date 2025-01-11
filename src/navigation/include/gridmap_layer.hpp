@@ -42,36 +42,33 @@
 #ifndef NAV2_COSTMAP_2D__GRIDMAP_LAYER_HPP_
 #define NAV2_COSTMAP_2D__GRIDMAP_LAYER_HPP_
 
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
+#include <grid_map_ros/grid_map_ros.hpp>
 #include <mutex>
+#include <nav2_costmap_2d/costmap_layer.hpp>
+#include <nav2_costmap_2d/footprint.hpp>
+#include <nav2_costmap_2d/layered_costmap.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
 
-#include <grid_map_ros/grid_map_ros.hpp>
-#include <nav2_costmap_2d/costmap_layer.hpp>
-#include <nav2_costmap_2d/layered_costmap.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <nav2_costmap_2d/footprint.hpp>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
-
-
-namespace nav2_costmap_2d
-{
+namespace nav2_costmap_2d {
 
 /**
  * @class GridmapLayer
  * @brief Takes in a gridmap map generated to add costs to costmap
  */
-class GridmapLayer : public CostmapLayer
-{
-public:
+class GridmapLayer : public CostmapLayer {
+ public:
   /**
-    * @brief Gridmap Layer constructor
-    */
+   * @brief Gridmap Layer constructor
+   */
   GridmapLayer();
   /**
-    * @brief Gridmap Layer destructor
-    */
+   * @brief Gridmap Layer destructor
+   */
   virtual ~GridmapLayer();
 
   /**
@@ -96,10 +93,11 @@ public:
   /**
    * @brief If clearing operations should be processed on this layer or not
    */
-  virtual bool isClearable() {return false;}
+  virtual bool isClearable() { return false; }
 
   /**
-   * @brief Update the bounds of the master costmap by this layer's update dimensions
+   * @brief Update the bounds of the master costmap by this layer's update
+   * dimensions
    * @param robot_x X pose of robot
    * @param robot_y Y pose of robot
    * @param robot_yaw Robot orientation
@@ -108,9 +106,9 @@ public:
    * @param max_x X max map coord of the window to update
    * @param max_y Y max map coord of the window to update
    */
-  virtual void updateBounds(
-    double robot_x, double robot_y, double robot_yaw, double * min_x,
-    double * min_y, double * max_x, double * max_y);
+  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw,
+                            double* min_x, double* min_y, double* max_x,
+                            double* max_y);
 
   /**
    * @brief Update the costs in the master costmap in the window
@@ -120,11 +118,10 @@ public:
    * @param max_x X max map coord of the window to update
    * @param max_y Y max map coord of the window to update
    */
-  virtual void updateCosts(
-    nav2_costmap_2d::Costmap2D & master_grid,
-    int min_i, int min_j, int max_i, int max_j);
+  virtual void updateCosts(nav2_costmap_2d::Costmap2D& master_grid, int min_i,
+                           int min_j, int max_i, int max_j);
 
-protected:
+ protected:
   /**
    * @brief Get parameters of layer
    */
@@ -133,7 +130,7 @@ protected:
   /**
    * @brief Process a new map coming from a topic
    */
-  void processMap(const grid_map::GridMap & new_map);
+  void processMap(const grid_map::GridMap& new_map);
 
   /**
    * @brief  Callback to update the costmap's map from the map_server
@@ -154,14 +151,12 @@ protected:
   /**
    * @brief Clear costmap layer info below the robot's footprint
    */
-  void updateFootprint(
-    double robot_x, double robot_y, double robot_yaw, double * min_x,
-    double * min_y,
-    double * max_x,
-    double * max_y);
+  void updateFootprint(double robot_x, double robot_y, double robot_yaw,
+                       double* min_x, double* min_y, double* max_x,
+                       double* max_y);
 
   std::string global_frame_;  ///< @brief The global frame for the costmap
-  std::string map_frame_;  /// @brief frame that map is located in
+  std::string map_frame_;     /// @brief frame that map is located in
 
   bool has_updated_data_{false};
 
