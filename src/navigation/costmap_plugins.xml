@@ -1,0 +1,5 @@
+<library path="gridmap_layer_core">
+  <class type="nav2_costmap_2d::GridmapLayer"  base_class_type="nav2_costmap_2d::Layer">
+    <description>Creates a costmap layer from a gridmap layer</description>
+  </class>
+</library>

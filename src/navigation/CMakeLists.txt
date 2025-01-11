@@ -1,21 +1,75 @@
 cmake_minimum_required(VERSION 3.5)
 project(navigation)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-# Find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_python REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_sensor_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(PCL REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(grid_map_core REQUIRED)
+find_package(grid_map_ros REQUIRED)
+find_package(grid_map_msgs REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+
+set(library_name gridmap_layer_core)
+
+# Get a linker error when there are undefined symbols
+add_link_options(-Wl,--no-undefined)
+
+include_directories(
+    include
+    ${EIGEN3_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
+    ${tf2_INCLUDE_DIRS}
+    ${tf2_ros_INCLUDE_DIRS}
+    ${tf2_geometry_msgs_INCLUDE_DIRS}
+    ${tf2_sensor_msgs_INCLUDE_DIRS}
+    ${grid_map_core_INCLUDE_DIRS}
+    ${grid_map_ros_INCLUDE_DIRS}
+    ${grid_map_msgs_INCLUDE_DIRS}
+    ${nav2_costmap_2d_INCLUDE_DIRS}
+)
+
+add_library(${library_name} SHARED
+            plugins/gridmap_layer.cpp
+)
+
+target_link_libraries(${library_name}
+  ${EIGEN3_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+
+ament_target_dependencies(${library_name}
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  tf2_sensor_msgs
+  visualization_msgs
+  builtin_interfaces
+  pluginlib
+  grid_map_core
+  grid_map_ros
+  grid_map_msgs
+  nav2_costmap_2d
+)
 
 install(
   DIRECTORY launch params behavior_trees
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(
+  DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+ament_export_dependencies(rosidl_default_runtime)
+pluginlib_export_plugin_description_file(nav2_costmap_2d costmap_plugins.xml)
+ament_export_include_directories(include)
+ament_export_libraries(${library_name})
 ament_package()
