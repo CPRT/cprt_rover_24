@@ -5,7 +5,6 @@ from nav_msgs.msg import Odometry
 
 
 class imu_filter(Node):
-
     def __init__(self):
         super().__init__("imu_filter")
         self.imu_pub = self.create_publisher(Imu, "imu/filtered", 1)
