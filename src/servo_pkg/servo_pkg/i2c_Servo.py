@@ -18,7 +18,7 @@ class i2c_Servo(Node):
         self.pca = PCA9685(self.i2c)
         self.pca.frequency = 50
 
-        self.MAXROM = 180  # max range of motion of the servo, assuming 180 for now
+        self.MAXROM = 180  # max range of motion of the servo, default 180
         self.servo_list = [None]*16
         self.servo_list = self.instantiate_servos()
 
