@@ -51,17 +51,17 @@ class joystickDrive(Node):
         )
         self.active = True
 
-        self.setTwistPub = self.create_publisher(Twist, "/drive/cmd_vel", 1)
+        self.setTwistPub = self.create_publisher(Twist, "/drive/cmd_vel", 10)
         self.setEstop = self.create_publisher(Bool, "/drive/estop", 1)
         self.cmd_move_subscriber = self.create_subscription(
-            Joy, "/joystick/drive", self.cmd_joy_callback, 10
+            Joy, "/joystick/drive", self.cmd_joy_callback, 1
         )
         self.setEstop.publish(self.estop)  # init as not estoped
 
         freq = 10
         self.rate = self.create_rate(freq)
         period = 1 / freq
-        self.timer = self.create_timer(period, self.joystick_timeout_handler)
+        # self.timer = self.create_timer(period, self.joystick_timeout_handler)
 
     def joystick_timeout_handler(self):
         if Node.get_clock(self).now().seconds_nanoseconds()[0] - self.lastTimestamp > 2:
@@ -74,29 +74,28 @@ class joystickDrive(Node):
             self.setEstop.publish(self.estopTimeout)
 
     def cmd_joy_callback(self, msg: Joy):
-        if msg.buttons[7] == 1 and self.last_msg.buttons[7] == 0:
-            self.active = not self.active
-        self.last_msg = msg
+        # if msg.buttons[7] == 1 and self.last_msg.buttons[7] == 0:
+        #     self.active = not self.active
+        # self.last_msg = msg
 
-        self.lastTimestamp = msg.header.stamp.sec
-        if msg.buttons[0] == 1:  # able to change buttons later on
-            self.estop.data = True
-            self.twist.linear.x = 0.0
-            self.twist.angular.z = 0.0
-            self.setTwistPub.publish(self.twist)
-            self.setEstop.publish(self.estop)
-            return
-        if (
-            msg.buttons[1] == 1
-        ):  # have 2 different buttons to avoid double presses not stopping
-            self.estop.data = False
-            self.twist.linear.x = 0.0
-            self.twist.angular.z = 0.0
-            self.setTwistPub.publish(self.twist)
-            self.setEstop.publish(self.estop)
-            return
+        # self.lastTimestamp = msg.header.stamp.sec
+        # if msg.buttons[0] == 1:  # able to change buttons later on
+        #     self.estop.data = True
+        #     self.twist.linear.x = 0.0
+        #     self.twist.angular.z = 0.0
+        #     self.setTwistPub.publish(self.twist)
+        #     self.setEstop.publish(self.estop)
+        #     return
+        # if (
+        #     msg.buttons[1] == 1
+        # ):  # have 2 different buttons to avoid double presses not stopping
+        #     self.estop.data = False
+        #     self.twist.linear.x = 0.0
+        #     self.twist.angular.z = 0.0
+        #     self.setTwistPub.publish(self.twist)
+        #     self.setEstop.publish(self.estop)
+        #     return
 
-        if self.pidMode == 1 and self.active:
             self.twist.linear.x = map_range(
                 msg.axes[3], -1, 1, -self.MAX_PID_SPEED, self.MAX_PID_SPEED
             )
@@ -104,14 +103,22 @@ class joystickDrive(Node):
                 msg.axes[2], -1, 1, -self.MAX_PID_TURN, self.MAX_PID_TURN
             )
             self.setTwistPub.publish(self.twist)
-        elif self.active:
-            self.twist.linear.x = map_range(
-                msg.axes[3], -1, 1, -self.MAX_VOLTAGE_SPEED, self.MAX_VOLTAGE_SPEED
-            )
-            self.twist.angular.z = map_range(
-                msg.axes[2], -1, 1, -self.MAX_VOLTAGE_TURN, self.MAX_VOLTAGE_TURN
-            )
-            self.setTwistPub.publish(self.twist)
+        # if self.pidMode == 1 and self.active:
+        #     self.twist.linear.x = map_range(
+        #         msg.axes[3], -1, 1, -self.MAX_PID_SPEED, self.MAX_PID_SPEED
+        #     )
+        #     self.twist.angular.z = map_range(
+        #         msg.axes[2], -1, 1, -self.MAX_PID_TURN, self.MAX_PID_TURN
+        #     )
+        #     self.setTwistPub.publish(self.twist)
+        # elif self.active:
+        #     self.twist.linear.x = map_range(
+        #         msg.axes[3], -1, 1, -self.MAX_VOLTAGE_SPEED, self.MAX_VOLTAGE_SPEED
+        #     )
+        #     self.twist.angular.z = map_range(
+        #         msg.axes[2], -1, 1, -self.MAX_VOLTAGE_TURN, self.MAX_VOLTAGE_TURN
+        #     )
+        #     self.setTwistPub.publish(self.twist)
 
 
 def main(args=None):
