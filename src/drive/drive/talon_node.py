@@ -4,6 +4,14 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 import rclpy.time
 from ros_phoenix.msg import MotorControl, MotorStatus
+from sensor_msgs.msg import Joy
+
+def map_range(value, old_min, old_max, new_min, new_max):
+    old_range = old_max - old_min
+    new_range = new_max - new_min
+    scaled_value = (value - old_min) / old_range
+    mapped_value = new_min + scaled_value * new_range
+    return mapped_value
 
 class talonDriveController(Node):
     def __init__(self):
@@ -40,55 +48,67 @@ class talonDriveController(Node):
 
         self.wheelPub = {}
         self.wheelControl = {}
+
         for wheel in self.wheels:
-            self.wheelPub[wheel] = self.create_publisher(MotorControl, f"/{wheel}/set", 1)
+            self.wheelPub[wheel] = self.create_publisher(MotorControl, f"/{wheel}/set", 10)
             self.wheelControl[wheel] = MotorControl()
-            self.wheelControl[wheel].mode = 2 #initialize to velocity mode
+            self.wheelControl[wheel].mode = 0 #initialize to velocity mode
             self.create_subscription(MotorStatus, f"/{wheel}/status", lambda msg: self.wheelStatusCallback(msg, wheel), 5) #this should pass in the wheel name to the subscriber
 
-        self.twistSub = self.create_subscription(Twist, "/drive/cmd_vel", self.twist_callback, 10)
+        # self.twistSub = self.create_subscription(Twist, "/drive/cmd_vel", self.twist_callback, 10)
+        self.joySub = self.create_subscription(Joy, "/joystick/drive", self.twist_callback, 10)
+        self.get_logger().info(f"THERE ARE THIS MANY WHEELS IN THE DRIVE "  + str(len(self.wheels)))
 
         freq = 10
         self.rate = self.create_rate(freq)
         period = 1 / freq
-        self.timer = self.create_timer(period, self.controlPublisher)
+        # self.timer = self.create_timer(period, self.controlPublisher)
 
     def wheelStatusCallback(self, msg: MotorStatus, wheel: str):
         # self.get_logger().info(f"wheel {wheel} status: pos {msg.position}, vel {msg.velocity}")
         return
 
-    def controlPublisher(self):
-        # if(Node.get_clock(self).now().seconds_nanoseconds()[0] - self.lastTimestamp > 2 or self.estop.data == True):
-        #     return
-        for wheel in self.wheels:
-            self.wheelPub[wheel].publish(self.wheelControl[wheel])
+    # def controlPublisher(self):
+    #     # if(Node.get_clock(self).now().seconds_nanoseconds()[0] - self.lastTimestamp > 2 or self.estop.data == True):
+    #     #     return
+    #     for wheel in self.wheels:
+    #         self.wheelPub[wheel].publish(self.wheelControl[wheel])
 
-    def twist_callback(self, msg: Twist):
-        if(msg.linear.x == 0 and msg.angular.z == 0):
+    def twist_callback(self, msg: Joy):
+        twist = Twist()
+        twist.linear.x = msg.axes[3]
+        twist.angular.z = msg.axes[2]
+
+        if(twist.linear.x == 0 and twist.angular.z == 0):
             for wheel in self.wheels:
                 self.wheelControl[wheel].value = 0.0
+            for wheel in self.wheels:
+                self.wheelPub[wheel].publish(self.wheelControl[wheel])
             return
-        linear_x = msg.linear.x
+        linear_x = twist.linear.x
         if linear_x > self.MAX_SPEED:  # check for messages above speed limit
             linear_x = self.MAX_SPEED
         if linear_x < -self.MAX_SPEED:
             linear_x = -self.MAX_SPEED
-        # self.get_logger().info(f"base: {msg.axes[3]}, digger: { msg.axes[1]}")
 
         # vr and vl are how fast the velocity on the left and right side is in m/s
-        vr = linear_x - msg.angular.z * self.BASE_WIDTH / 2  # m/s
-        vl = linear_x + msg.angular.z * self.BASE_WIDTH / 2
-        self.twist = None
+        vr = linear_x - twist.angular.z * self.BASE_WIDTH / 2  # m/s
+        vl = linear_x + twist.angular.z * self.BASE_WIDTH / 2
+        # wheelnames = ' '
+        # wheelnames = ' '.join(self.wheels)
 
         # ticks convert the speed the wheel needs to go into encoder ticks per second
         vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
         vl_ticks = int(vl * self.TICKS_PER_METER)
 
         for wheel in self.wheels:
-            if "left" in wheel:
-                self.wheelControl[wheel].value = float(vl_ticks) 
+            if "Left" in wheel:
+                self.wheelControl[wheel].value = float(-vl) 
             else:
-                self.wheelControl[wheel].value = float(-vr_ticks)
+                self.wheelControl[wheel].value = float(vr)
+        # self.get_logger().info(f"vl: {vl}, vr: {vr}" + wheelnames)
+        for wheel in self.wheels:
+            self.wheelPub[wheel].publish(self.wheelControl[wheel])
 
 
 def main(args=None):
