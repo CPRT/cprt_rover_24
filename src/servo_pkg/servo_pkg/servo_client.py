@@ -26,14 +26,16 @@ class Servo_Client(Node):
         return self.future.result()
 
     def servo_request(self, req_port, req_pos, req_min, req_max) -> None:
-        response = self.send_request(port=req_port, pos=req_pos, min=req_min, max=req_max)
+        response = self.send_request(
+            port=req_port, pos=req_pos, min=req_min, max=req_max
+        )
         Servo_Client.get_logger(self).info(
             "Results: %s, status: %s" % (response.status, response.status_msg)
         )
 
     def servo_tester(self) -> None:
         random_pos = random.randint(0, 180)
-        
+
         self.servo_request(0, random_pos, 0, 180)
         self.servo_request(0, random_pos, None, 180)
 
