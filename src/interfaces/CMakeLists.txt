@@ -35,7 +35,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   builtin_interfaces
   geometry_msgs 
   geographic_msgs # Add packages that above messages depend on
-  DEPENDENCIES builtin_interfaces geometry_msgs
  )
 
 ament_export_dependencies(rosidl_default_runtime)

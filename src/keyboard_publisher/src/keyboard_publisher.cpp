@@ -2,35 +2,29 @@
 
 using namespace std::chrono_literals;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
-* member function as a callback from the timer. */
-
-MinimalPublisher::MinimalPublisher()
+KeyboardPublisher::KeyboardPublisher()
 : Node("minimal_publisher"), count_(0)
 {
   publisher_ = this->create_publisher<interfaces::msg::ArmCmd>("arm_base_commands", 10);
-  timer_ = this->create_wall_timer(500ms, std::bind(&MinimalPublisher::timer_callback, this));//*/
+  timer_ = this->create_wall_timer(500ms, std::bind(&KeyboardPublisher::timer_callback, this));
   std::cout<<"Type w, a, s, d to move. Use zxrtfgcv to change orientation. Type 'h' to change step size (default is 10 rviz units). Type 'n' to reset. Type 'm' to open/close gripper. Type 'b' to plan to the orange arm in rviz."<<std::endl;
 }
 
-void MinimalPublisher::timer_callback()
+void KeyboardPublisher::timer_callback()
 {
-  interfaces::msg::ArmCmd poseCmd = [&]{
-		interfaces::msg::ArmCmd msg;
-		msg.pose.position.x = 0;
-		msg.pose.position.y = 0;
-		msg.pose.position.z = 0;
-		msg.pose.orientation.x = 0;
-		msg.pose.orientation.y = 0;
-		msg.pose.orientation.z = 0;
-		msg.pose.orientation.w = 0;
-		msg.speed = defSpeed;
-		msg.named_pose = 0;
-		msg.estop = false;
-		msg.reset = false;
-		msg.query_goal_state = false;
-		return msg;
-	}();
+  interfaces::msg::ArmCmd poseCmd;
+  poseCmd.pose.position.x = 0;
+  poseCmd.pose.position.y = 0;
+  poseCmd.pose.position.z = 0;
+  poseCmd.pose.orientation.x = 0;
+  poseCmd.pose.orientation.y = 0;
+  poseCmd.pose.orientation.z = 0;
+  poseCmd.pose.orientation.w = 0;
+  poseCmd.speed = defSpeed;
+  poseCmd.named_pose = 0;
+  poseCmd.estop = false;
+  poseCmd.reset = false;
+  poseCmd.query_goal_state = false;
   char c;
   std::cin>>c;
   if (c == 'w')
@@ -102,35 +96,31 @@ void MinimalPublisher::timer_callback()
     poseCmd.goal_angles.resize(6, 0);
     double d = 0;
     std::cin>>d;
-    poseCmd.goal_angles[0] = d/360.0 * 2*3.14159;
+    poseCmd.goal_angles[0] = d/360.0 * 2*M_PI;
     std::cin>>d;
-    poseCmd.goal_angles[1] = d/360.0 * 2*3.14159;
+    poseCmd.goal_angles[1] = d/360.0 * 2*M_PI;
     std::cin>>d;
-    poseCmd.goal_angles[2] = d/360.0 * 2*3.14159;
+    poseCmd.goal_angles[2] = d/360.0 * 2*M_PI;
     std::cin>>d;
-    poseCmd.goal_angles[3] = d/360.0 * 2*3.14159;
+    poseCmd.goal_angles[3] = d/360.0 * 2*M_PI;
     std::cin>>d;
-    poseCmd.goal_angles[4] = d/360.0 * 2*3.14159;
+    poseCmd.goal_angles[4] = d/360.0 * 2*M_PI;
     std::cin>>d;
-    poseCmd.goal_angles[5] = d/360.0 * 2*3.14159;
+    poseCmd.goal_angles[5] = d/360.0 * 2*M_PI;
     for (unsigned long int i = 0; i < poseCmd.goal_angles.size(); i++)
     {
-      RCLCPP_INFO(this->get_logger(), std::to_string(poseCmd.goal_angles[i]).c_str());
+      RCLCPP_INFO(this->get_logger(), "Goal angle [%d]: %f", i, poseCmd.goal_angles[i]);
     }
   }
-  //auto message = std_msgs::msg::String();
-  //geometry_msgs::msg::Pose message;
-  //message.data = cmd;
-  //RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-  geometry_msgs::msg::Pose current_pose = []{
-		geometry_msgs::msg::Pose msg;
-		msg.orientation.w = 1.0;
-		msg.position.x = 0.636922;
-		msg.position.y = 0.064768;
-		msg.position.z = 0.678810;
-		return msg;
-	}();
-	poseCmd.current_pose = current_pose;
+  
+  //not sure what this part does, but it might be important
+  geometry_msgs::msg::Pose current_pose;
+  current_pose.orientation.w = 1.0;
+  current_pose.position.x = 0.636922;
+  current_pose.position.y = 0.064768;
+  current_pose.position.z = 0.678810;
+  poseCmd.current_pose = current_pose;
+  
   publisher_->publish(poseCmd);
 }
 
@@ -138,13 +128,8 @@ void MinimalPublisher::timer_callback()
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalPublisher>());
+  rclcpp::spin(std::make_shared<KeyboardPublisher>());
   
-  /*rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<MinimalPublisher>();
-  executor.add_node(node);
-  auto spinner = std::thread([&executor]() {executor.spin(); });
-  spinner.join();*/
   rclcpp::shutdown();
   return 0;
 }

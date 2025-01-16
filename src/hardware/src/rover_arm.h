@@ -31,25 +31,33 @@ namespace ros2_control_rover_arm
   public:
     RCLCPP_SHARED_PTR_DEFINITIONS(RoverArmHardwareInterface)
 
+    //runs on start
     hardware_interface::CallbackReturn on_init(
       const hardware_interface::HardwareInfo & info) override;
 
+    //runs on configure
     hardware_interface::CallbackReturn on_configure(
       const rclcpp_lifecycle::State & previous_state) override;
 
+    //returns the pointer to the hardware position states vector
     std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
+    //returns the pointer to the hardware commands states vector
     std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
+    //runs on activate
     hardware_interface::CallbackReturn on_activate(
       const rclcpp_lifecycle::State & previous_state) override;
 
+    //runs on deactivate
     hardware_interface::CallbackReturn on_deactivate(
       const rclcpp_lifecycle::State & previous_state) override;
 
+    //gets called every so often by ros2_control, where you have to update the hardware positions vector
     hardware_interface::return_type read(
       const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
+    //gets called every so often by ros2_control, so you have to read from the hardware commands vector and send it out
     hardware_interface::return_type write(
       const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
@@ -58,10 +66,10 @@ namespace ros2_control_rover_arm
     std::vector<double> hw_commands_;
     std::vector<double> hw_position_states_;
     std::vector<double> hw_velocity_states_;
-    std::shared_ptr<rclcpp::Node> node;
-    rclcpp::Client<interfaces::srv::ArmPos>::SharedPtr client;
-    std::shared_ptr<rclcpp::Node> write_node;
-    rclcpp::Client<interfaces::srv::ArmCmd>::SharedPtr write_client;
+    std::shared_ptr<rclcpp::Node> node_;
+    rclcpp::Client<interfaces::srv::ArmPos>::SharedPtr client_;
+    std::shared_ptr<rclcpp::Node> write_node_;
+    rclcpp::Client<interfaces::srv::ArmCmd>::SharedPtr write_client_;
   };
 
 }

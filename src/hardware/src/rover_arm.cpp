@@ -64,10 +64,10 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     }
   }
   
-  node = rclcpp::Node::make_shared("get_angle_client");
-  client = node->create_client<interfaces::srv::ArmPos>("arm_pos");
+  node_ = rclcpp::Node::make_shared("get_angle_client");
+  client_ = node_->create_client<interfaces::srv::ArmPos>("arm_pos");
 
-  while (!client->wait_for_service(1s)) {
+  while (!client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
       return hardware_interface::CallbackReturn::SUCCESS;
@@ -75,10 +75,10 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
   }
   
-  write_node = rclcpp::Node::make_shared("set_angle_client");
-  write_client = write_node->create_client<interfaces::srv::ArmCmd>("arm_cmd");
+  write_node_ = rclcpp::Node::make_shared("set_angle_client");
+  write_client_ = write_node_->create_client<interfaces::srv::ArmCmd>("arm_cmd");
 
-  while (!write_client->wait_for_service(1s)) {
+  while (!write_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
       return hardware_interface::CallbackReturn::SUCCESS;
@@ -100,7 +100,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_configure(
     hw_commands_[i] = 0;
   }
 
-  RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Successfully configured!");
+  RCLCPP_INFO(rclcpp::get_logger("RoverArmHardwareInterface"), "Successfully configured!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -160,21 +160,14 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_deactivate(
 hardware_interface::return_type RoverArmHardwareInterface::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  //RCLCPP_INFO(rclcpp::get_logger("RoverArmHardwareInterface"), "Reading...");
-  
   auto request = std::make_shared<interfaces::srv::ArmPos::Request>();
   request->stop = false;
-  auto result = client->async_send_request(request);
-  //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading");
-  // Wait for the result.
-  if (rclcpp::spin_until_future_complete(node, result) ==
+  auto result = client_->async_send_request(request);
+  
+  if (rclcpp::spin_until_future_complete(node_, result) ==
     rclcpp::FutureReturnCode::SUCCESS)
   {
-    //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Base: %f", result.get()->base);
     auto resultCopy = result.get();
-    //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading %f for elbow", resultCopy->elbow);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading %f %f %f %f for elbow %f %f", resultCopy->base, resultCopy->diff1, resultCopy->diff2, resultCopy->elbow, resultCopy->wristtilt, resultCopy->wristturn);
     hw_position_states_[0] = resultCopy->base;
     hw_position_states_[1] = resultCopy->diff1;
     hw_position_states_[2] = resultCopy->diff2;
@@ -189,18 +182,7 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
   {
     // Simulate RRBot's movement
     hw_velocity_states_[i] = 0;
-    /*RCLCPP_INFO(
-      rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Got state %.5f for joint %d!",
-      hw_position_states_[i], i);*/
   }
-  /*hw_position_states_[0] = result.get()->base;
-  hw_position_states_[1] = result.get()->diff1;
-  hw_position_states_[2] = result.get()->diff2;
-  hw_position_states_[3] = result.get()->elbow;
-  hw_position_states_[4] = result.get()->wristtilt;
-  hw_position_states_[5] = result.get()->wristturn;//*/
-  //RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully read!");
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;
 }
@@ -208,12 +190,6 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
 hardware_interface::return_type RoverArmHardwareInterface::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  /*for (uint i = 0; i < hw_commands_.size(); i++)
-  {
-    hw_commands_[i];
-  }*/
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware writing %f %f %f %f for elbow %f %f", hw_commands_[0], hw_commands_[1], hw_commands_[2], hw_commands_[3], hw_commands_[4], hw_commands_[5]);
-  
   auto request = std::make_shared<interfaces::srv::ArmCmd::Request>();
   request->base = hw_commands_[0];
   request->diff1 = hw_commands_[1];
@@ -221,27 +197,20 @@ hardware_interface::return_type RoverArmHardwareInterface::write(
   request->elbow = hw_commands_[3];
   request->wristtilt = hw_commands_[4];
   request->wristturn = hw_commands_[5];
-  //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Writing request sent");
-  auto result = write_client->async_send_request(request);
-  //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading");
-  // Wait for the result.
-  if (rclcpp::spin_until_future_complete(write_node, result) ==
+  auto result = write_client_->async_send_request(request);
+  
+  if (rclcpp::spin_until_future_complete(write_node_, result) ==
     rclcpp::FutureReturnCode::SUCCESS)
   {
-    //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Base: %f", result.get()->base);
     auto resultCopy = result.get();
-    //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hardware reading %f for elbow", resultCopy->elbow);
-    //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sent angles");
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service add_two_ints");
   }
-  
-  //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Writing request received");//*/
 
   return hardware_interface::return_type::OK;
 }
 
-}  // namespace ros2_control_demo_example_1
+}  // namespace ros2_control_rover_arm
 
 #include "pluginlib/class_list_macros.hpp"
 

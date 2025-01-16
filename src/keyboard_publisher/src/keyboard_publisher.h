@@ -14,13 +14,12 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "interfaces/msg/arm_cmd.hpp"
+#include <math.h>
 
-bool isOpen = true;
-
-class MinimalPublisher : public rclcpp::Node
+class KeyboardPublisher : public rclcpp::Node
 {
   public:
-    MinimalPublisher();
+    KeyboardPublisher();
 
   private:
     void timer_callback();
@@ -28,6 +27,7 @@ class MinimalPublisher : public rclcpp::Node
     rclcpp::Publisher<interfaces::msg::ArmCmd>::SharedPtr publisher_;
     size_t count_;
     double defSpeed = 10;
+    bool isOpen = true;
 };
 
 #endif
