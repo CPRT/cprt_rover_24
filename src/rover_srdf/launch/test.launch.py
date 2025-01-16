@@ -129,5 +129,5 @@ def test_launch(moveit_config, launch_package_path=None):
     return ld
 
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("arm_urdf3", package_name="rover_srdf").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder("arm_urdf", package_name="rover_srdf").to_moveit_configs()
     return test_launch(moveit_config)
