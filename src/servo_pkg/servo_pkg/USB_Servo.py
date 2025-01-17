@@ -25,20 +25,28 @@ class USB_Servo(Node):
         self.min = 3000  # 0 Degrees
         self.max = 6000  # 180 Degrees
 
+        self.ZERO_DEGREES_VALUE = 3000
+        self.CONVERSION_VALUE = 6000
+        self.MAX_DEGREES = 360
+
         for i in range(0, 11):  # usb controller has 12 channels
-            self.servo.setRange(i, min, max)
+            self.servo.setRange(i, self.min, self.max)
 
     # Set target within valid range (min to max quarter-microseconds)
     def set_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
-        # if ranges fall outside typical range this must can be changed
+        # if ranges fall outside typical range this must be changed
         # servo dependent, which I would like to change later
         if request.min != None and request.max != None and request.max > 0:
             if request.min == 0:
-                self.min = 3000
+                self.min = self.ZERO_DEGREES_VALUE
             else:
-                self.min = 3000 + (6000 / (360 / request.min))
+                self.min = self.ZERO_DEGREES_VALUE + (
+                    self.CONVERSION_VALUE / (self.MAX_DEGREES / request.min)
+                )
 
-            self.max = 3000 + (6000 / (360 / request.max))
+            self.max = self.ZERO_DEGREES_VALUE + (
+                self.CONVERSION_VALUE / (self.MAX_DEGREES / request.max)
+            )
 
         self.servo.setRange(request.port, min, max)
         if request.pos > max or request.pos < min:

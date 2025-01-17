@@ -17,6 +17,7 @@ class Servo_Client(Node):
         self.req = MoveServo.Request()
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
+        self.req = MoveServo.Request()
         self.req.port = port
         self.req.pos = pos
         self.req.min = min

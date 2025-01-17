@@ -18,16 +18,15 @@ class i2c_Servo(Node):
         self.pca = PCA9685(self.i2c)
         self.pca.frequency = 50
 
-        self.MAXROM = 180  # max range of motion of the servo, default 180
+        self.maxrom = 180  # max range of motion of the servo, default 180
         self.servo_list = [None] * 16
-        self.servo_list = self.instantiate_servos()
 
     def set_position(self, request, response) -> MoveServo:
         if request.max != None:
-            self.MAXROM = request.max
+            self.maxrom = request.max
         if self.servo_list[request.port - 1] == None:
             self.servo_list[request.port] = servo.Servo(
-                self.pca.channels[request.port], actuation_range=self.MAXROM
+                self.pca.channels[request.port], actuation_range=self.maxrom
             )
 
         s = self.servo_list[request.port]
