@@ -95,21 +95,20 @@ void KeyboardPublisher::timer_callback()
     poseCmd.query_goal_state = true;
     poseCmd.goal_angles.resize(6, 0);
     double d = 0;
-    std::cin>>d;
-    poseCmd.goal_angles[0] = d/360.0 * 2*M_PI;
-    std::cin>>d;
-    poseCmd.goal_angles[1] = d/360.0 * 2*M_PI;
-    std::cin>>d;
-    poseCmd.goal_angles[2] = d/360.0 * 2*M_PI;
-    std::cin>>d;
-    poseCmd.goal_angles[3] = d/360.0 * 2*M_PI;
-    std::cin>>d;
-    poseCmd.goal_angles[4] = d/360.0 * 2*M_PI;
-    std::cin>>d;
-    poseCmd.goal_angles[5] = d/360.0 * 2*M_PI;
+    for (int i = 0; i < 6; i++)
+    {
+      if (!(std::cin>>d))
+      {
+        std::cout<<"Enter a real number please >:("<<std::endl;
+        std::cin.clear(); 
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return;
+      }
+      poseCmd.goal_angles[i] = d/360.0 * 2*M_PI;
+    }
     for (unsigned long int i = 0; i < poseCmd.goal_angles.size(); i++)
     {
-      RCLCPP_INFO(this->get_logger(), "Goal angle [%d]: %f", i, poseCmd.goal_angles[i]);
+      RCLCPP_INFO(this->get_logger(), "Goal angle [%ld]: %f", i, poseCmd.goal_angles[i]);
     }
   }
   
