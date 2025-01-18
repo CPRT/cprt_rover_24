@@ -11,14 +11,14 @@ ublox_gps_node:
       baudrate: 115200
       in: 32
       out: 32
-    rate: 1
+    rate: 1.0
     nav_rate: 1
     enable_ppp: false
     tmode3: 0
     gnss:
       sbas: false
-        max: 0
-        usage: 0
+      max: 0
+      usage: 0
       gps: true
       glonass: true
       beidou: true
@@ -27,7 +27,7 @@ ublox_gps_node:
       galileo: true
       imes: true
     dynamic_model: portable
-    fix_mode: both
+    fix_mode: auto
     dr_limit: 0
     save_on_shutdown: false
     clear_bbr: false
