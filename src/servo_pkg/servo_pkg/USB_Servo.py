@@ -29,7 +29,7 @@ class USB_Servo(Node):
         self.CONVERSION_VALUE = 6000
         self.MAX_DEGREES = 360
 
-        for i in range(0, 11):  # usb controller has 12 channels
+        for i in range(0, 12):  # usb controller has 12 channels
             self.servo.setRange(i, self.min, self.max)
 
     # Set target within valid range (min to max quarter-microseconds)
