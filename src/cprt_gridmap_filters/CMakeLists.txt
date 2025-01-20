@@ -40,6 +40,7 @@ set(dependencies
 
 set(filter_libs
   threshold_filter
+  preserve_cost_inflation_filter
 )
 
 ###########
@@ -55,6 +56,7 @@ include_directories(
 
 ## Declare cpp libraries
 add_library(threshold_filter SHARED src/ThresholdFilter.cpp)
+add_library(preserve_cost_inflation_filter SHARED src/PreserveCostInflationFilter.cpp)
 
 foreach(lib_name ${filter_libs})
   ament_target_dependencies(${lib_name} SYSTEM
