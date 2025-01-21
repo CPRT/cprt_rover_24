@@ -106,9 +106,8 @@ Visualization Manager:
       Show Names: false
       Tree:
         map:
-          {}
-        odom:
-          {}
+          odom:
+            {}
         zed_camera_link:
           zed_camera_center:
             zed_left_camera_frame:

@@ -74,38 +74,6 @@ bool PreserveCostInflationFilter<T>::update(const T &mapIn, T &mapOut) {
 
   this->computeWithSimpleSerialMethod(mapIn, mapOut);
 
-  // Eigen::MatrixXf & outputData = mapOut[this->outputLayer_];
-
-  // (void)outputData.rows();
-
-  // For each cell in map.
-  // auto & data = mapOut[this->outputLayer_];
-  // for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd();
-  // ++iterator) {
-  //   if (!mapOut.isValid(*iterator, this->outputLayer_))
-  //   {
-  //     continue;
-  //   }
-  //   const size_t i = iterator.getLinearIndex();
-  //   float & value = data(i);
-  //   value = value * 1.0;
-  //   // value = this->inflationRadius_;
-  // }
-
-  // // Recover Cell index from range iterator.
-  // const grid_map::Index index(20, 20);
-  // if (mapOut.isValid(index, this->inputLayer_)) {
-  //   RCLCPP_INFO(this->logging_interface_->get_logger(), "Cell at position
-  //   (20, 20) is valid and has value %f.",
-  //               data(20, 20));
-  // }
-  // else
-  // {
-  //   RCLCPP_INFO(this->logging_interface_->get_logger(), "Cell at position
-  //   (20, 20) is invalid and has value %f.",
-  //               data(20, 20));
-  // }
-
   return true;
 }
 
@@ -127,10 +95,6 @@ void PreserveCostInflationFilter<T>::computeWithSimpleSerialMethod(
     grid_map::Position position;
     mapIn.getPosition(
         index, position);  // Get position of cell from grid_map::Index of cell
-
-    // RCLCPP_INFO(
-    //   this->logging_interface_->get_logger(), "Value: %f",
-    //   layerIn.coeff(index(0), index(1)));
 
     this->radialInflateSerial(mapOut, position,
                               layerIn.coeff(index(0), index(1)));
