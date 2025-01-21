@@ -139,10 +139,6 @@ void PreserveCostInflationFilter<T>::computeWithSimpleSerialMethod(
   const double end = clock.now().seconds();
   RCLCPP_DEBUG_THROTTLE(this->logging_interface_->get_logger(), clock, 2.0,
                         "NORMAL COMPUTATION TIME = %f", (end - start));
-
-  RCLCPP_INFO(this->logging_interface_->get_logger(),
-              "Preserve Inflation Simple Serial COMPUTATION TIME = %f",
-              (end - start));
 }
 
 template <typename T>
