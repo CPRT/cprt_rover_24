@@ -10,21 +10,18 @@
 #define GRID_MAP_FILTERS__THRESHOLDFILTER_HPP_
 
 #include <filters/filter_base.hpp>
-
 #include <string>
 #include <vector>
 
-namespace grid_map
-{
+namespace grid_map {
 
 /*!
  * Threshold filter class to set values below/above a threshold to a
  * specified value.
  */
-template<typename T>
-class ThresholdFilter : public filters::FilterBase<T>
-{
-public:
+template <typename T>
+class ThresholdFilter : public filters::FilterBase<T> {
+ public:
   /*!
    * Constructor
    */
@@ -46,9 +43,9 @@ public:
    * @param mapIn GridMap with the different layers to apply a threshold.
    * @param mapOut GridMap with the threshold applied to the layers.
    */
-  bool update(const T & mapIn, T & mapOut) override;
+  bool update(const T& mapIn, T& mapOut) override;
 
-private:
+ private:
   //! Layer the threshold should be applied to.
   std::string layer_;
 
