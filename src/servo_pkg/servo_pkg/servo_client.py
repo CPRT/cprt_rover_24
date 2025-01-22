@@ -1,5 +1,5 @@
 import rclpy
-from rclpy import time
+import time
 from rclpy.node import Node
 from interfaces.srv import MoveServo
 
@@ -10,11 +10,20 @@ class Servo_Client(Node):
     def __init__(self):
         super().__init__("servo_Client")
 
-        self.timer = self.create_timer(5.0, self.servo_tester)
         self.cli = self.create_client(MoveServo, "servo_service")
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("service not available, waiting again...")
         self.req = MoveServo.Request()
+
+        self.servo_tester()
+        time.sleep(2.0)
+        self.servo_tester()
+        time.sleep(2.0)
+        self.servo_tester()
+        time.sleep(2.0)
+        self.servo_tester()
+        time.sleep(2.0)
+        self.servo_tester()
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
         self.req = MoveServo.Request()
@@ -27,6 +36,9 @@ class Servo_Client(Node):
         return self.future.result()
 
     def servo_request(self, req_port, req_pos, req_min, req_max) -> None:
+        Servo_Client.get_logger(self).info(
+            "Sending Request for: %s" % (req_pos)
+        )
         response = self.send_request(
             port=req_port, pos=req_pos, min=req_min, max=req_max
         )
@@ -38,7 +50,6 @@ class Servo_Client(Node):
         random_pos = random.randint(0, 180)
 
         self.servo_request(0, random_pos, 0, 180)
-        self.servo_request(0, random_pos, None, 180)
 
 
 def main(args=None):

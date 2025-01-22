@@ -12,22 +12,27 @@ class USB_Servo(Node):
         super().__init__("usb_servo")
 
         self.declare_parameter(
-            "serial_port", "/dev/ttyACM0"
-        )  # default to "/dev/ttyACM0" port
+            "serial_port", '/dev/ttyACM0'
+        )  # default to '/dev/ttyACM0' port
         self.servo = maestro.Controller(
-            self.get_parameter("serial_port").get_parameter_value().string_value
+            #self.get_parameter("serial_port").get_parameter_value().string_value
+            '/dev/ttyACM0'
         )
 
         self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
 
-        # Servo center is at 1500 microseconds, or 6000 quarter-microseconds
-        # Typcially valid servo range is 3000 to 9000 quarter-microseconds
-        self.min = 3000  # 0 Degrees
-        self.max = 6000  # 180 Degrees
+        # These ranges come from the tower pro mini 9g data sheet
+        # 512 - 2400 microseconds, postions must be in quarter-microseoncds, so 2048 - 9600
+        # https://www.friendlywire.com/projects/ne555-servo-safe/SG90-datasheet.pdf
+        # 
+        # For the HS-40 615-2495 microseconds, converted: 2460 -9980
+        # https://www.servocity.com/hs-40-servo/
+        self.min = 2048  # 0 Degrees
+        self.max = 9600  # 180 Degrees
 
-        self.ZERO_DEGREES_VALUE = 3000
-        self.CONVERSION_VALUE = 6000
-        self.MAX_DEGREES = 360
+        self.ZERO_DEGREES_VALUE = 2048
+        self.CONVERSION_VALUE = 7552
+        self.MAX_DEGREES = 180
 
         for i in range(0, 12):  # usb controller has 12 channels
             self.servo.setRange(i, self.min, self.max)
@@ -40,22 +45,21 @@ class USB_Servo(Node):
             if request.min == 0:
                 self.min = self.ZERO_DEGREES_VALUE
             else:
-                self.min = self.ZERO_DEGREES_VALUE + (
-                    self.CONVERSION_VALUE / (self.MAX_DEGREES / request.min)
-                )
+                self.min = self.convert_from_degrees(request.min)
 
-            self.max = self.ZERO_DEGREES_VALUE + (
-                self.CONVERSION_VALUE / (self.MAX_DEGREES / request.max)
-            )
+            self.max = self.convert_from_degrees(request.max)
 
-        self.servo.setRange(request.port, min, max)
-        if request.pos > max or request.pos < min:
+        self.servo.setRange(request.port, self.min, self.max)
+        if self.convert_from_degrees(request.pos) > self.max or self.convert_from_degrees(request.pos) < self.min:
             response.status = False
             current_position = self.servo.getPosition(request.port)
             response.status_msg = f"Servo {request.port} input out of range\ncurrent position: {current_position}"
 
         else:
-            self.servo.setTarget(request.port, request.pos)
+            USB_Servo.get_logger(self).info(
+            "Received request for: %s, Converted: %s" % (request.pos, self.convert_from_degrees(request.pos))
+        )
+            self.servo.setTarget(request.port, self.convert_from_degrees(request.pos))
 
             response.status = True
             current_position = self.servo.getPosition(request.port)
@@ -63,7 +67,6 @@ class USB_Servo(Node):
                 f"Servo {request.port} current position: {current_position}"
             )
 
-        self.servo.close()
         return response
 
     def get_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
@@ -71,8 +74,12 @@ class USB_Servo(Node):
         current_position = self.servo.getPosition(request.port)
         response.status_msg = f"{current_position}"
 
-        self.servo.close()
         return response
+
+    def convert_from_degrees(self, degrees: int) -> int:
+        return int(self.ZERO_DEGREES_VALUE + (
+            self.CONVERSION_VALUE / (self.MAX_DEGREES / degrees)
+        ))
 
 
 def main(args=None):

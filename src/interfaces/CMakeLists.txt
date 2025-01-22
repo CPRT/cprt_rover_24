@@ -30,6 +30,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/GPIOmsg.msg" #ik its goofy the actual gpio package is GPIO
   "srv/NavToGPSGeopose.srv"
   "srv/VideoOut.srv"
+  "srv/MoveServo.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 
