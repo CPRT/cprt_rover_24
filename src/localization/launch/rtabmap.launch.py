@@ -1,20 +1,4 @@
-# Copyright (C) 2023  Miguel Ángel González Santamarta
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import os
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
@@ -22,85 +6,110 @@ from ament_index_python.packages import get_package_share_directory
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 
-
 def generate_launch_description():
-    config_dir = os.path.join(get_package_share_directory("localization"), "config")
-
+    # Path to the config directory in your custom package
+    
+    config_dir = os.path.join(get_package_share_directory("my_rtabmap_package"), "config")
     params_file = os.path.join(config_dir, "rtabmap.yaml")
 
+    # Launch arguments
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_sim_time_cmd = DeclareLaunchArgument(
         "use_sim_time",
         default_value="False",
-        description="Use simulation (Gazebo) clock if True",
-    )
+        description="Use simulation (Gazebo) clock if True")
 
     launch_rtabmapviz = LaunchConfiguration("launch_rtabmapviz")
     launch_rtabmapviz_cmd = DeclareLaunchArgument(
         "launch_rtabmapviz",
-        default_value="False",
-        description="Whether to launch rtabmapviz",
-    )
+        default_value="True",
+        description="Whether to launch rtabmapviz")
 
-    parameters = [
-        {
-            "frame_id": "base_link",
-            "subscribe_depth": False,
-            "subscribe_rgb": False,
-            "subscribe_scan_cloud": True,
-            "approx_sync": True,
-            "publish_tf": False,
-            "use_sim_time": use_sim_time,
-            "qos_imu": 2,
-            "Grid/DepthDecimation": "2",
-            "Grid/RangeMin": "1.5",
-            "Grid/RangeMax": "10.0",
-            "Grid/MinClusterSize": "20",
-            "Grid/MaxGroundAngle": "35",
-            "Grid/NormalK": "20",
-            "Grid/CellSize": "0.05",
-            "Grid/FlatObstacleDetected": "false",
-            # "Grid/Sensor": "True",
-            "GridGlobal/UpdateError": "0.01",
-            "GridGlobal/MinSize": "200",
-            "Reg/Strategy": "1",
-        }
-    ]
+    # RTAB-Map parameters
+    parameters = [{
+        "frame_id": "base_link",
+        "subscribe_depth": True,
+        "subscribe_rgb": True,
+        "subscribe_scan_cloud": False,
+        "approx_sync": True,
+        "publish_tf": True,
+        "use_sim_time": use_sim_time,
+        "qos_camera_info": 2,
+
+        "Grid/DepthDecimation": "2",
+        "Grid/RangeMin": "0.5",
+        "Grid/RangeMax": "15.0",
+        "Grid/MinClusterSize": "10",
+        "Grid/MaxGroundAngle": "30",
+        "Grid/NormalK": "10",
+        "Grid/CellSize": "0.05",
+        "Grid/FlatObstacleDetected": "false",
+
+        "GridGlobal/UpdateError": "0.01",
+        "GridGlobal/MinSize": "200",
+
+        "Reg/Strategy": "1"
+    }]
+
+    # Remappings for ZED topics
     remappings = [
-        ("scan_cloud", "ouster/points"),
-        ("rgb/camera_info", "camera/camera_info"),
-        ("depth/image", "zed/depth_image"),
-        ("imu", "ouster/imu"),
-        ("odom", "odometry/filtered/local"),
+        ("rgb/image", "zed/zed_node/rgb/image_rect_color"),
+        ("rgb/camera_info", "zed/zed_node/rgb/camera_info"),
+        ("depth/image", "zed/zed_node/depth/depth_registered"),
+        ("odom", "zed/zed_node/odom"),
+        ("imu", "zed/zed_node/imu/data"),
         ("goal", "goal_pose"),
         ("map", "map"),
     ]
 
-    return LaunchDescription(
-        [
-            use_sim_time_cmd,
-            launch_rtabmapviz_cmd,
-            Node(
-                package="rtabmap_slam",
-                executable="rtabmap",
-                output="screen",
-                parameters=parameters,
-                remappings=remappings,
-                arguments=[
-                    "-d",
-                    "--delete_db_on_start",
-                    "--ros-args",
-                    "--log-level",
-                    "Warn",
-                ],
-            ),
-            Node(
-                condition=IfCondition(launch_rtabmapviz),
-                package="rtabmap_viz",
-                executable="rtabmap_viz",
-                output="screen",
-                parameters=[params_file],
-                remappings=remappings,
-            ),
-        ]
+    static_tf_pub_odom_to_base_link = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"],
     )
+
+    static_tf_pub_base_link_to_camera = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=["0", "0", "0", "0", "0", "0", "base_link", "zed_left_camera_optical_frame"],
+    )
+
+    # Launch Description
+    return LaunchDescription([
+        # Declare launch arguments
+        use_sim_time_cmd,
+        launch_rtabmapviz_cmd,
+        static_tf_pub_odom_to_base_link,  
+        static_tf_pub_base_link_to_camera,
+        
+
+        # RTAB-Map Node
+        Node(
+            package="rtabmap_slam",
+            executable="rtabmap",
+            output="screen",
+            parameters=parameters,
+            remappings=remappings,
+            arguments=["-d", "--delete_db_on_start",
+                       "--ros-args", "--log-level", "Warn"]),
+
+        # RTAB-Map Visualization Node (Conditional)
+        Node(
+            condition=IfCondition(launch_rtabmapviz),
+            package="rtabmap_viz",
+            executable="rtabmap_viz",
+            output="screen",
+            parameters=[params_file],
+            remappings=remappings),
+
+        # ZED Wrapper Node
+        #Node(
+         #   package="zed_wrapper",
+          #  executable="zed_wrapper_node",
+           # name="zed2i",
+            #output="screen",
+            #parameters=[
+             #   os.path.join(os.path.expanduser("~/ros2_ws/src/zed-ros2-wrapper/zed_wrapper/config"), "common_stereo.yaml")
+                
+            #])
+    ])
