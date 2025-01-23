@@ -13,49 +13,49 @@ namespace ros_phoenix {
 
 class BaseNode : public Node {
 public:
-    struct Parameter {
-        static const std::string ID;
-        static const std::string INTERFACE;
-    };
+  struct Parameter {
+    static const std::string ID;
+    static const std::string INTERFACE;
+  };
 
-    RCLCPP_SHARED_PTR_DEFINITIONS(BaseNode)
+  RCLCPP_SHARED_PTR_DEFINITIONS(BaseNode)
 
-    BaseNode(const std::string& name, const NodeOptions& options = NodeOptions());
+  BaseNode(const std::string &name, const NodeOptions &options = NodeOptions());
 
-    virtual ~BaseNode();
+  virtual ~BaseNode();
 
-    virtual MotorStatus::SharedPtr status() = 0;
+  virtual MotorStatus::SharedPtr status() = 0;
 
-    virtual void set(MotorControl::SharedPtr control_msg);
+  virtual void set(MotorControl::SharedPtr control_msg);
 
-    virtual rcl_interfaces::msg::SetParametersResult reconfigure(
-        const std::vector<rclcpp::Parameter>& params);
+  virtual rcl_interfaces::msg::SetParametersResult
+  reconfigure(const std::vector<rclcpp::Parameter> &params);
 
 protected:
-    virtual void configure() = 0;
+  virtual void configure() = 0;
 
-    virtual void onTimer();
-    
-    int id_;
-    std::string interface_;
+  virtual void onTimer();
 
-    int follow_id_;
-    double sensor_multiplier_ = 1.0;
+  int id_;
+  std::string interface_;
 
-    bool configured_ = false;
-    std::mutex config_mutex_;
+  int follow_id_;
+  double sensor_multiplier_ = 1.0;
+
+  bool configured_ = false;
+  std::mutex config_mutex_;
 
 private:
-    int watchdog_ms_;
-    int period_ms_;
+  int watchdog_ms_;
+  int period_ms_;
 
-    OnSetParametersCallbackHandle::SharedPtr set_parameters_callback_;
+  OnSetParametersCallbackHandle::SharedPtr set_parameters_callback_;
 
-    std::shared_ptr<std::thread> config_thread_;
+  std::shared_ptr<std::thread> config_thread_;
 
-    rclcpp::TimerBase::SharedPtr timer_;
-    bool watchdog_warned_ = true;
-    rclcpp::Time last_update_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  bool watchdog_warned_ = true;
+  rclcpp::Time last_update_;
 };
 
 } // namespace ros_phoenix
