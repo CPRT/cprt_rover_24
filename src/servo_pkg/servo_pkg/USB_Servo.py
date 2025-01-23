@@ -25,7 +25,7 @@ class USB_Servo(Node):
         # 512 - 2400 microseconds, postions must be in quarter-microseoncds, so 2048 - 9600
         # https://www.friendlywire.com/projects/ne555-servo-safe/SG90-datasheet.pdf
         # 
-        # For the HS-40 615-2495 microseconds, converted: 2460 -9980
+        # For the HS-40 615-2495 microseconds, converted: 2460 - 9980
         # https://www.servocity.com/hs-40-servo/
         self.min = 2048  # 0 Degrees
         self.max = 9600  # 180 Degrees
