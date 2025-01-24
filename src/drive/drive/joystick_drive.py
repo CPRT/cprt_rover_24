@@ -96,29 +96,30 @@ class joystickDrive(Node):
         #     self.setEstop.publish(self.estop)
         #     return
 
-            self.twist.linear.x = map_range(
-                msg.axes[3], -1, 1, -self.MAX_PID_SPEED, self.MAX_PID_SPEED
-            )
-            self.twist.angular.z = map_range(
-                msg.axes[2], -1, 1, -self.MAX_PID_TURN, self.MAX_PID_TURN
-            )
-            self.setTwistPub.publish(self.twist)
-        # if self.pidMode == 1 and self.active:
-        #     self.twist.linear.x = map_range(
-        #         msg.axes[3], -1, 1, -self.MAX_PID_SPEED, self.MAX_PID_SPEED
-        #     )
-        #     self.twist.angular.z = map_range(
-        #         msg.axes[2], -1, 1, -self.MAX_PID_TURN, self.MAX_PID_TURN
-        #     )
-        #     self.setTwistPub.publish(self.twist)
-        # elif self.active:
-        #     self.twist.linear.x = map_range(
-        #         msg.axes[3], -1, 1, -self.MAX_VOLTAGE_SPEED, self.MAX_VOLTAGE_SPEED
-        #     )
-        #     self.twist.angular.z = map_range(
-        #         msg.axes[2], -1, 1, -self.MAX_VOLTAGE_TURN, self.MAX_VOLTAGE_TURN
-        #     )
-        #     self.setTwistPub.publish(self.twist)
+        self.twist.linear.x = map_range(
+            msg.axes[3], -1, 1, -self.MAX_PID_SPEED, self.MAX_PID_SPEED
+        )
+        self.twist.angular.z = map_range(
+            msg.axes[2], -1, 1, -self.MAX_PID_TURN, self.MAX_PID_TURN
+        )
+        self.setTwistPub.publish(self.twist)
+
+    # if self.pidMode == 1 and self.active:
+    #     self.twist.linear.x = map_range(
+    #         msg.axes[3], -1, 1, -self.MAX_PID_SPEED, self.MAX_PID_SPEED
+    #     )
+    #     self.twist.angular.z = map_range(
+    #         msg.axes[2], -1, 1, -self.MAX_PID_TURN, self.MAX_PID_TURN
+    #     )
+    #     self.setTwistPub.publish(self.twist)
+    # elif self.active:
+    #     self.twist.linear.x = map_range(
+    #         msg.axes[3], -1, 1, -self.MAX_VOLTAGE_SPEED, self.MAX_VOLTAGE_SPEED
+    #     )
+    #     self.twist.angular.z = map_range(
+    #         msg.axes[2], -1, 1, -self.MAX_VOLTAGE_TURN, self.MAX_VOLTAGE_TURN
+    #     )
+    #     self.setTwistPub.publish(self.twist)
 
 
 def main(args=None):
