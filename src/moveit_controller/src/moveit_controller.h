@@ -1,17 +1,18 @@
 #ifndef MOVEIT_CONTROLLER_H
 #define MOVEIT_CONTROLLER_H
 
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/robot_state/robot_state.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <unistd.h>
+
 #include <iostream>
 #include <memory>
-#include <unistd.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "interfaces/msg/arm_cmd.hpp"
 #include "std_msgs/msg/string.hpp"
-#include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/robot_state/robot_state.h>
-#include <rclcpp/rclcpp.hpp>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 void executeTrajectory(moveit_msgs::msg::RobotTrajectory &traj,
                        moveit::planning_interface::MoveGroupInterfacePtr mgi);
@@ -23,10 +24,10 @@ void executePlan(
 bool isEmpty(const geometry_msgs::msg::Pose &p);
 
 class MoveitController : public rclcpp::Node {
-public:
+ public:
   MoveitController(const rclcpp::NodeOptions &options);
 
-private:
+ private:
   rclcpp::Subscription<interfaces::msg::ArmCmd>::SharedPtr subscription;
 
   std::string node_name;

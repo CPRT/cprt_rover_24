@@ -39,7 +39,7 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
 
   move_group_ptr =
       std::make_shared<moveit::planning_interface::MoveGroupInterface>(
-          node_ptr, "rover_arm3"); // used to be rover_arm, then rover_arm2
+          node_ptr, "rover_arm3");  // used to be rover_arm, then rover_arm2
 
   executor_ptr->add_node(node_ptr);
   executor_thread = std::thread([this]() { this->executor_ptr->spin(); });
@@ -76,7 +76,7 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               poseMsg.position.x, poseMsg.position.y, poseMsg.position.z,
               poseMsg.orientation.x, poseMsg.orientation.y,
               poseMsg.orientation.z,
-              poseMsg.orientation.w); //*/
+              poseMsg.orientation.w);  //*/
 
   move_group_ptr->stop();
   if (th.joinable()) {
@@ -101,7 +101,7 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               current_pose.position.x, current_pose.position.y,
               current_pose.position.z, current_pose.orientation.x,
               current_pose.orientation.y, current_pose.orientation.z,
-              current_pose.orientation.w); //*/
+              current_pose.orientation.w);  //*/
 
   geometry_msgs::msg::Pose new_pose = current_pose;
   new_pose.position.x += poseMsg.position.x * stepSize;
@@ -112,7 +112,7 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               new_pose.position.x, new_pose.position.y, new_pose.position.z,
               new_pose.orientation.x, new_pose.orientation.y,
               new_pose.orientation.z, new_pose.orientation.w);
-  if (armMsg.reset == true) // reset to default position
+  if (armMsg.reset == true)  // reset to default position
   {
     geometry_msgs::msg::Pose target_pose;
     target_pose.position = default_pose.position;
@@ -135,13 +135,13 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     } else {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
-  } else if (armMsg.named_pose != 0) // TODO: Add end-effector features
+  } else if (armMsg.named_pose != 0)  // TODO: Add end-effector features
   {
     // intended to be used for end effector, which does not work currently
     if (armMsg.named_pose == 1 ||
-        armMsg.named_pose == 2) // 1 = closed, 2 = open
+        armMsg.named_pose == 2)  // 1 = closed, 2 = open
     {
-      std::string s = "open"; // jjk reference?
+      std::string s = "open";  // jjk reference?
       if (armMsg.named_pose == 1) {
         RCLCPP_INFO(this->get_logger(), "Furnace: close!");
         s = "closed";
@@ -176,7 +176,7 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     }
   } else if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
              poseMsg.orientation.z != 0 ||
-             poseMsg.orientation.w != 0) // rotation required
+             poseMsg.orientation.w != 0)  // rotation required
   {
     tf2::Quaternion q1;
     tf2::convert(current_pose.orientation, q1);
@@ -206,7 +206,7 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     th = std::thread(executeTrajectory, std::ref(trajectory), move_group_ptr);
     RCLCPP_INFO(this->get_logger(), "Creating thread");
 
-  } else // rotation not required
+  } else  // rotation not required
   {
     points.push_back(new_pose);
     const double jump_threshold = 0;

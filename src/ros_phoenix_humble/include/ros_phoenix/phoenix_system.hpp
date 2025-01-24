@@ -3,23 +3,21 @@
 
 #include <thread>
 
+#include "hardware_interface/system_interface.hpp"
+#include "rclcpp/logger.hpp"
+#include "rclcpp/macros.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "ros_phoenix/base_node.hpp"
 #include "ros_phoenix/msg/motor_control.hpp"
 #include "ros_phoenix/msg/motor_status.hpp"
 
-#include "hardware_interface/system_interface.hpp"
-
-#include "rclcpp/logger.hpp"
-#include "rclcpp/macros.hpp"
-#include "rclcpp/rclcpp.hpp"
-
-#define Phoenix_No_WPI // remove WPI dependencies
+#define Phoenix_No_WPI  // remove WPI dependencies
 #include "ctre/Phoenix.h"
 
 namespace ros_phoenix {
 
 class PhoenixSystem : public hardware_interface::SystemInterface {
-public:
+ public:
   static const std::string PERCENT_OUTPUT;
   static const std::string POSITION;
   static const std::string VELOCITY;
@@ -32,8 +30,8 @@ public:
 
   ~PhoenixSystem() = default;
 
-  hardware_interface::return_type
-  configure(const hardware_interface::HardwareInfo &info);
+  hardware_interface::return_type configure(
+      const hardware_interface::HardwareInfo &info);
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces();
 
@@ -46,10 +44,10 @@ public:
   hardware_interface::return_type read(const rclcpp::Time &time,
                                        const rclcpp::Duration &period) override;
 
-  hardware_interface::return_type
-  write(const rclcpp::Time &time, const rclcpp::Duration &period) override;
+  hardware_interface::return_type write(
+      const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
-private:
+ private:
   struct JointInfo {
     hardware_interface::ComponentInfo info;
     BaseNode::SharedPtr node;
@@ -74,5 +72,5 @@ private:
       subscribers_;
 };
 
-} // namespace ros_phoenix
-#endif // ROS_PHOENIX_PHOENIX_SYSTEM
+}  // namespace ros_phoenix
+#endif  // ROS_PHOENIX_PHOENIX_SYSTEM

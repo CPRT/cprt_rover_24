@@ -1,10 +1,9 @@
-#include "ros_phoenix/phoenix_manager.hpp"
+#include <memory>
+#include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/component_manager.hpp"
-
-#include <memory>
-#include <string>
+#include "ros_phoenix/phoenix_manager.hpp"
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);

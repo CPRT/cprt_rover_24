@@ -151,9 +151,8 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_deactivate(
   return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type
-RoverArmHardwareInterface::read(const rclcpp::Time & /*time*/,
-                                const rclcpp::Duration & /*period*/) {
+hardware_interface::return_type RoverArmHardwareInterface::read(
+    const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
   auto request = std::make_shared<interfaces::srv::ArmPos::Request>();
   request->stop = false;
   auto result = client_->async_send_request(request);
@@ -180,9 +179,8 @@ RoverArmHardwareInterface::read(const rclcpp::Time & /*time*/,
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type
-RoverArmHardwareInterface::write(const rclcpp::Time & /*time*/,
-                                 const rclcpp::Duration & /*period*/) {
+hardware_interface::return_type RoverArmHardwareInterface::write(
+    const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
   auto request = std::make_shared<interfaces::srv::ArmCmd::Request>();
   request->base = hw_commands_[0];
   request->diff1 = hw_commands_[1];
@@ -203,7 +201,7 @@ RoverArmHardwareInterface::write(const rclcpp::Time & /*time*/,
   return hardware_interface::return_type::OK;
 }
 
-} // namespace ros2_control_rover_arm
+}  // namespace ros2_control_rover_arm
 
 #include "pluginlib/class_list_macros.hpp"
 

@@ -1,10 +1,9 @@
 #ifndef ROS_PHOENIX_MOTOR_CONTROLLER
 #define ROS_PHOENIX_MOTOR_CONTROLLER
 
+#include "rclcpp/rclcpp.hpp"
 #include "ros_phoenix/msg/motor_control.hpp"
 #include "ros_phoenix/msg/motor_status.hpp"
-
-#include "rclcpp/rclcpp.hpp"
 
 using namespace rclcpp;
 using namespace ros_phoenix::msg;
@@ -12,7 +11,7 @@ using namespace ros_phoenix::msg;
 namespace ros_phoenix {
 
 class BaseNode : public Node {
-public:
+ public:
   struct Parameter {
     static const std::string ID;
     static const std::string INTERFACE;
@@ -28,10 +27,10 @@ public:
 
   virtual void set(MotorControl::SharedPtr control_msg);
 
-  virtual rcl_interfaces::msg::SetParametersResult
-  reconfigure(const std::vector<rclcpp::Parameter> &params);
+  virtual rcl_interfaces::msg::SetParametersResult reconfigure(
+      const std::vector<rclcpp::Parameter> &params);
 
-protected:
+ protected:
   virtual void configure() = 0;
 
   virtual void onTimer();
@@ -45,7 +44,7 @@ protected:
   bool configured_ = false;
   std::mutex config_mutex_;
 
-private:
+ private:
   int watchdog_ms_;
   int period_ms_;
 
@@ -58,6 +57,6 @@ private:
   rclcpp::Time last_update_;
 };
 
-} // namespace ros_phoenix
+}  // namespace ros_phoenix
 
-#endif // ROS_PHOENIX_MOTOR_CONTROLLER
+#endif  // ROS_PHOENIX_MOTOR_CONTROLLER

@@ -1,4 +1,5 @@
 #include "ros_phoenix/base_node.hpp"
+
 #include "ros_phoenix/phoenix_manager.hpp"
 
 namespace ros_phoenix {
@@ -21,9 +22,9 @@ BaseNode::BaseNode(const std::string &name, const rclcpp::NodeOptions &options)
   this->declare_parameter<int>("watchdog_ms", 100);
   this->template declare_parameter<int>("period_ms", 20);
   this->declare_parameter<int>("follow_id", -1);
-  this->declare_parameter<int>(
-      "edges_per_rot",
-      2048); // Encoder edges per rotation (2048 is for Falcon built-in encoder)
+  this->declare_parameter<int>("edges_per_rot",
+                               2048);  // Encoder edges per rotation (2048 is
+                                       // for Falcon built-in encoder)
   this->declare_parameter<bool>("invert", false);
   this->declare_parameter<bool>("invert_sensor", false);
   this->declare_parameter<bool>("brake_mode", true);
@@ -61,7 +62,7 @@ BaseNode::BaseNode(const std::string &name, const rclcpp::NodeOptions &options)
 BaseNode::~BaseNode() {
   std::unique_lock<std::mutex> lock(this->config_mutex_);
   if (this->config_thread_) {
-    this->configured_ = true; // Signal config thread to stop
+    this->configured_ = true;  // Signal config thread to stop
     lock.unlock();
     this->config_thread_->join();
   }
@@ -85,8 +86,8 @@ void BaseNode::set(MotorControl::SharedPtr control_msg
   }
 }
 
-rcl_interfaces::msg::SetParametersResult
-BaseNode::reconfigure(const std::vector<rclcpp::Parameter> &params) {
+rcl_interfaces::msg::SetParametersResult BaseNode::reconfigure(
+    const std::vector<rclcpp::Parameter> &params) {
   for (auto param : params) {
     RCLCPP_DEBUG(this->get_logger(), "Parameter changed: %s=%s",
                  param.get_name().c_str(), param.value_to_string().c_str());
@@ -106,11 +107,11 @@ BaseNode::reconfigure(const std::vector<rclcpp::Parameter> &params) {
     }
   }
 
-  if (!this->config_thread_) { // Thread does not exist, create it
+  if (!this->config_thread_) {  // Thread does not exist, create it
     this->configured_ = false;
     this->config_thread_ =
         std::make_shared<std::thread>(std::bind(&BaseNode::configure, this));
-  } else if (this->configured_) { // Thread needs to be joined and restarted
+  } else if (this->configured_) {  // Thread needs to be joined and restarted
     this->config_thread_->join();
     this->configured_ = false;
     this->config_thread_ =
@@ -123,8 +124,7 @@ BaseNode::reconfigure(const std::vector<rclcpp::Parameter> &params) {
 }
 
 void BaseNode::onTimer() {
-  if (!this->configured_)
-    return;
+  if (!this->configured_) return;
 
   // Check if watchdog has expired
   if (this->follow_id_ < 0 &&
@@ -143,4 +143,4 @@ void BaseNode::onTimer() {
   }
 }
 
-} // namespace ros_phoenix
+}  // namespace ros_phoenix

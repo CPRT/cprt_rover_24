@@ -3,19 +3,17 @@
 
 #include <thread>
 
-#include "ros_phoenix/msg/motor_control.hpp"
-#include "ros_phoenix/msg/motor_status.hpp"
-
 #include "hardware_interface/system_interface.hpp"
-
 #include "rclcpp/logger.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "ros_phoenix/msg/motor_control.hpp"
+#include "ros_phoenix/msg/motor_status.hpp"
 
 namespace ros_phoenix {
 
 class PhoenixBridge : public hardware_interface::SystemInterface {
-public:
+ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(PhoenixBridge)
 
   PhoenixBridge();
@@ -24,8 +22,8 @@ public:
 
   ~PhoenixBridge() = default;
 
-  hardware_interface::return_type
-  configure(const hardware_interface::HardwareInfo &info);
+  hardware_interface::return_type configure(
+      const hardware_interface::HardwareInfo &info);
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces();
 
@@ -38,10 +36,10 @@ public:
   hardware_interface::return_type read(const rclcpp::Time &time,
                                        const rclcpp::Duration &period) override;
 
-  hardware_interface::return_type
-  write(const rclcpp::Time &time, const rclcpp::Duration &period) override;
+  hardware_interface::return_type write(
+      const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
-private:
+ private:
   enum InterfaceType {
     INVALID = -1,
     PERCENT_OUTPUT = 0,
@@ -68,5 +66,5 @@ private:
       subscribers_;
 };
 
-} // namespace ros_phoenix
-#endif // ROS_PHOENIX_PHOENIX_BRIDGE
+}  // namespace ros_phoenix
+#endif  // ROS_PHOENIX_PHOENIX_BRIDGE

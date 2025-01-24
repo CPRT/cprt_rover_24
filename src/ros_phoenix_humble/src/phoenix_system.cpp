@@ -1,14 +1,14 @@
 #include "ros_phoenix/phoenix_system.hpp"
-#include "ros_phoenix/phoenix_manager.hpp"
-#include "ros_phoenix/phoenix_nodes.hpp"
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rcutils/logging_macros.h"
+#include "ros_phoenix/phoenix_manager.hpp"
+#include "ros_phoenix/phoenix_nodes.hpp"
 
-hardware_interface::return_type
-set_parameters(const std::unordered_map<std::string, std::string> parameters,
-               rclcpp::Node::SharedPtr node) {
+hardware_interface::return_type set_parameters(
+    const std::unordered_map<std::string, std::string> parameters,
+    rclcpp::Node::SharedPtr node) {
   for (const auto &p : parameters) {
     std::string name(p.first);
     std::string value(p.second);
@@ -16,32 +16,32 @@ set_parameters(const std::unordered_map<std::string, std::string> parameters,
     if (node->has_parameter(name)) {
       auto param = node->get_parameter(name);
       switch (param.get_type()) {
-      case ParameterType::PARAMETER_STRING:
-        node->set_parameter(Parameter(name, value));
-        break;
-      case ParameterType::PARAMETER_INTEGER:
-        node->set_parameter(Parameter(name, std::stoi(value)));
-        break;
-      case ParameterType::PARAMETER_DOUBLE:
-        node->set_parameter(Parameter(name, std::stod(value)));
-        break;
-      case ParameterType::PARAMETER_BOOL:
-        if (value == "true") {
-          node->set_parameter(Parameter(name, true));
-        } else if (value == "false") {
-          node->set_parameter(Parameter(name, false));
-        } else {
-          RCLCPP_FATAL(
-              node->get_logger(),
-              "Boolean parameter '%s' must be either 'true' or 'false'",
-              name.c_str());
+        case ParameterType::PARAMETER_STRING:
+          node->set_parameter(Parameter(name, value));
+          break;
+        case ParameterType::PARAMETER_INTEGER:
+          node->set_parameter(Parameter(name, std::stoi(value)));
+          break;
+        case ParameterType::PARAMETER_DOUBLE:
+          node->set_parameter(Parameter(name, std::stod(value)));
+          break;
+        case ParameterType::PARAMETER_BOOL:
+          if (value == "true") {
+            node->set_parameter(Parameter(name, true));
+          } else if (value == "false") {
+            node->set_parameter(Parameter(name, false));
+          } else {
+            RCLCPP_FATAL(
+                node->get_logger(),
+                "Boolean parameter '%s' must be either 'true' or 'false'",
+                name.c_str());
+            return hardware_interface::return_type::ERROR;
+          }
+          break;
+        default:
+          RCLCPP_FATAL(node->get_logger(), "Unsupported parameter type: %s",
+                       param.get_type_name().c_str());
           return hardware_interface::return_type::ERROR;
-        }
-        break;
-      default:
-        RCLCPP_FATAL(node->get_logger(), "Unsupported parameter type: %s",
-                     param.get_type_name().c_str());
-        return hardware_interface::return_type::ERROR;
       }
     } else {
       RCLCPP_FATAL(node->get_logger(), "Unknown parameter '%s' for node '%s'",
@@ -89,22 +89,22 @@ ControlMode PhoenixSystem::str_to_interface(const std::string &str) {
 
 PhoenixSystem::PhoenixSystem() : logger_(rclcpp::get_logger("PhoenixSystem")) {}
 
-hardware_interface::return_type
-PhoenixSystem::configure(const hardware_interface::HardwareInfo &info) {
+hardware_interface::return_type PhoenixSystem::configure(
+    const hardware_interface::HardwareInfo &info) {
   this->logger_ = rclcpp::get_logger(info.name);
   this->exec_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   std::shared_ptr<ros_phoenix::PhoenixManager> phoenix_manager = nullptr;
   try {
     phoenix_manager = ros_phoenix::PhoenixManager::getInstance(this->exec_);
   } catch (const std::runtime_error &exec) {
-    RCLCPP_FATAL(this->logger_, "Multiple instance of PhoenixSystem were "
-                                "detected. Only one per process is allowed!");
+    RCLCPP_FATAL(this->logger_,
+                 "Multiple instance of PhoenixSystem were "
+                 "detected. Only one per process is allowed!");
     return hardware_interface::return_type::ERROR;
   }
 
   auto rc = set_parameters(info.hardware_parameters, phoenix_manager);
-  if (rc != hardware_interface::return_type::OK)
-    return rc;
+  if (rc != hardware_interface::return_type::OK) return rc;
 
   this->exec_->add_node(phoenix_manager);
 
@@ -128,8 +128,7 @@ PhoenixSystem::configure(const hardware_interface::HardwareInfo &info) {
     auto parameters = joint.parameters;
     parameters.erase("type");
     auto rc = set_parameters(parameters, node);
-    if (rc != hardware_interface::return_type::OK)
-      return rc;
+    if (rc != hardware_interface::return_type::OK) return rc;
 
     this->exec_->add_node(node);
 
@@ -235,7 +234,7 @@ hardware_interface::return_type PhoenixSystem::write(const rclcpp::Time &,
   return hardware_interface::return_type::OK;
 }
 
-} // namespace ros_phoenix
+}  // namespace ros_phoenix
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(ros_phoenix::PhoenixSystem,
