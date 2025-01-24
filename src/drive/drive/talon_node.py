@@ -97,17 +97,25 @@ class TalonDriveController(Node):
         FREQ = max(1, FREQ)
 
         self.declare_parameter("robot_frame", "base_link")
-        self.FRAME = self.get_parameter("robot_frame").get_parameter_value().string_value
+        self.FRAME = (
+            self.get_parameter("robot_frame").get_parameter_value().string_value
+        )
         self.declare_parameter("angular_covariance", 0.3)
-        angular_cov = self.get_parameter("angular_covariance").get_parameter_value().double_value
+        angular_cov = (
+            self.get_parameter("angular_covariance").get_parameter_value().double_value
+        )
         self.declare_parameter("linear_covariance", 0.3)
-        linear_cov = self.get_parameter("linear_covariance").get_parameter_value().double_value
+        linear_cov = (
+            self.get_parameter("linear_covariance").get_parameter_value().double_value
+        )
         self.covariance = [0.0] * 36
         self.covariance[0] = linear_cov
         self.covariance[35] = angular_cov
 
         self.declare_parameter("timeout", 2.0)
-        self.TIMEOUT = self.get_parameter("timeout").get_parameter_value().double_value * 1e9
+        self.TIMEOUT = (
+            self.get_parameter("timeout").get_parameter_value().double_value * 1e9
+        )
 
         self.declare_parameter(
             "wheels", ["frontRight", "frontLeft", "backRight", "backLeft"]
@@ -121,7 +129,9 @@ class TalonDriveController(Node):
             self.wheels.append(WheelControl(wheel, self))
         self.get_logger().info(f"There are {str(len(self.wheels))} wheels")
 
-        self.twist_sub = self.create_subscription(Twist, "/cmd_vel", self.twist_callback, 10)
+        self.twist_sub = self.create_subscription(
+            Twist, "/cmd_vel", self.twist_callback, 10
+        )
         self.timer = self.create_timer(1 / FREQ, self.control_timer_callback)
         if PUB_ODOM:
             self.odom_pub = self.create_publisher(Odometry, "/drive/odom", 10)
