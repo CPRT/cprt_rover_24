@@ -118,7 +118,7 @@ class JoystickController(Node):
         turbo_button = self.get_parameter("turbo_button").int_value
         self.declare_parameter("deadman_button", -1)
         deadman_button = self.get_parameter("deadman_button").int_value
-        self.declare_parameter("max_linear_speed", 0.5)
+        self.declare_parameter("max_linear_speed", 1.0)
         self.max_linear_speed = self.get_parameter("max_linear_speed").double_value
         self.declare_parameter("max_angular_speed", 1.0)
         self.max_angular_speed = self.get_parameter("max_angular_speed").double_value
