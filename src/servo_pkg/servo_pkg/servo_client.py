@@ -15,16 +15,6 @@ class Servo_Client(Node):
             self.get_logger().info("service not available, waiting again...")
         self.req = MoveServo.Request()
 
-        self.servo_tester()
-        time.sleep(2.0)
-        self.servo_tester()
-        time.sleep(2.0)
-        self.servo_tester()
-        time.sleep(2.0)
-        self.servo_tester()
-        time.sleep(2.0)
-        self.servo_tester()
-
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
         self.req = MoveServo.Request()
         self.req.port = port
