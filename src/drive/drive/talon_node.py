@@ -190,23 +190,18 @@ class TalonDriveController(Node):
         :param msg: Twist message.
         """
         self.last_timestamp = self.get_clock().now().nanoseconds
-        if msg.linear.x == 0 and msg.angular.z == 0:
-            for wheel in self.wheels:
-                wheel.set_vel(0.0)
-                wheel.send()
-            return
         linear_x = msg.linear.x
         linear_x = min(linear_x, self.MAX_SPEED)
         linear_x = max(linear_x, -self.MAX_SPEED)
 
-        vr = linear_x - msg.angular.z * self.BASE_WIDTH / 2  # m/s
-        vl = linear_x + msg.angular.z * self.BASE_WIDTH / 2
+        vr = linear_x + msg.angular.z * self.BASE_WIDTH / 2  # m/s
+        vl = linear_x - msg.angular.z * self.BASE_WIDTH / 2
 
         for wheel in self.wheels:
             if wheel.side == LEFT:
-                wheel.set_vel(float(-vl))
+                wheel.set_vel(float(vl))
             else:
-                wheel.set_vel(float(vr))
+                wheel.set_vel(float(-vr))
 
 
 def main(args=None):
