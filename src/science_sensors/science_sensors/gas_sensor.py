@@ -9,7 +9,18 @@ from interfaces.msg import GasSensorReading
 
 
 class GasSensor(Node):
+    """
+    ROS 2 Node that reads environmental data (temperature, humidity, pressure,
+    CO2, and TVOC) from the BME280 and ENS160 sensors and publishes it to
+    the 'gas_sensor' topic.
+    """
+
     def __init__(self):
+        """
+        Initializes the GasSensor node, sets up I2C communication, configures
+        sensors (BME280 and ENS160), declares parameters, and sets up a timer
+        for publishing sensor readings.
+        """
         super().__init__("gas_sensor")
 
         i2c = board.I2C()
@@ -39,6 +50,11 @@ class GasSensor(Node):
         self.create_timer(self.get_parameter("gas_sensor_update_interval_s"), self.loop)
 
     def loop(self):
+        """
+        Periodically reads data from the BME280 and ENS160 sensors, packages
+        the readings into a GasSensorReading message, and publishes it if
+        there are any subscribers.
+        """
         if self.sensor_reading_pub.get_subscription_count() > 0:
             temperature = self.bms280.temperature
             humidity = self.bms280.humidity
@@ -59,6 +75,10 @@ class GasSensor(Node):
 
 
 def main(args=None):
+    """
+    Initializes the ROS 2 python library, starts this node, and enters the
+    ROS 2 spin loop to process incoming messages and trigger callbacks.
+    """
     rclpy.init(args=args)
     node = GasSensor()
     rclpy.spin(node)
