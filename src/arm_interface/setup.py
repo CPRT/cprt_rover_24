@@ -28,6 +28,8 @@ setup(
             "trajectory_interpreter = arm_interface.trajectoryInterpreter:main",
             "joystick_arm_controller = arm_interface.joystickArmController:main",
             "joystick_science_controller = arm_interface.joystickScienceController:main",
+            "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
+            "keyboard_arm_controller = arm_interface.keyboardArmController:main",
         ],
     },
 )
