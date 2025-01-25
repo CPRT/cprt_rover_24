@@ -15,6 +15,7 @@ class GasSensor(Node):
         i2c = board.I2C()
 
         self.declare_parameter("sea_level_pressure_hpa", 1013.25)
+        self.declare_parameter("gas_sensor_update_interval_s", 0.2)
 
         try:
             self.bms280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
@@ -35,7 +36,7 @@ class GasSensor(Node):
         self.sensor_reading_pub = self.create_publisher(
             GasSensorReading, "gas_sensor", 10
         )
-        self.create_timer(0.2, self.loop)
+        self.create_timer(self.get_parameter("gas_sensor_update_interval_s"), self.loop)
 
     def loop(self):
         if self.sensor_reading_pub.get_subscription_count() > 0:
