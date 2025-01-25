@@ -21,8 +21,12 @@ class GasSensor(Node):
             self.ens160 = adafruit_ens160.ENS160(i2c)
         except RuntimeError:
             raise RuntimeError("Gas Sensor Not Connected")
-        
-        self.bms280.sea_level_pressure = self.get_parameter("sea_level_pressure_hpa").get_parameter_value().double_value
+
+        self.bms280.sea_level_pressure = (
+            self.get_parameter("sea_level_pressure_hpa")
+            .get_parameter_value()
+            .double_value
+        )
         self.bms280.mode = adafruit_bme280.MODE_NORMAL
 
         # self.ens160.reset() # not necessary AFAIK
@@ -46,7 +50,7 @@ class GasSensor(Node):
 
             self.ens160.temperature_compensation = temperature
             self.ens160.humidity_compensation = humidity
-            
+
             reading.co2_ppm = self.ens160.eCO2
             reading.tvoc_ppb = self.ens160.TVOC
 
