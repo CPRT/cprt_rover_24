@@ -1,0 +1,6 @@
+int32 timestamp
+float32 temperature_c
+float32 pressure_pa
+float32 humidity_rh
+float32 co2_ppm
+float32 tvoc_ppb
