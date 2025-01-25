@@ -74,8 +74,13 @@ def generate_launch_description():
         [
             container,
             launch_ros.actions.Node(
+                package="drive",
+                executable="joystick_breakout",
+                name="joystick_breakout_node",
+            ),
+            launch_ros.actions.Node(
                 package="drive_cpp",
-                executable="drive_cpp",
+                executable="TalonDriveController",
                 name="talon_control_node",
                 parameters=[
                     {"wheels": ["frontRight", "frontLeft", "backRight", "backLeft"]},
@@ -88,15 +93,17 @@ def generate_launch_description():
             launch_ros.actions.Node(
                 package="joy", executable="joy_node", name="joystick"
             ),
-            launch_ros.actions.Node(
-                package="drive",
-                executable="joystick_controller",
-                name="joystick_controller",
-                parameters=[
-                    {"linear_axis_index": 3},
-                    {"turn_axis_index": 2},
-                    {"max_linear_speed": 1.0},
-                ],
-            ),
+            # launch_ros.actions.Node(
+            #     package="drive",
+            #     executable="joystick_drive",
+            #     name="joystick_drive_station",
+            #     parameters=[
+            #         {"PID_max_speed": 1.0},  # m/s
+            #         {"PID_max_turn": 1.0},  # rad/s
+            #         {"voltage_max_speed": 8.0},  # x/12volts
+            #         {"voltage_max_turn": 8.0},  # x/12volts
+            #         {"PID": 1},  # PID 1 Voltage 0
+            #     ],
+            # ),
         ]
     )

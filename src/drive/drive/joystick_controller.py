@@ -111,19 +111,33 @@ class JoystickController(Node):
         """
         super().__init__("joystick_controller")
         self.declare_parameter("linear_axis_index", 0)
-        linear_axis = self.get_parameter("linear_axis_index").get_parameter_value().integer_value
+        linear_axis = (
+            self.get_parameter("linear_axis_index").get_parameter_value().integer_value
+        )
         self.declare_parameter("turn_axis_index", 1)
-        turn_axis = self.get_parameter("turn_axis_index").get_parameter_value().integer_value
+        turn_axis = (
+            self.get_parameter("turn_axis_index").get_parameter_value().integer_value
+        )
         self.declare_parameter("turbo_button", -1)
-        turbo_button = self.get_parameter("turbo_button").get_parameter_value().integer_value
+        turbo_button = (
+            self.get_parameter("turbo_button").get_parameter_value().integer_value
+        )
         self.declare_parameter("deadman_button", -1)
-        deadman_button = self.get_parameter("deadman_button").get_parameter_value().integer_value
+        deadman_button = (
+            self.get_parameter("deadman_button").get_parameter_value().integer_value
+        )
         self.declare_parameter("max_linear_speed", 1.0)
-        self.max_linear_speed = self.get_parameter("max_linear_speed").get_parameter_value().double_value
+        self.max_linear_speed = (
+            self.get_parameter("max_linear_speed").get_parameter_value().double_value
+        )
         self.declare_parameter("max_angular_speed", 1.0)
-        self.max_angular_speed = self.get_parameter("max_angular_speed").get_parameter_value().double_value
+        self.max_angular_speed = (
+            self.get_parameter("max_angular_speed").get_parameter_value().double_value
+        )
         self.declare_parameter("turbo_multiplier", 2.0)
-        self.turbo_multiplier = self.get_parameter("turbo_multiplier").get_parameter_value().double_value
+        self.turbo_multiplier = (
+            self.get_parameter("turbo_multiplier").get_parameter_value().double_value
+        )
         self.declare_parameter("curve_type", "linear")
         curve_type = self.get_parameter("curve_type").get_parameter_value().string_value
 
