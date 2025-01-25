@@ -58,8 +58,28 @@ class TalonDriveController : public rclcpp::Node {
   bool pubOdom_;
 
   /**
-   * @brief Flag indicating whether to publish electrical status information.
-   * (Not implemented)
+   * @brief Frame id used for odometry output
+   */
+  std::string frameId_;
+
+  /**
+   * @brief Covariance value for angular odometry
+   */
+  double angularCov_;
+
+  /**
+   * @brief Covariance value for linear odometry
+   */
+  double linearCov_;
+
+  /**
+   * @brief Ticks per meter used for odometry output
+   */
+  double ticksPerMeter_;
+
+  /**
+   * @brief Flag indicating whether to publish electrical status
+   * information. (Not implemented)
    */
   bool pubElec_;
 

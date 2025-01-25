@@ -1,6 +1,7 @@
 #include "TalonDriveController.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 TalonDriveController::TalonDriveController() : Node("talonDrive") {
   lastTimestamp_ = 0;
@@ -12,6 +13,18 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
   pubOdom_ = this->get_parameter("pub_odom").as_bool();
   this->declare_parameter("pub_elec", true);
   pubElec_ = this->get_parameter("pub_elec").as_bool();
+  this->declare_parameter("angular_cov", 0.3);
+  angularCov_ = this->get_parameter("angular_cov").as_double();
+  this->declare_parameter("linear_cov", 0.3);
+  linearCov_ = this->get_parameter("linear_cov").as_double();
+  this->declare_parameter("ticks_per_rotation", 2760);
+  this->declare_parameter("wheel_rad", 0.2);
+  const double wheelCircumference =
+      this->get_parameter("wheel_rad").as_double() * 2 * M_PI;
+  ticksPerMeter_ =
+      this->get_parameter("ticks_per_rotation").as_int() / wheelCircumference;
+  this->declare_parameter("frame_id", "base_link");
+  frameId_ = this->get_parameter("frame_id").as_string();
   this->declare_parameter("frequency", 10.0);
   const double frequency =
       std::max(this->get_parameter("frequency").as_double(), 1.0);
@@ -53,30 +66,28 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
 }
 
 void TalonDriveController::odom_pub_callback() {
-  double vl_total = 0.0;
-  double vr_total = 0.0;
+  double ticksL = 0.0;
+  double ticksR = 0.0;
 
   for (const auto &wheel : wheels_) {
     if (wheel.getWheelSide() == WheelSide::LEFT) {
-      vl_total += wheel.getVelocity();
+      ticksL += wheel.getVelocity();
     } else {
-      vr_total += wheel.getVelocity();
+      ticksR -= wheel.getVelocity();
     }
   }
-
-  double vl = vl_total / (wheels_.size() / 2);
-  double vr = vr_total / (wheels_.size() / 2);
+  const int wheelsPerSide = wheels_.size() / 2;
+  const double vl = ticksL / (wheelsPerSide * ticksPerMeter_);
+  const double vr = ticksR / (wheelsPerSide * ticksPerMeter_);
 
   Odometry odom;
   odom.header.stamp = this->get_clock()->now();
-  odom.header.frame_id = "odom";
-  odom.child_frame_id = "base_link";  // TODO: make configurable
+  odom.child_frame_id = frameId_;
   odom.twist.twist.linear.x = (vr + vl) / 2;
   odom.twist.twist.angular.z = (vl - vr) / baseWidth_;
-  odom.twist.covariance = {
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0,
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3};  // TODO: make configurable
+  odom.twist.covariance = {0};
+  odom.twist.covariance[0] = linearCov_;
+  odom.twist.covariance[35] = angularCov_;
   odomPub_->publish(odom);
 }
 
