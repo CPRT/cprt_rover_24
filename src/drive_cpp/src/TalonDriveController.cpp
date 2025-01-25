@@ -4,7 +4,6 @@
 
 TalonDriveController::TalonDriveController() : Node("talonDrive") {
   lastTimestamp_ = 0;
-  lastVel_ = 0;
   this->declare_parameter("max_speed", 2.0);
   maxSpeed_ = this->get_parameter("max_speed").as_double();
   this->declare_parameter("base_width", 0.9144);
@@ -102,7 +101,6 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
   if (linearX < -maxSpeed_) {
     linearX = -maxSpeed_;
   }
-  lastVel_ = linearX;
 
   double vr = linearX + msg->angular.z * baseWidth_ / 2;
   double vl = linearX - msg->angular.z * baseWidth_ / 2;
