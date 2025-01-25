@@ -12,25 +12,20 @@ class Servo_Client(Node):
         self.cli = self.create_client(MoveServo, "servo_service")
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("service not available, waiting again...")
-        self.req = MoveServo.Request()
+        self.timer = self.create_timer(2, self.servo_tester)
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
-        self.req = MoveServo.Request()
-        self.req.port = port
-        self.req.pos = pos
-        self.req.min = min
-        self.req.max = max
-        self.future = self.cli.call_async(self.req)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
+        req = MoveServo.Request()
+        req.port = port
+        req.pos = pos
+        req.min = min
+        req.max = max
+        future = self.cli.call_async(req)
 
     def servo_request(self, req_port, req_pos, req_min, req_max) -> None:
         Servo_Client.get_logger(self).info("Sending Request for: %s" % (req_pos))
-        response = self.send_request(
+        self.send_request(
             port=req_port, pos=req_pos, min=req_min, max=req_max
-        )
-        Servo_Client.get_logger(self).info(
-            "Results: %s, status: %s" % (response.status, response.status_msg)
         )
 
     def servo_tester(self) -> None:
