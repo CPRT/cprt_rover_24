@@ -6,6 +6,19 @@ import rclpy.time
 from sensor_msgs.msg import Joy
 from std_msgs.msg import Bool
 
+def load_mapping(joystick_name):
+    # Read mapping file
+    # Conseptual layout:
+    # File name: Joystick name
+    # Button,Input index,Output index (ex: a,0,0)
+    # Joystick + Axis,Input index,Output index (ex: left.x,0,0)
+    mapping_file = "temp" #'joystick_name'+'.csv'
+    with open(mapping_file, 'r') as file:
+        lines = file.readlines
+        mapping = []
+        for line in lines:
+            index = line.strip().split(',')
+            mapping.append(index[1])
 
 class joystickBreakout(Node):
     def __init__(self):

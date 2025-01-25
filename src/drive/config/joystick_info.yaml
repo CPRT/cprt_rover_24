@@ -1,0 +1,28 @@
+# Change parameters to reflect the joystick setup.
+# Max of two joysticks can be used at once.
+# There are 4 parameters:
+#   - joyX_active allows to only have one joystick active instead of two,
+#     one joystick should always have this parameter as True.
+#   - joyX_name is the joystick's name, this can be found with joy using
+#     'ros2 run joy joy_enumerate_devices'.
+#   - joyX_id is the joystick's device id, this can also be found using
+#     ros2 run joy joy_enumerate_devices'. This parameter is only necessary
+#     if two identical joysticks are being used.
+#   - joyX_control defines what the joystick will be controlling:
+#       - "arm" means it will only be used to control the arm
+#       - "chassis" means it will only be used to control the chassis
+#       - "omni" means it will be used to control both the arm and the chassis
+
+joystick_breakout_node:
+  ros__parameters:
+    # Parameters for first joystick
+    joy1_enabled: True
+    joy1_name: "logitech_f310"
+    joy1_id: 0
+    joy1_control: "arm"
+
+    # Parameters for second joystick
+    joy2_enabled: True
+    joy2_name: "logitech_f310"
+    joy2_id: 1
+    joy2_control: "omni"
