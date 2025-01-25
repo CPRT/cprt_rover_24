@@ -31,7 +31,6 @@ setup(
             "roboclaw_node = drive.roboclaw_node:main",
             "joystick_breakout = drive.joystick_breakout:main",
             "joystick_controller = drive.joystick_controller:main",
-            "talon_node = drive.talon_node:main",
         ],
     },
 )
