@@ -34,12 +34,12 @@ class GasSensor(Node):
         self.create_timer(0.2, self.loop)
 
     def loop(self):
-        if self.sensor_reading_pub.get_subscription_count > 0:
+        if self.sensor_reading_pub.get_subscription_count() > 0:
             temperature = self.bms280.temperature
             humidity = self.bms280.humidity
 
             reading = GasSensorReading()
-            reading.timestamp = self.get_clock().now().to_msg()
+            reading.header.stamp = self.get_clock().now().to_msg()
             reading.temperature_c = temperature
             reading.pressure_pa = self.bms280.pressure * 100  # convert from hPa to Pa
             reading.humidity_rh = humidity
@@ -47,9 +47,8 @@ class GasSensor(Node):
             self.ens160.temperature_compensation = temperature
             self.ens160.humidity_compensation = humidity
             
-            ensData = self.ens160.read_all_sensors()
-            reading.co2_ppm = ensData["eCO2"]
-            reading.tvoc_ppb = ensData["TVOC"]
+            reading.co2_ppm = self.ens160.eCO2
+            reading.tvoc_ppb = self.ens160.TVOC
 
             self.sensor_reading_pub.publish(reading)
 
