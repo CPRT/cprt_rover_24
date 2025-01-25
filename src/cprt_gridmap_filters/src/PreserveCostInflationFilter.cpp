@@ -8,6 +8,7 @@
 
 #include "PreserveCostInflationFilter.hpp"
 
+#include <cmath>
 #include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <string>
@@ -70,7 +71,7 @@ bool PreserveCostInflationFilter<T>::update(const T &mapIn, T &mapOut) {
     return false;
   }
 
-  mapOut.add(this->outputLayer_, 1.0);
+  mapOut.add(this->outputLayer_, 0.0);
 
   this->computeWithSimpleSerialMethod(mapIn, mapOut);
 
@@ -109,17 +110,15 @@ template <typename T>
 void PreserveCostInflationFilter<T>::radialInflateSerial(
     grid_map::GridMap &mapOut, const grid_map::Position &position,
     const float value) {
-  Eigen::MatrixXf &layerOut = mapOut[this->outputLayer_];
-
   for (grid_map::CircleIterator iterator(mapOut, position,
                                          this->inflationRadius_);
        !iterator.isPastEnd(); ++iterator) {
-    if (!mapOut.isValid(*iterator, this->outputLayer_)) {
+    auto &cellValue = mapOut.at(this->outputLayer_, *iterator);
+
+    if (!std::isfinite(cellValue)) {
       continue;
     }
-
-    layerOut.coeffRef((*iterator)(0), (*iterator)(1)) =
-        std::min(layerOut.coeff((*iterator)(0), (*iterator)(1)), value);
+    cellValue = std::max(cellValue, value);
   }
 }
 
