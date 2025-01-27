@@ -15,8 +15,7 @@ class USB_Servo(Node):
             "serial_port", "/dev/ttyACM0"
         )  # default to '/dev/ttyACM0' port
         self.servo = maestro.Controller(
-            # self.get_parameter("serial_port").get_parameter_value().string_value
-            "/dev/ttyACM0"
+            self.get_parameter("serial_port").get_parameter_value().string_value
         )
 
         self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
