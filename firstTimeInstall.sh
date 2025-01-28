@@ -46,6 +46,7 @@ pip3 install adafruit-circuitpython-bme280
 pip3 install adafruit-circuitpython-ens160
 pip3 install adafruit-circuitpython-busdevice
 pip3 install adafruit-circuitpython-register
+pip3 install pyubx2
 
 sudo rosdep init
 rosdep update
