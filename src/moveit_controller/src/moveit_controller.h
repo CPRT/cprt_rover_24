@@ -1,6 +1,10 @@
 #ifndef MOVEIT_CONTROLLER_H
 #define MOVEIT_CONTROLLER_H
 
+#define ARM_DEFAULT_X 0.636922
+#define ARM_DEFAULT_Y 0.064768
+#define ARM_DEFAULT_Z 0.678810
+
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/robot_state/robot_state.h>
 #include <tf2/LinearMath/Quaternion.h>

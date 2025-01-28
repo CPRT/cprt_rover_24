@@ -45,9 +45,9 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
   executor_thread = std::thread([this]() { this->executor_ptr->spin(); });
 
   // default pose, chosen randomly
-  default_pose.position.x = 0.636922;
-  default_pose.position.y = 0.064768;
-  default_pose.position.z = 0.678810;
+  default_pose.position.x = ARM_DEFAULT_X;
+  default_pose.position.y = ARM_DEFAULT_Y;
+  default_pose.position.z = ARM_DEFAULT_Z;
 
   geometry_msgs::msg::Pose target_pose;
   target_pose.position = default_pose.position;
