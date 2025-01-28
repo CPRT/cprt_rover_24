@@ -21,6 +21,8 @@ setup(
         "console_scripts": [
             "trajectory_interpreter = arm_interface.trajectoryInterpreter:main",
             "typing_controller = arm_interface.typingController:main",
+            "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
+            "keyboard_arm_controller = arm_interface.keyboardArmController:main",
         ],
     },
 )

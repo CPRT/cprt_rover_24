@@ -46,6 +46,17 @@ def act1_rad_to_pos(node, rad):
     node.get_logger().info(str(c/15.24 * 5709.0))
     return c/15.24 * 5709.0 
 
+def act2_rad_to_pos(node, rad):
+    #rad = 180.0 - rad
+    a = 15.0
+    b = 42.3
+    c = math.sqrt(a*a + b*b - 2*a*b*math.cos(rad))
+    c -= 30.96 + 1.6
+    node.get_logger().info("diff2 "+str(c))
+    node.get_logger().info(str(math.sqrt(a*a + b*b - 2*a*b*math.cos(rad))))
+    node.get_logger().info(str(c/13.24 * 5109.0))
+    return c/13.64 * 5109.0 
+
 def diff_rad_to_pos(diff1, diff2, node):
     diffCont2 = (diff2 - diff1)/2
     diffCont1 = diff2 - diffCont2
@@ -147,7 +158,7 @@ class keyboardArmPublisher(Node):
         elif msg.data == 's': #elbow down
           self.diff1.value = -1.0
         elif msg.data == 'q': #diff2 = 45.2, diff1 = 46.2
-          self.elbow.value = 0.0
+          self.elbow.value = 0.0 #diff1 - 42, diff2 - 130 degrees
           self.diff1.value = 0.0
           self.diff2.value = 0.0
           self.base.value = 0.0
@@ -186,6 +197,10 @@ class keyboardArmPublisher(Node):
           self.base.value = -0.5
         elif msg.data == 'b':
           self.diff1.value = act1_rad_to_pos(self, 3.14/4)
+        elif msg.data == 'n':
+          self.diff2.value = act2_rad_to_pos(self, 3.14/4)
+        elif msg.data == 'm':
+          self.diff2.value = act2_rad_to_pos(self, 3.14/3)
           
         
 

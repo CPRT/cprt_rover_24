@@ -12,6 +12,7 @@ from interfaces.srv import ArmCmd
 from trajectory_msgs.msg import JointTrajectoryPoint
 from ros_phoenix.msg import MotorControl, MotorStatus
 from math import pi
+import math
 
 
 def map_range(value, old_min, old_max, new_min, new_max):
@@ -32,6 +33,12 @@ def diff_rad_to_pos(diff1, diff2):
     diffCont2 = (diffCont2 * 8300 * 8000) / (2 * 3.14159)
     diffCont1 = (diffCont1 * 8300 * 8000) / (2 * 3.14159)
     return diffCont1, diffCont2
+
+def act1_pos_to_rad(node, pos):
+    c = pos/5709.0 * 15.24 + 30.96
+    a = 20.0
+    b = 48.68
+    return math.acos((a*a+b*b-c*c)/(2*a*b))-0.7832711 #other one is 0.89151
 
 
 class trajectoryInterpreter(Node):
@@ -136,11 +143,7 @@ class trajectoryInterpreter(Node):
 
     def diff1_callback(self, msg: MotorStatus):
         # self.diff1Cont = self.diff1ZeroPoint + msg.position * ((2*pi)/1000 * 1/83 * 1/100)
-        self.diff1Cont = self.diff1ZeroPoint + msg.position * (
-            (2 * pi) / 8000 * 1 / 83 * 1 / 100
-        )
-        self.diff1Angle = self.diff1Cont - self.diff2Cont
-        self.diff1Pos = msg.position
+        self.diff1Angle = act1_pos_to_rad(self, msg.position)
         print("bruh1" + str(self.diff1Angle))
 
     def diff2_callback(self, msg: MotorStatus):
@@ -155,7 +158,7 @@ class trajectoryInterpreter(Node):
     def elbow_callback(self, msg: MotorStatus):
         # self.elbowAngle = (self.elbowZeroPoint + msg.position * ((2*pi)/1000 * ((1/83) * (1/100) * (16/13)))) * 4
         self.elbowAngle = self.elbowZeroPoint + msg.position * (
-            (2 * pi) / 2000 * ((1 / 83) * (1 / 100) * (16 / 13))
+            (2*pi)/2000*((1/83)*(1/100)*(16/13))
         )
         self.elbowPos = msg.position
 
@@ -177,7 +180,7 @@ class trajectoryInterpreter(Node):
         self.anglePub.publish(out)
 
     def get_arm_pos_callback(self, request, response):
-        # self.get_logger().info(f'Elbow: {self.elbowAngle}')
+        self.get_logger().info(f'Diff1: {self.diff1Angle}')
         # response.base = self.elbowAngle
         response.base = self.baseAngle
         response.diff1 = self.diff1Angle
@@ -187,7 +190,7 @@ class trajectoryInterpreter(Node):
         response.wristtilt = self.wristTiltAngle
         return response
 
-    def get_arm_cmd_callback(self, request, response):
+    def get_arm_cmd_callback(self, request, response): #set angles
         # self.get_logger().info(f'Elbow: {self.elbowAngle}')
         # response.base = self.elbowAngle
         # self.get_logger().info("I received something!");
@@ -198,20 +201,7 @@ class trajectoryInterpreter(Node):
         self.diff1.value, self.diff2.value = diff_rad_to_pos(
             request.diff1, request.diff2
         )
-        # self.get_logger().info(f'Arm cmd: {request.base}, {request.diff1}, {request.diff2}, {request.elbow}, {request.wristtilt}, {request.wristturn}');
-        if self.shouldPub:
-            self.get_logger().info(
-                f"Elbow target: {self.elbow.value}, {self.elbowPos}, {abs(self.elbow.value - self.elbowPos)}, {self.elbowAngle}, {request.elbow}"
-            )
-            if abs(self.elbow.value - self.elbowPos) > 1000:
-                self.elbowCommand.publish(self.elbow)
-            if (
-                abs(self.diff2.value - self.diff2Pos) > 1000
-                and abs(self.diff1.value - self.diff1Pos) > 1000
-            ):
-                # pass
-                self.diff2Command.publish(self.diff2)
-                self.diff1Command.publish(self.diff1)
+        
         response.success = True
         return response
 

@@ -102,6 +102,9 @@ def generate_launch_description():
             package='arm_interface',
             executable='keyboard_arm_publisher',
             name='keyboard_arm_publisher'),
-            
+        launch_ros.actions.Node(
+            package='arm_interface',
+            executable='trajectory_interpreter',
+            name='trajectory_interpreter'),
             
             ])
