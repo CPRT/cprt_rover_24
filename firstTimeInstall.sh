@@ -41,6 +41,11 @@ fi
 
 pip3 install black
 pip3 install pylint
+pip3 install Adafruit-Blinka
+pip3 install adafruit-circuitpython-bme280
+pip3 install adafruit-circuitpython-ens160
+pip3 install adafruit-circuitpython-busdevice
+pip3 install adafruit-circuitpython-register
 
 sudo rosdep init
 rosdep update
