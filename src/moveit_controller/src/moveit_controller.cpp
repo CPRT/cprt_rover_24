@@ -44,9 +44,9 @@ TestNode::TestNode(const rclcpp::NodeOptions &options)
   geometry_msgs::msg::Pose target_pose = []{
     geometry_msgs::msg::Pose msg;
     msg.orientation.w = 1.0;
-    msg.position.x = 0.636922;
-    msg.position.y = 0.064768;
-    msg.position.z = 0.678810;
+    msg.position.x = 1.019404;
+    msg.position.y = -0.028744;
+    msg.position.z = -0.007406;
     return msg;
   }();
   move_group_ptr->setMaxVelocityScalingFactor(1.0);
@@ -122,12 +122,28 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
     current_pose.orientation.y,
     current_pose.orientation.z,
     current_pose.orientation.w);//*/
-    
-  auto const new_pose = [&]{
+  
+  tf2::Vector3 dir;
+  tf2::fromMsg(poseMsg.position, dir);
+  tf2::Quaternion quaternion;
+  tf2::fromMsg(current_pose.orientation, quaternion);
+  
+  tf2::Vector3 localTransform = quatRotate(quaternion, dir);
+  /*auto const new_pose = [&]{
     geometry_msgs::msg::Pose msg = current_pose;
     msg.position.x += poseMsg.position.x*stepSize;
     msg.position.y += poseMsg.position.y*stepSize;
     msg.position.z += poseMsg.position.z*stepSize;
+    
+    
+    return msg;
+  }();*/
+  
+  auto const new_pose = [&]{
+    geometry_msgs::msg::Pose msg = current_pose;
+    msg.position.x += localTransform.getX()*stepSize;
+    msg.position.y += localTransform.getY()*stepSize;
+    msg.position.z += localTransform.getZ()*stepSize;
     
     
     return msg;

@@ -38,7 +38,35 @@ def act1_pos_to_rad(node, pos):
     c = pos/5709.0 * 15.24 + 30.96
     a = 20.0
     b = 48.68
-    return math.acos((a*a+b*b-c*c)/(2*a*b))-0.7832711 #other one is 0.89151
+    d = (a*a+b*b-c*c)/(2*a*b)
+    if (d > 1 or d < -1):
+        return 0
+    return math.acos(d)-0.7832711 #other one is 0.89151
+
+def act1_rad_to_pos(node, rad):
+    rad = rad + 0.7832711
+    a = 20.1
+    b = 48.5
+    c = math.sqrt(a*a + b*b - 2*a*b*math.cos(rad))
+    c -= 30.96
+    return c/15.24 * 5709.0 
+
+def act2_pos_to_rad(node, pos):
+    c = pos/5109.0 * 13.64 + 30.96# + 1.6 #44.5?
+    a = 15.0
+    b = 42.3
+    d = (a*a+b*b-c*c)/(2*a*b)
+    if (d > 1 or d < -1):
+        return 0
+    return -math.acos(d)+0.89151
+
+def act2_rad_to_pos(node, rad):
+    rad = rad - 0.89151
+    a = 15.0
+    b = 42.3
+    c = math.sqrt(a*a + b*b - 2*a*b*math.cos(rad))
+    c -= 30.96
+    return c/13.64 * 5109.0 
 
 
 class trajectoryInterpreter(Node):
@@ -148,11 +176,7 @@ class trajectoryInterpreter(Node):
 
     def diff2_callback(self, msg: MotorStatus):
         # self.diff2Cont = self.diff2ZeroPoint + msg.position * ((2*pi)/1000 * 1/83 * 1/100)
-        self.diff2Cont = self.diff2ZeroPoint + msg.position * (
-            (2 * pi) / 8000 * 1 / 83 * 1 / 100
-        )  # diff drive: 83 100
-        self.diff2Angle = self.diff1Cont + self.diff2Cont
-        self.diff2Pos = msg.position
+        self.diff2Angle = act2_pos_to_rad(self, msg.position)
         print("bruh2" + str(self.diff2Angle))
 
     def elbow_callback(self, msg: MotorStatus):
@@ -180,7 +204,7 @@ class trajectoryInterpreter(Node):
         self.anglePub.publish(out)
 
     def get_arm_pos_callback(self, request, response):
-        self.get_logger().info(f'Diff1: {self.diff1Angle}')
+        #self.get_logger().info(f'Diff1: {self.diff1Angle}')
         # response.base = self.elbowAngle
         response.base = self.baseAngle
         response.diff1 = self.diff1Angle
@@ -197,12 +221,15 @@ class trajectoryInterpreter(Node):
         # time for elbow 90 degrees: 9.37 s
         # time for diff2 90 degrees: 31.15 s
         # time for
-        self.elbow.value = elbow_rad_to_pos(request.elbow)
-        self.diff1.value, self.diff2.value = diff_rad_to_pos(
-            request.diff1, request.diff2
-        )
+        self.diff1.value = act1_rad_to_pos(self, request.diff1)
+        self.diff2.value = act2_rad_to_pos(self, request.diff2)
         
-        response.success = True
+        if (self.shouldPub):
+            self.get_logger().info(f'diff1 rad: {request.diff1}, diff1 pos: {self.diff1.value}, diff2 rad: {request.diff2}, diff2 pos: {self.diff2.value}')
+            self.diff1.mode = 1
+            self.diff2.mode = 1
+            self.diff1Command.publish(self.diff1)
+            self.diff2Command.publish(self.diff2)
         return response
 
     def controlPublisher(self):
