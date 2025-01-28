@@ -32,22 +32,21 @@ class MoveitController : public rclcpp::Node {
   MoveitController(const rclcpp::NodeOptions &options);
 
  private:
+  static constexpr double JUMP_THRESHOLD = 0;
+  static constexpr double EEF_STEP = 0.01;
   rclcpp::Subscription<interfaces::msg::ArmCmd>::SharedPtr subscription;
 
-  std::string node_name;
   moveit::planning_interface::MoveGroupInterfacePtr move_group_ptr;
   rclcpp::Node::SharedPtr node_ptr;
   rclcpp::Executor::SharedPtr executor_ptr;
   std::thread executor_thread;
-  std::thread th;
+  std::thread move_it_thread;
   moveit_msgs::msg::RobotTrajectory trajectory;
   geometry_msgs::msg::Pose default_pose;
 
   moveit::planning_interface::MoveGroupInterface::Plan rotationPlan;
 
   void topic_callback(const interfaces::msg::ArmCmd &armMsg);
-
-  rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;
 };
 
 #endif

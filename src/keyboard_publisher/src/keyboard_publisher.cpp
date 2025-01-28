@@ -24,7 +24,7 @@ void KeyboardPublisher::timer_callback() {
   poseCmd.pose.orientation.z = 0;
   poseCmd.pose.orientation.w = 0;
   poseCmd.speed = defSpeed;
-  poseCmd.named_pose = 0;
+  poseCmd.end_effector = interfaces::msg::ArmCmd::END_EFF_UNKNOWN;
   poseCmd.estop = false;
   poseCmd.reset = false;
   poseCmd.query_goal_state = false;
@@ -62,7 +62,8 @@ void KeyboardPublisher::timer_callback() {
     poseCmd.reset = true;
   } else if (c == 'm') {
     isOpen = !isOpen;
-    poseCmd.named_pose = 1 + isOpen;
+    poseCmd.end_effector = isOpen ? interfaces::msg::ArmCmd::END_EFF_OPEN
+                                  : interfaces::msg::ArmCmd::END_EFF_CLOSE;
   } else if (c == 'b') {
     poseCmd.query_goal_state = true;
     poseCmd.goal_angles.resize(6, 0);

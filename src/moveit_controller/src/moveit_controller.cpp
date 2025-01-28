@@ -34,9 +34,6 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
       std::bind(&MoveitController::topic_callback, this,
                 std::placeholders::_1));
 
-  publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
-      "arm_trajectory", 11);
-
   move_group_ptr =
       std::make_shared<moveit::planning_interface::MoveGroupInterface>(
           node_ptr, "rover_arm3");  // used to be rover_arm, then rover_arm2
@@ -59,8 +56,6 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
   moveit::planning_interface::MoveGroupInterface::Plan plan;
   bool success = static_cast<bool>(move_group_ptr->plan(plan));
 
-  publisher->publish(plan.trajectory_.joint_trajectory);
-
   // Execute the plan
   if (success) {
     move_group_ptr->execute(plan);
@@ -79,13 +74,14 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               poseMsg.orientation.w);  //*/
 
   move_group_ptr->stop();
-  if (th.joinable()) {
-    th.join();
+  if (move_it_thread.joinable()) {
+    move_it_thread.join();
   }
-  if ((isEmpty(poseMsg) && !armMsg.reset && armMsg.named_pose == 0 &&
+  if ((isEmpty(poseMsg) && !armMsg.reset &&
+       armMsg.end_effector == interfaces::msg::ArmCmd::END_EFF_UNKNOWN &&
        !armMsg.query_goal_state) ||
       armMsg.estop) {
-    RCLCPP_INFO(this->get_logger(), "Stopping (for some reason)");
+    RCLCPP_INFO(this->get_logger(), "Stopping the arm");
     return;
   }
 
@@ -103,15 +99,9 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               current_pose.orientation.y, current_pose.orientation.z,
               current_pose.orientation.w);  //*/
 
-  geometry_msgs::msg::Pose new_pose = current_pose;
-  new_pose.position.x += poseMsg.position.x * stepSize;
-  new_pose.position.y += poseMsg.position.y * stepSize;
-  new_pose.position.z += poseMsg.position.z * stepSize;
-
-  RCLCPP_INFO(this->get_logger(), "New pose: %f %f %f %f %f %f %f",
-              new_pose.position.x, new_pose.position.y, new_pose.position.z,
-              new_pose.orientation.x, new_pose.orientation.y,
-              new_pose.orientation.z, new_pose.orientation.w);
+  if (armMsg.end_effector != interfaces::msg::ArmCmd::END_EFF_UNKNOWN) {
+    // TODO: Add end-effector features
+  }
   if (armMsg.reset == true)  // reset to default position
   {
     geometry_msgs::msg::Pose target_pose;
@@ -130,93 +120,37 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
           "multiDOFjointtrajectorypoints: %li",
           std::size(plan.trajectory_.joint_trajectory.points),
           std::size(plan.trajectory_.multi_dof_joint_trajectory.points));
-      publisher->publish(plan.trajectory_.joint_trajectory);
       move_group_ptr->execute(plan);
     } else {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
-  } else if (armMsg.named_pose != 0)  // TODO: Add end-effector features
-  {
-    // intended to be used for end effector, which does not work currently
-    if (armMsg.named_pose == 1 ||
-        armMsg.named_pose == 2)  // 1 = closed, 2 = open
+  } else {
+    geometry_msgs::msg::Pose new_pose = current_pose;
+    new_pose.position.x += poseMsg.position.x * stepSize;
+    new_pose.position.y += poseMsg.position.y * stepSize;
+    new_pose.position.z += poseMsg.position.z * stepSize;
+
+    if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
+        poseMsg.orientation.z != 0 ||
+        poseMsg.orientation.w != 0)  // rotation required
     {
-      std::string s = "open";  // jjk reference?
-      if (armMsg.named_pose == 1) {
-        RCLCPP_INFO(this->get_logger(), "Furnace: close!");
-        s = "closed";
-      } else {
-        RCLCPP_INFO(this->get_logger(), "Furnace: open!");
-      }
-      // actually add stuff later
+      tf2::Quaternion q1;
+      tf2::convert(current_pose.orientation, q1);
+      tf2::Quaternion q2;
+      q2.setRPY(poseMsg.orientation.x, poseMsg.orientation.y,
+                poseMsg.orientation.z);
+      tf2::Quaternion q3 = q1 * q2;
+      geometry_msgs::msg::Quaternion q4 = tf2::toMsg(q3);
+
+      new_pose.orientation = q4;
     }
-  } else if (armMsg.query_goal_state) {
-    std::vector<double> angles(6);
-    for (unsigned long int i = 0; i < angles.size(); i++) {
-      angles[i] = armMsg.goal_angles[i];
-      RCLCPP_INFO(this->get_logger(),
-                  std::to_string(armMsg.goal_angles[i]).c_str());
-    }
-    move_group_ptr->setJointValueTarget(angles);
-    moveit::planning_interface::MoveGroupInterface::Plan plan;
-    bool success = static_cast<bool>(move_group_ptr->plan(plan));
-
-    // Execute the plan
-    if (success) {
-      RCLCPP_INFO(
-          this->get_logger(),
-          "Number of joint trajectory points: %li, number of "
-          "multiDOFjointtrajectorypoints: %li",
-          std::size(plan.trajectory_.joint_trajectory.points),
-          std::size(plan.trajectory_.multi_dof_joint_trajectory.points));
-      publisher->publish(plan.trajectory_.joint_trajectory);
-      move_group_ptr->execute(plan);
-    } else {
-      RCLCPP_ERROR(this->get_logger(), "Planing failed!");
-    }
-  } else if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
-             poseMsg.orientation.z != 0 ||
-             poseMsg.orientation.w != 0)  // rotation required
-  {
-    tf2::Quaternion q1;
-    tf2::convert(current_pose.orientation, q1);
-    tf2::Quaternion q2;
-    q2.setRPY(poseMsg.orientation.x, poseMsg.orientation.y,
-              poseMsg.orientation.z);
-    tf2::Quaternion q3 = q1 * q2;
-    geometry_msgs::msg::Quaternion q4 = tf2::toMsg(q3);
-
-    geometry_msgs::msg::Pose rotation_pose = current_pose;
-    rotation_pose.orientation = q4;
-
-    points.push_back(rotation_pose);
-
-    const double jump_threshold = 0;
-    const double eef_step = 0.01;
-    move_group_ptr->computeCartesianPath(points, eef_step, jump_threshold,
-                                         trajectory);
-
-    // launch thread
-    RCLCPP_INFO(this->get_logger(), "Joining thread");
-    if (th.joinable()) {
-      th.join();
-    }
-    RCLCPP_INFO(this->get_logger(), "Thread joined");
-    publisher->publish(trajectory.joint_trajectory);
-    th = std::thread(executeTrajectory, std::ref(trajectory), move_group_ptr);
-    RCLCPP_INFO(this->get_logger(), "Creating thread");
-
-  } else  // rotation not required
-  {
     points.push_back(new_pose);
-    const double jump_threshold = 0;
-    const double eef_step = 0.01;
-    move_group_ptr->computeCartesianPath(points, eef_step, jump_threshold,
+    move_group_ptr->computeCartesianPath(points, EEF_STEP, JUMP_THRESHOLD,
                                          trajectory);
 
     // launch thread
-    publisher->publish(trajectory.joint_trajectory);
-    th = std::thread(executeTrajectory, std::ref(trajectory), move_group_ptr);
+    move_it_thread =
+        std::thread(executeTrajectory, std::ref(trajectory), move_group_ptr);
     RCLCPP_INFO(this->get_logger(), "Thread created");
   }
 }
