@@ -14,14 +14,14 @@
 
   <build_depend>geometry_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>rospy</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>rclpy</build_depend>
   <build_depend>ros_phoenix</build_depend>
   <build_depend>interfaces</build_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>rospy</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>ros_phoenix</exec_depend>
   <exec_depend>interfaces</exec_depend>
 

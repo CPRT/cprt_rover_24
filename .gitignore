@@ -10,3 +10,6 @@ build/
 *.pyc
 __pycache__
 camera_setup/images/*
+
+# macOS Directory Information
+.DS_Store
