@@ -41,6 +41,10 @@ fi
 
 pip3 install black
 pip3 install pylint
+pip3 install pyserial
+pip3 install adafruit-circuitpython-lis3dh
+pip3 install adafruit-circuitpython-pca9685
+pip3 install adafruit-circuitpython-motorkit 
 pip3 install Adafruit-Blinka
 pip3 install adafruit-circuitpython-bme280
 pip3 install adafruit-circuitpython-ens160

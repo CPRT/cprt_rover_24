@@ -30,6 +30,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/GasSensorReading.msg"
   "srv/NavToGPSGeopose.srv"
   "srv/VideoOut.srv"
+  "srv/MoveServo.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 
