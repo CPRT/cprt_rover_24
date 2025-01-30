@@ -85,7 +85,7 @@ def generate_launch_description():
                 ],
             ),
             Node(
-                condition=IfCondition(launch_rtabmapviz_cmd),
+                condition=IfCondition(launch_rtabmapviz),
                 package="rtabmap_viz",
                 executable="rtabmap_viz",
                 output="screen",
