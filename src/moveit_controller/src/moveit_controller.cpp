@@ -5,17 +5,9 @@ using std::placeholders::_1;
 
 void executeTrajectory(moveit_msgs::msg::RobotTrajectory &traj,
                        moveit::planning_interface::MoveGroupInterfacePtr mgi) {
-  RCLCPP_INFO(rclcpp::get_logger("hello_moveit"), "Starting thread");
+  RCLCPP_INFO(rclcpp::get_logger("moveit_controller"), "Starting thread");
   mgi->asyncExecute(traj);
-  RCLCPP_INFO(rclcpp::get_logger("hello_moveit"), "Ending thread");
-}
-
-void executePlan(
-    moveit::planning_interface::MoveGroupInterface::Plan &rotationPlan,
-    moveit::planning_interface::MoveGroupInterfacePtr mgi) {
-  RCLCPP_INFO(rclcpp::get_logger("hello_moveit"), "Starting thread");
-  mgi->asyncExecute(rotationPlan);
-  RCLCPP_INFO(rclcpp::get_logger("hello_moveit"), "Ending thread");
+  RCLCPP_INFO(rclcpp::get_logger("moveit_controller"), "Ending thread");
 }
 
 bool isEmpty(const geometry_msgs::msg::Pose &p) {
@@ -25,40 +17,40 @@ bool isEmpty(const geometry_msgs::msg::Pose &p) {
 }
 
 MoveitController::MoveitController(const rclcpp::NodeOptions &options)
-    : Node("hello_moveit", options),
-      node_ptr(std::make_shared<rclcpp::Node>("example_moveit")),
-      executor_ptr(
+    : Node("moveit_controller", options),
+      node_ptr_(std::make_shared<rclcpp::Node>("example_moveit")),
+      executor_ptr_(
           std::make_shared<rclcpp::executors::SingleThreadedExecutor>()) {
-  subscription = this->create_subscription<interfaces::msg::ArmCmd>(
+  subscription_ = this->create_subscription<interfaces::msg::ArmCmd>(
       "arm_base_commands", 10,
       std::bind(&MoveitController::topic_callback, this,
                 std::placeholders::_1));
 
-  move_group_ptr =
+  move_group_ptr_ =
       std::make_shared<moveit::planning_interface::MoveGroupInterface>(
-          node_ptr, "rover_arm3");  // used to be rover_arm, then rover_arm2
+          node_ptr_, "rover_arm3");  // used to be rover_arm, then rover_arm2
 
-  executor_ptr->add_node(node_ptr);
-  executor_thread = std::thread([this]() { this->executor_ptr->spin(); });
+  executor_ptr_->add_node(node_ptr_);
+  executor_thread_ = std::thread([this]() { this->executor_ptr_->spin(); });
 
-  // default pose, chosen randomly
-  default_pose.position.x = ARM_DEFAULT_X;
-  default_pose.position.y = ARM_DEFAULT_Y;
-  default_pose.position.z = ARM_DEFAULT_Z;
+  // default pose, chosen to optimize starting movement
+  default_pose_.position.x = ARM_DEFAULT_X;
+  default_pose_.position.y = ARM_DEFAULT_Y;
+  default_pose_.position.z = ARM_DEFAULT_Z;
 
   geometry_msgs::msg::Pose target_pose;
-  target_pose.position = default_pose.position;
-  move_group_ptr->setMaxVelocityScalingFactor(1.0);
-  move_group_ptr->setMaxAccelerationScalingFactor(1.0);
-  move_group_ptr->setPoseTarget(target_pose);
+  target_pose.position = default_pose_.position;
+  move_group_ptr_->setMaxVelocityScalingFactor(1.0);
+  move_group_ptr_->setMaxAccelerationScalingFactor(1.0);
+  move_group_ptr_->setPoseTarget(target_pose);
 
   // Create a plan to that target pose
   moveit::planning_interface::MoveGroupInterface::Plan plan;
-  bool success = static_cast<bool>(move_group_ptr->plan(plan));
+  bool success = static_cast<bool>(move_group_ptr_->plan(plan));
 
   // Execute the plan
   if (success) {
-    move_group_ptr->execute(plan);
+    move_group_ptr_->execute(plan);
   } else {
     RCLCPP_ERROR(this->get_logger(), "Planing failed!");
   }
@@ -73,9 +65,9 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               poseMsg.orientation.z,
               poseMsg.orientation.w);  //*/
 
-  move_group_ptr->stop();
-  if (move_it_thread.joinable()) {
-    move_it_thread.join();
+  move_group_ptr_->stop();
+  if (move_it_thread_.joinable()) {
+    move_it_thread_.join();
   }
   if ((isEmpty(poseMsg) && !armMsg.reset &&
        armMsg.end_effector == interfaces::msg::ArmCmd::END_EFF_UNKNOWN &&
@@ -87,8 +79,9 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
 
   std::vector<geometry_msgs::msg::Pose> points;
 
-  move_group_ptr->setStartStateToCurrentState();
-  geometry_msgs::msg::Pose current_pose = move_group_ptr->getCurrentPose().pose;
+  move_group_ptr_->setStartStateToCurrentState();
+  geometry_msgs::msg::Pose current_pose =
+      move_group_ptr_->getCurrentPose().pose;
 
   points.push_back(current_pose);
 
@@ -105,22 +98,16 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
   if (armMsg.reset == true)  // reset to default position
   {
     geometry_msgs::msg::Pose target_pose;
-    target_pose.position = default_pose.position;
-    move_group_ptr->setPoseTarget(target_pose);
+    target_pose.position = default_pose_.position;
+    move_group_ptr_->setPoseTarget(target_pose);
 
     // Create a plan to that target pose
     moveit::planning_interface::MoveGroupInterface::Plan plan;
-    bool success = static_cast<bool>(move_group_ptr->plan(plan));
+    bool success = static_cast<bool>(move_group_ptr_->plan(plan));
 
     // Execute the plan
     if (success) {
-      RCLCPP_INFO(
-          this->get_logger(),
-          "Number of joint trajectory points: %li, number of "
-          "multiDOFjointtrajectorypoints: %li",
-          std::size(plan.trajectory_.joint_trajectory.points),
-          std::size(plan.trajectory_.multi_dof_joint_trajectory.points));
-      move_group_ptr->execute(plan);
+      move_group_ptr_->execute(plan);
     } else {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
@@ -145,12 +132,12 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       new_pose.orientation = q4;
     }
     points.push_back(new_pose);
-    move_group_ptr->computeCartesianPath(points, EEF_STEP, JUMP_THRESHOLD,
-                                         trajectory);
+    move_group_ptr_->computeCartesianPath(points, EEF_STEP, JUMP_THRESHOLD,
+                                          trajectory_);
 
     // launch thread
-    move_it_thread =
-        std::thread(executeTrajectory, std::ref(trajectory), move_group_ptr);
+    move_it_thread_ =
+        std::thread(executeTrajectory, std::ref(trajectory_), move_group_ptr_);
     RCLCPP_INFO(this->get_logger(), "Thread created");
   }
 }
