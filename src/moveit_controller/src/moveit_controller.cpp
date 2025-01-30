@@ -112,10 +112,36 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
   } else {
-    geometry_msgs::msg::Pose new_pose = current_pose;
-    new_pose.position.x += poseMsg.position.x * stepSize;
-    new_pose.position.y += poseMsg.position.y * stepSize;
-    new_pose.position.z += poseMsg.position.z * stepSize;
+    tf2::Vector3 dir;
+  tf2::fromMsg(poseMsg.position, dir);
+  tf2::Quaternion quaternion;
+  tf2::fromMsg(current_pose.orientation, quaternion);
+  
+  tf2::Vector3 localTransform = quatRotate(quaternion, dir);
+  /*auto const new_pose = [&]{
+    geometry_msgs::msg::Pose msg = current_pose;
+    msg.position.x += poseMsg.position.x*stepSize;
+    msg.position.y += poseMsg.position.y*stepSize;
+    msg.position.z += poseMsg.position.z*stepSize;
+    
+    
+    return msg;
+  }();*/
+  
+ 
+    geometry_msgs::msg::Pose msg = current_pose;
+    msg.position.x += localTransform.getX()*stepSize;
+    msg.position.y += localTransform.getY()*stepSize;
+    msg.position.z += localTransform.getZ()*stepSize;
+    tf2::Quaternion current;
+    tf2::Quaternion desired;
+    tf2::convert(msg.orientation, current);
+    tf2::convert(poseMsg.orientation, desired);
+    current *= desired;
+    tf2::convert(current, msg.orientation);
+    auto new_pose = msg;
+    
+   
 
     if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
         poseMsg.orientation.z != 0 ||
