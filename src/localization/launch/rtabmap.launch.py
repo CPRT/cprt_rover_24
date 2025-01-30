@@ -84,5 +84,13 @@ def generate_launch_description():
                     "Warn",
                 ],
             ),
+            Node(
+                condition=IfCondition(launch_rtabmapviz_cmd),
+                package="rtabmap_viz",
+                executable="rtabmap_viz",
+                output="screen",
+                parameters=[params_file],
+                remappings=remappings,
+            ),
         ]
     )
