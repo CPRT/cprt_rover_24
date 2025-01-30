@@ -23,6 +23,9 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["rtcm_pub_node = gps.rtcm_pub_node:main"],
+        "console_scripts": [
+            "rtcm_pub_node = gps.rtcm_pub_node:main",
+            "heading_pub_node = gps.heading_pub_node:main",
+        ],
     },
 )
