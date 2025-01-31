@@ -112,27 +112,20 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
   } else {
+    // local transformations for position
     tf2::Vector3 dir;
-  tf2::fromMsg(poseMsg.position, dir);
-  tf2::Quaternion quaternion;
-  tf2::fromMsg(current_pose.orientation, quaternion);
+    tf2::fromMsg(poseMsg.position, dir);
+    tf2::Quaternion quaternion;
+    tf2::fromMsg(current_pose.orientation, quaternion);
   
-  tf2::Vector3 localTransform = quatRotate(quaternion, dir);
-  /*auto const new_pose = [&]{
-    geometry_msgs::msg::Pose msg = current_pose;
-    msg.position.x += poseMsg.position.x*stepSize;
-    msg.position.y += poseMsg.position.y*stepSize;
-    msg.position.z += poseMsg.position.z*stepSize;
-    
-    
-    return msg;
-  }();*/
+    tf2::Vector3 localTransform = quatRotate(quaternion, dir);
   
- 
     geometry_msgs::msg::Pose msg = current_pose;
+
     msg.position.x += localTransform.getX()*stepSize;
     msg.position.y += localTransform.getY()*stepSize;
     msg.position.z += localTransform.getZ()*stepSize;
+    // local transformations for orientation
     tf2::Quaternion current;
     tf2::Quaternion desired;
     tf2::convert(msg.orientation, current);
@@ -141,8 +134,6 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     tf2::convert(current, msg.orientation);
     auto new_pose = msg;
     
-   
-
     if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
         poseMsg.orientation.z != 0 ||
         poseMsg.orientation.w != 0)  // rotation required
