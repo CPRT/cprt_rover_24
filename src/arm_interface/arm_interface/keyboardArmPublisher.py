@@ -57,13 +57,8 @@ def act2_rad_to_pos(node, rad):
     node.get_logger().info(str(c/13.24 * 5109.0))
     return c/13.64 * 5109.0 
 
-def diff_rad_to_pos(diff1, diff2, node):
-    diffCont2 = (diff2 - diff1)/2
-    diffCont1 = diff2 - diffCont2
-    diffCont2 = (diffCont2*8300*8000)/(2*3.14159)
-    diffCont1 = (diffCont1*8300*8000)/(2*3.14159)
-    node.get_logger().info(f'{diffCont1}, {diffCont2}')
-    return diffCont1, diffCont2
+def base_rad_to_pos(node, rad):
+    return (rad * (100.0/15.0) * 1100)
 
 class keyboardArmPublisher(Node):
     def __init__(self):
@@ -92,7 +87,7 @@ class keyboardArmPublisher(Node):
         self.base = MotorControl()
         self.diff1 = MotorControl()
         self.diff2 = MotorControl()
-        self.elbow = MotorControl()
+        self.elbow = MotorControl() #96 big gear
         self.wristTilt = MotorControl()
         self.wristTurn = MotorControl()
         self.gripperVal = 5.555
@@ -171,7 +166,7 @@ class keyboardArmPublisher(Node):
           self.base.mode = 1
         elif msg.data == 'f':
           #self.elbow.value = elbow_rad_to_pos(3.14159/2);
-          self.diff1.value, self.diff2.value = diff_rad_to_pos(3.1415/2, 0, self)
+          pass
         elif msg.data == 'g':
           self.elbow.mode = 0
           self.diff1.mode = 0
@@ -201,6 +196,13 @@ class keyboardArmPublisher(Node):
           self.diff2.value = act2_rad_to_pos(self, 3.14/4)
         elif msg.data == 'm':
           self.diff2.value = act2_rad_to_pos(self, 3.14/3)
+        elif msg.data == 'h':
+          self.base.value = 1.0
+        elif msg.data == 'j':
+          self.base.value = -1.0
+        elif msg.data == 'k':
+          self.base.value = base_rad_to_pos(self, 3.14/2)
+          self.get_logger().info(f"Base value {self.base.value}")
           
         
 
