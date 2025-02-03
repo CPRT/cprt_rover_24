@@ -1,18 +1,13 @@
 import rclpy
 import math
 from rclpy.node import Node
-import tf
-# from ublox_msgs.msg import NavRELPOSNED9  
+
 from sensor_msgs.msg import Imu
 from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH
 from pyubx2 import (
     UBX_PROTOCOL,
 )
-from .ubx_io_manager import UbxIoManager
-
-# Defines
-# TMODE_SVIN = 1
-# TMODE_FIXED = 2
+from ubx_io_manager import UbxIoManager  # Took off .
 
 
 class HeadingNode(Node):
@@ -20,16 +15,16 @@ class HeadingNode(Node):
     ROS 2 node for ending the via serial communication.
 
     Attributes:
-        rtcm_pub (Publisher): Publishes Heading messages to the /rtcm topic.
+        heading_pub (Publisher): Publishes Heading messages to the /heading topic.
         serial_conn (IoManager): Manages serial I/O operations.
         layers (int): Configuration layers for the UBXMessage.
-        timer (Timer): Timer for periodically reading and publishing RTCM data.
+        timer (Timer): Timer for periodically reading and publishing heading data.
     """
 
     def __init__(self):
         """
-        Initializes the RTCM node, loads parameters, sets up serial communication,
-        configures RTCM output, and starts a periodic timer callback.
+        Initializes the Heading node, loads parameters, sets up serial communication,
+        and starts a periodic timer callback.
         """
         super().__init__("heading_node")
         self.load_params()
@@ -37,11 +32,34 @@ class HeadingNode(Node):
             self.get_parameter("QueueDepth").get_parameter_value().integer_value
         )
         self.heading_pub = self.create_publisher(Imu, "/heading", queue_depth)
-        self.serial_conn = UbxIoManager(port=self.dev, baud=self.baudrate, msg_filter=UBX_PROTOCOL)
+        self.serial_conn = UbxIoManager(
+            port=self.dev, baud=self.baudrate, msg_filter=UBX_PROTOCOL
+        )
         self.layers = SET_LAYER_RAM | SET_LAYER_BBR
         if self.persistent:
             self.layers |= SET_LAYER_FLASH
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
+
+    def quaternion_from_euler(self,roll, pitch, yaw):
+        """
+        Converts euler roll, pitch, yaw to quaternion (w in last place)
+        quat = [x, y, z, w]
+        Bellow should be replaced when porting for ROS 2 Python tf_conversions is done.
+        """
+        cy = math.cos(yaw * 0.5)
+        sy = math.sin(yaw * 0.5)
+        cp = math.cos(pitch * 0.5)
+        sp = math.sin(pitch * 0.5)
+        cr = math.cos(roll * 0.5)
+        sr = math.sin(roll * 0.5)
+
+        q = [0] * 4
+        q[0] = cy * cp * cr + sy * sp * sr
+        q[1] = cy * cp * sr - sy * sp * cr
+        q[2] = sy * cp * sr + cy * sp * cr
+        q[3] = sy * cp * cr - cy * sp * sr
+
+        return q
 
     def load_params(self):
         """
@@ -66,51 +84,51 @@ class HeadingNode(Node):
         self.declare_parameter("Device", "/dev/ttyUSB0")
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
         self.declare_parameter("QueueDepth", 1)
-
+    
 
     def timer_callback(self):
         """
-        Periodic callback to read RTCM data from the receiver and publish it to the /rtcm topic.
+        Periodic callback to read UBX data from the receiver and publish it to the /heading topic as an IMU.
         If data is available, it publishes the raw data and logs the parsed message.
         """
-        while self.serial_conn.data_available():
-            raw, parsed_data = self.serial_conn.read()   
+        while self.serial_conn.data_available():        
+            raw, parsed_data = self.serial_conn.read()
 
             if not raw:
                 self.get_logger().warn("No data read from serial port.")
                 return
-            
-            self.imu.linear_acceleration_covariance[0] = -1
-            self.imu.angular_velocity_covariance[0] = -1
-            heading = math.pi / 2 - (m.relPosHeading * 1e-5 / 180.0 * math.pi)
-            orientation = tf.transformations.quaternion_from_euler(0, 0, heading)
-            self.imu.orientation.x = orientation[0]
-            self.imu.orientation.y = orientation[1]
-            self.imu.orientation.z = orientation[2]
-            self.imu.orientation.w = orientation[3]
-            self.imu.orientation_covariance[0] = 1000.0
-            self.imu.orientation_covariance[4] = 1000.0
-            self.imu.orientation_covariance[8] = 1000.0
+            msg = Imu()
+            msg.linear_acceleration_covariance[0] = -1
+            msg.angular_velocity_covariance[0] = -1
+            heading = math.pi / 2 - (parsed_data.relPosHeading * 1e-5 / 180.0 * math.pi)
+            orientation = self.quaternion_from_euler(0, 0, heading)
+            msg.orientation.x = orientation[0]
+            msg.orientation.y = orientation[1]
+            msg.orientation.z = orientation[2]
+            msg.orientation.w = orientation[3]
+            msg.orientation_covariance[0] = 1000.0
+            msg.orientation_covariance[4] = 1000.0
+            msg.orientation_covariance[8] = 1000.0
 
             # When heading is reported to be valid, use accuracy reported in 1e-5 deg units
-            #if heading_is_valid set to 1:
-                # self.imu.orientation_covariance[8] = (m.accHeading * 1e-5 / 180.0 * math.pi) ** 2
+            if parsed_data.relPosValid==1:     
+                msg.orientation_covariance[8] = (msg.accHeading * 1e-5 / 180.0 * math.pi) ** 2
 
-            self.heading_pub.publish(self.imu)
+            self.heading_pub.publish(msg)
             self.get_logger().info(
-                f"Published UBX message of length {len(raw)}. Parsed message: {parsed_data}"
+                f"test: {msg}"
             )
-#Find is N or E is 0
-#Convert heading to geometry_msgs/Quaternion orientation from cpp(https://github.com/KumarRobotics/ublox/blob/master/ublox_gps/src/node.cpp). Is heading an eular angle?
+
+#Need to config the nav-relposned for the lite board, for some reason it didn't save
 #And the covarience(accurcy from messages)
-#Last touches(Publishers)
+
 
 def main(args=None):
     """
     Main entry point for the Heading node.
 
     Initializes the ROS 2 system, creates the Heading node, and starts spinning the event loop.
-    """ 
+    """
     rclpy.init(args=args)
     heading_node = HeadingNode()
     rclpy.spin(heading_node)
