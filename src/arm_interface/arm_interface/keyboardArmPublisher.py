@@ -60,6 +60,9 @@ def act2_rad_to_pos(node, rad):
 def base_rad_to_pos(node, rad):
     return (rad * (100.0/15.0) * 1100)
 
+def wristturn_rad_to_pos(node, rad):
+    return (rad*(97.0/13.0)*4.0*10000.0)
+
 class keyboardArmPublisher(Node):
     def __init__(self):
         super().__init__("keyboardControl")
@@ -164,6 +167,7 @@ class keyboardArmPublisher(Node):
           self.diff1.mode = 1
           self.diff2.mode = 1
           self.base.mode = 1
+          self.wristTurn.mode = 1
         elif msg.data == 'f':
           #self.elbow.value = elbow_rad_to_pos(3.14159/2);
           pass
@@ -172,6 +176,7 @@ class keyboardArmPublisher(Node):
           self.diff1.mode = 0
           self.diff2.mode = 0
           self.base.mode = 0
+          self.wristTurn.mode = 0
         elif msg.data == 'a': #shift left and right
           self.diff2.value = 1.0
         elif msg.data == 'd':
@@ -203,6 +208,13 @@ class keyboardArmPublisher(Node):
         elif msg.data == 'k':
           self.base.value = base_rad_to_pos(self, 3.14/2)
           self.get_logger().info(f"Base value {self.base.value}")
+        elif msg.data == "W":
+          self.elbow.value = 1.0
+        elif msg.data == "S":
+          self.elbow.value = -1.0
+        elif msg.data == "A":
+          self.wristTurn.value = wristturn_rad_to_pos(self, 3.14/2)
+          
           
         
 

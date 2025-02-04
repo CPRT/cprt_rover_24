@@ -79,18 +79,6 @@ def generate_launch_description():
                             {"invert_sensor":True}],
                 
             ),
-            ComposableNode(
-                package="ros_phoenix",
-                plugin="ros_phoenix::TalonSRX",
-                name="wristTurn",
-                parameters=[{"id": 7},
-                            {"P":5.0},
-                            {"I":0.0},
-                            {"D":0.0},
-                            {"max_voltage": 6.0},
-                            {"invert_sensor":True}],
-                
-            ),
         ],
         output="screen",
     )
