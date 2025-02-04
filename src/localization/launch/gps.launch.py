@@ -22,9 +22,9 @@ def generate_launch_description():
     )
 
     navsat_remappings = [
-        ("imu", "zed/imu_data"),
+        ("imu", "zed/zed_node/imu/data"),
         ("gps/fix", "gps/fix"),
-        ("odometry/filtered", "odometry/filtered/globaousterl"),
+        ("odometry/filtered", "odometry/filtered/global"),
         ("odometry/gps", "gps/odom"),
     ]
 
@@ -39,13 +39,7 @@ def generate_launch_description():
 
     return launch.LaunchDescription(
         [
-            ublox_gps_node,
             navsat_node,
-            launch.actions.RegisterEventHandler(
-                event_handler=launch.event_handlers.OnProcessExit(
-                    target_action=ublox_gps_node,
-                    on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
-                )
-            ),
+            ublox_cmd,
         ]
     )

@@ -61,7 +61,7 @@ def generate_launch_description():
         parameters=[configured_local_params],
         remappings=[
             ("odometry/filtered", "odometry/filtered/local"),
-            ("accel/filtered", "/accel"),
+            ("accel/filtered", "/accel/local"),
         ],
     )
     global_ekf_cmd = Node(
@@ -72,7 +72,7 @@ def generate_launch_description():
         parameters=[configured_global_params],
         remappings=[
             ("odometry/filtered", "odometry/filtered/global"),
-            ("accel/filtered", "/accel"),
+            ("accel/filtered", "/accel/global"),
         ],
     )
 
