@@ -21,7 +21,8 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
       node_ptr_(std::make_shared<rclcpp::Node>("example_moveit")),
       executor_ptr_(
           std::make_shared<rclcpp::executors::SingleThreadedExecutor>()) {
-  subscription_ = this->create_subscription<interfaces::msg::ArmCmd>(
+      
+      subscription_ = this->create_subscription<interfaces::msg::ArmCmd>(
       "arm_base_commands", 10,
       std::bind(&MoveitController::topic_callback, this,
                 std::placeholders::_1));
@@ -59,12 +60,18 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
 void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
   geometry_msgs::msg::Pose poseMsg = armMsg.pose;
   double stepSize = armMsg.speed;
+  bool toggle = armMsg.toggle_transformations;
   RCLCPP_INFO(this->get_logger(), "I heard: %f %f %f %f %f %f %f",
               poseMsg.position.x, poseMsg.position.y, poseMsg.position.z,
               poseMsg.orientation.x, poseMsg.orientation.y,
               poseMsg.orientation.z,
               poseMsg.orientation.w);  //*/
-
+  if (toggle){
+      RCLCPP_INFO(this->get_logger(), "Local Transformations Toggled"); 
+      local_transformations = !local_transformations;
+    }
+  RCLCPP_INFO(this->get_logger(), "Local Transformations %d",
+      local_transformations); 
   move_group_ptr_->stop();
   if (move_it_thread_.joinable()) {
     move_it_thread_.join();
@@ -112,6 +119,11 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
   } else {
+    
+    geometry_msgs::msg::Pose msg;
+    
+    // check to see whether arm operates with global or local transformations
+    if (local_transformations){
     // local transformations for position
     tf2::Vector3 dir;
     tf2::convert(poseMsg.position, dir);
@@ -120,7 +132,7 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
   
     tf2::Vector3 localTransform = quatRotate(quaternion, dir);
   
-    geometry_msgs::msg::Pose msg = current_pose;
+    msg = current_pose;
 
     msg.position.x += localTransform.getX()*stepSize;
     msg.position.y += localTransform.getY()*stepSize;
@@ -132,6 +144,15 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     tf2::convert(poseMsg.orientation, desired);
     current *= desired;
     tf2::convert(current, msg.orientation);
+    }
+    // global transformations
+    else {
+      msg = current_pose;
+
+      msg.position.x += poseMsg.position.x*stepSize;
+      msg.position.y += poseMsg.position.y*stepSize;
+      msg.position.z += poseMsg.position.z*stepSize;
+    }
     auto new_pose = msg;
     
     if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||

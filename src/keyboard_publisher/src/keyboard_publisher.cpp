@@ -58,7 +58,11 @@ void KeyboardPublisher::timer_callback() {
     double newSpeed = 0;
     std::cin >> newSpeed;
     defSpeed = newSpeed;
-  } else if (c == 'n') {
+  }
+    else if (c == 'o'){
+    poseCmd.toggle_transformations = true;
+  }
+    else if (c == 'n') {
     poseCmd.reset = true;
   } else if (c == 'm') {
     isOpen = !isOpen;
@@ -82,7 +86,9 @@ void KeyboardPublisher::timer_callback() {
                   poseCmd.goal_angles[i]);
     }
   }
-
+ 
+  RCLCPP_INFO(this->get_logger(), "Toggle Transformations %d", poseCmd.toggle_transformations
+                 );
   publisher_->publish(poseCmd);
 }
 
