@@ -15,54 +15,50 @@ def generate_launch_description():
 
     # Declare launch arguments
     use_sim_time = LaunchConfiguration("use_sim_time", default="False")
-    launch_rviz = LaunchConfiguration("launch_rviz", default="True")
+    launch_rviz = LaunchConfiguration("launch_rviz", default="False")
     launch_gps = LaunchConfiguration("launch_gps", default="True")
     launch_desc = LaunchConfiguration("launch_desc", default="True")
 
     # Launch argument declarations
     use_sim_time_cmd = DeclareLaunchArgument(
-        "use_sim_time", description="Use simulation (Gazebo) clock if True"
+        "use_sim_time",
+        description="Use simulation (Gazebo) clock if True",
+        default_value="False",
     )
     launch_rviz_cmd = DeclareLaunchArgument(
-        "launch_rviz", description="Launch rviz if True"
+        "launch_rviz", description="Launch rviz if True", default_value="False"
     )
     launch_gps_cmd = DeclareLaunchArgument(
-        "launch_gps", description="Launch ublox if True"
+        "launch_gps", description="Launch ublox if True", default_value="True"
     )
     launch_desc_cmd = DeclareLaunchArgument(
-        "launch_desc", description="Launch description if True"
+        "launch_desc", description="Launch description if True", default_value="True"
     )
 
-    # RViz launch command
     rviz_config = os.path.join(
         pkg_localization, "config", "rviz.views", "basicNavMap.rviz"
     )
     rviz_launch_file_path = Path(pkg_localization) / "launch" / "rviz.launch.py"
     rviz_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(str(rviz_launch_file_path)),
-        launch_arguments={"rviz_config": rviz_config}.items(),
+        launch_arguments={
+            "rviz_config": rviz_config,
+            "use_sim_time": use_sim_time,
+        }.items(),
         condition=IfCondition(launch_rviz),
     )
 
-    # GPS launch command
     gps_launch_file_path = Path(pkg_localization) / "launch" / "gps.launch.py"
     gps_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(str(gps_launch_file_path)),
         condition=IfCondition(launch_gps),
     )
 
-    # Static description publiser launch command
     desc_launch_file_path = Path(pkg_localization) / "launch" / "description.launch.py"
     desc_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(str(desc_launch_file_path)),
         condition=IfCondition(launch_desc),
-    )
-
-    # Other launch commands
-    navsat_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_localization, "launch", "navsat.launch.py")
-        )
+        launch_arguments={"use_sim_time": use_sim_time}.items(),
     )
 
     slam_cmd = IncludeLaunchDescription(
@@ -88,7 +84,6 @@ def generate_launch_description():
             launch_desc_cmd,
             rviz_cmd,
             gps_cmd,
-            navsat_cmd,
             slam_cmd,
             ekf_cmd,
             desc_cmd,
