@@ -20,13 +20,23 @@ def generate_launch_description():
     launch_desc = LaunchConfiguration("launch_desc", default="True")
 
     # Launch argument declarations
-    use_sim_time_cmd = DeclareLaunchArgument("use_sim_time", description="Use simulation (Gazebo) clock if True")
-    launch_rviz_cmd = DeclareLaunchArgument("launch_rviz", description="Launch rviz if True")
-    launch_gps_cmd = DeclareLaunchArgument("launch_gps", description="Launch ublox if True")
-    launch_desc_cmd = DeclareLaunchArgument("launch_desc", description="Launch description if True")
+    use_sim_time_cmd = DeclareLaunchArgument(
+        "use_sim_time", description="Use simulation (Gazebo) clock if True"
+    )
+    launch_rviz_cmd = DeclareLaunchArgument(
+        "launch_rviz", description="Launch rviz if True"
+    )
+    launch_gps_cmd = DeclareLaunchArgument(
+        "launch_gps", description="Launch ublox if True"
+    )
+    launch_desc_cmd = DeclareLaunchArgument(
+        "launch_desc", description="Launch description if True"
+    )
 
     # RViz launch command
-    rviz_config = os.path.join(pkg_localization, "config", "rviz.views", "basicNavMap.rviz")
+    rviz_config = os.path.join(
+        pkg_localization, "config", "rviz.views", "basicNavMap.rviz"
+    )
     rviz_launch_file_path = Path(pkg_localization) / "launch" / "rviz.launch.py"
     rviz_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(str(rviz_launch_file_path)),
@@ -50,16 +60,22 @@ def generate_launch_description():
 
     # Other launch commands
     navsat_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_localization, "launch", "navsat.launch.py"))
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_localization, "launch", "navsat.launch.py")
+        )
     )
 
     slam_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_localization, "launch", "rtabmap.launch.py")),
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_localization, "launch", "rtabmap.launch.py")
+        ),
         launch_arguments={"use_sim_time": use_sim_time}.items(),
     )
 
     ekf_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_localization, "launch", "ekf.launch.py")),
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_localization, "launch", "ekf.launch.py")
+        ),
         launch_arguments={"use_sim_time": use_sim_time}.items(),
     )
 
