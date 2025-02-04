@@ -114,9 +114,9 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
   } else {
     // local transformations for position
     tf2::Vector3 dir;
-    tf2::fromMsg(poseMsg.position, dir);
+    tf2::convert(poseMsg.position, dir);
     tf2::Quaternion quaternion;
-    tf2::fromMsg(current_pose.orientation, quaternion);
+    tf2::convert(current_pose.orientation, quaternion);
   
     tf2::Vector3 localTransform = quatRotate(quaternion, dir);
   
