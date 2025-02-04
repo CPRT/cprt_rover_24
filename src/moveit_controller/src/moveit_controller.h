@@ -19,9 +19,8 @@
 #include "interfaces/msg/arm_cmd.hpp"
 #include "std_msgs/msg/string.hpp"
 
-void executePlan(
-    moveit::planning_interface::MoveGroupInterface::Plan &rotationPlan,
-    moveit::planning_interface::MoveGroupInterfacePtr mgi);
+void executeTrajectory(moveit_msgs::msg::RobotTrajectory &traj,
+                       moveit::planning_interface::MoveGroupInterfacePtr mgi);
 
 bool isEmpty(const geometry_msgs::msg::Pose &p);
 
