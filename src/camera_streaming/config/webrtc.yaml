@@ -2,9 +2,9 @@ webrtc_node:
   ros__parameters:
     camera_name:
     - "Drive"
-    - "Arm"
+    - "Secondary"
     camera_path:
-    - "/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
-    - "/dev/video2"
+    - "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+    - "/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
     web_server: true
     web_server_path: "/home/cprt/gstreamer/webrtc/gstwebrtc-api/dist"
