@@ -50,7 +50,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="elbow",
                 parameters=[{"id": 4},
-                            {"P":100.0},
+                            {"P":1.0},
                             {"I":0.0},
                             {"D":0.0}],
                 

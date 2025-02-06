@@ -24,7 +24,10 @@ def map_range(value, old_min, old_max, new_min, new_max):
 
 
 def elbow_rad_to_pos(rad):
-    return (rad * 8300 * 2000 * 13 / 16) / (2 * 3.14159)
+    return (rad*30.0/96.0)*10000
+    
+def elbow_pos_to_rad(pos):
+    return pos/10000.0/(30.0/96.0)
 
 
 def diff_rad_to_pos(diff1, diff2):
@@ -75,6 +78,18 @@ def base_rad_to_pos(node, rad):
 
 def base_pos_to_rad(node, pos):
     return -(pos/1100.0/(100.0/15.0))
+
+def wristturn_rad_to_pos(node, rad):
+    return (rad*(97.0/13.0)*4.0*10000.0)
+
+def wristturn_pos_to_rad(node, pos):
+    return pos/10000.0/4.0/(97.0/13.0)
+
+def wristtilt_rad_to_pos(node, rad):
+    return (rad*8300*300.0)
+
+def wristtilt_pos_to_rad(node, pos):
+    return pos/300.0/8300.0
 
 class trajectoryInterpreter(Node):
     def __init__(self):
@@ -189,16 +204,14 @@ class trajectoryInterpreter(Node):
 
     def elbow_callback(self, msg: MotorStatus):
         # self.elbowAngle = (self.elbowZeroPoint + msg.position * ((2*pi)/1000 * ((1/83) * (1/100) * (16/13)))) * 4
-        self.elbowAngle = self.elbowZeroPoint + msg.position * (
-            (2*pi)/2000*((1/83)*(1/100)*(16/13))
-        )
+        self.elbowAngle = elbow_pos_to_rad(msg.position)
         self.elbowPos = msg.position
 
     def wrist_turn_callback(self, msg: MotorStatus):
-        self.wristTurnAngle = 0.0
+        self.wristTurnAngle = wristturn_pos_to_rad(self, msg.position)
 
     def wrist_tilt_callback(self, msg: MotorStatus):
-        self.wristTiltAngle = 0.0
+        self.wristTiltAngle = wristtilt_pos_to_rad(self, msg.position)
 
     '''def anglepublisher(self):
         out = SixFloats()
@@ -232,15 +245,24 @@ class trajectoryInterpreter(Node):
         self.diff1.value = act1_rad_to_pos(self, request.diff1)
         self.diff2.value = act2_rad_to_pos(self, request.diff2)
         self.base.value = base_rad_to_pos(self, request.base)
+        self.elbow.value = elbow_rad_to_pos(request.elbow)
+        self.wristTurn.value = wristturn_rad_to_pos(self, request.wristturn)
+        self.wristTilt.value = wristtilt_rad_to_pos(self, request.wristtilt)
         
         if (self.shouldPub):
             self.get_logger().info(f'diff1 rad: {request.diff1}, diff1 pos: {self.diff1.value}, diff2 rad: {request.diff2}, diff2 pos: {self.diff2.value}')
             self.diff1.mode = 1
             self.diff2.mode = 1
             self.base.mode = 1
+            self.elbow.mode = 1
+            self.wristTurn.mode = 1
+            self.wristTilt.mode = 1
             self.diff1Command.publish(self.diff1)
             self.diff2Command.publish(self.diff2)
             self.baseCommand.publish(self.base)
+            self.wristTurnCommand.publish(self.wristTurn)
+            self.wristTiltCommand.publish(self.wristTilt)
+            self.elbowCommand.publish(self.elbow)
         return response
 
     def controlPublisher(self):

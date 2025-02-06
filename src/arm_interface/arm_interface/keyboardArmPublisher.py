@@ -34,7 +34,7 @@ def joystick_to_motor_control(vertical, horizontal):
     return -left_motor, -right_motor
 
 def elbow_rad_to_pos(rad):
-    return (rad*8300*2000*13/16)/(2*3.14159)
+    return (rad*30.0/96.0)*10000
 
 def act1_rad_to_pos(node, rad):
     a = 20.1
@@ -63,6 +63,9 @@ def base_rad_to_pos(node, rad):
 def wristturn_rad_to_pos(node, rad):
     return (rad*(97.0/13.0)*4.0*10000.0)
 
+def wristtilt_rad_to_pos(node, rad):
+    return (rad*8300*300.0)
+
 class keyboardArmPublisher(Node):
     def __init__(self):
         super().__init__("keyboardControl")
@@ -90,7 +93,7 @@ class keyboardArmPublisher(Node):
         self.base = MotorControl()
         self.diff1 = MotorControl()
         self.diff2 = MotorControl()
-        self.elbow = MotorControl() #96 big gear
+        self.elbow = MotorControl() #96 big gear, 30 small gear
         self.wristTilt = MotorControl()
         self.wristTurn = MotorControl()
         self.gripperVal = 5.555
@@ -168,15 +171,17 @@ class keyboardArmPublisher(Node):
           self.diff2.mode = 1
           self.base.mode = 1
           self.wristTurn.mode = 1
+          self.wristTilt.mode = 1
         elif msg.data == 'f':
-          #self.elbow.value = elbow_rad_to_pos(3.14159/2);
-          pass
+          self.elbow.value = elbow_rad_to_pos(3.14159/2);
+          #pass
         elif msg.data == 'g':
           self.elbow.mode = 0
           self.diff1.mode = 0
           self.diff2.mode = 0
           self.base.mode = 0
           self.wristTurn.mode = 0
+          self.wristTilt.mode = 0
         elif msg.data == 'a': #shift left and right
           self.diff2.value = 1.0
         elif msg.data == 'd':
@@ -214,6 +219,8 @@ class keyboardArmPublisher(Node):
           self.elbow.value = -1.0
         elif msg.data == "A":
           self.wristTurn.value = wristturn_rad_to_pos(self, 3.14/2)
+        elif msg.data == "D":
+          self.wristTilt.value = wristtilt_rad_to_pos(self, 3.14/2)
           
           
         
