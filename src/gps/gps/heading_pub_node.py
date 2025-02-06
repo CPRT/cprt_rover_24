@@ -7,7 +7,7 @@ from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLA
 from pyubx2 import (
     UBX_PROTOCOL,
 )
-from ubx_io_manager import UbxIoManager  # Took off .
+from .ubx_io_manager import UbxIoManager  # Took off .
 
 
 class HeadingNode(Node):
@@ -40,7 +40,7 @@ class HeadingNode(Node):
             self.layers |= SET_LAYER_FLASH
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
 
-    def quaternion_from_euler(self,roll, pitch, yaw):
+    def quaternion_from_euler(self, roll, pitch, yaw):
         """
         Converts euler roll, pitch, yaw to quaternion (w in last place)
         quat = [x, y, z, w]
@@ -54,10 +54,10 @@ class HeadingNode(Node):
         sr = math.sin(roll * 0.5)
 
         q = [0] * 4
-        q[0] = cy * cp * cr + sy * sp * sr
-        q[1] = cy * cp * sr - sy * sp * cr
-        q[2] = sy * cp * sr + cy * sp * cr
-        q[3] = sy * cp * cr - cy * sp * sr
+        q[0] = cy * cp * sr - sy * sp * cr
+        q[1] = sy * cp * sr + cy * sp * cr
+        q[2] = sy * cp * cr - cy * sp * sr
+        q[3] = cy * cp * cr + sy * sp * sr
 
         return q
 
@@ -84,14 +84,13 @@ class HeadingNode(Node):
         self.declare_parameter("Device", "/dev/ttyUSB0")
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
         self.declare_parameter("QueueDepth", 1)
-    
 
     def timer_callback(self):
         """
         Periodic callback to read UBX data from the receiver and publish it to the /heading topic as an IMU.
         If data is available, it publishes the raw data and logs the parsed message.
         """
-        while self.serial_conn.data_available():        
+        while self.serial_conn.data_available():
             raw, parsed_data = self.serial_conn.read()
 
             if not raw:
@@ -100,7 +99,7 @@ class HeadingNode(Node):
             msg = Imu()
             msg.linear_acceleration_covariance[0] = -1
             msg.angular_velocity_covariance[0] = -1
-            heading = math.pi / 2 - (parsed_data.relPosHeading * 1e-5 / 180.0 * math.pi)
+            heading = math.pi / 2 - (parsed_data.relPosHeading / 180.0 * math.pi)
             orientation = self.quaternion_from_euler(0, 0, heading)
             msg.orientation.x = orientation[0]
             msg.orientation.y = orientation[1]
@@ -110,17 +109,14 @@ class HeadingNode(Node):
             msg.orientation_covariance[4] = 1000.0
             msg.orientation_covariance[8] = 1000.0
 
-            # When heading is reported to be valid, use accuracy reported in 1e-5 deg units
-            if parsed_data.relPosValid==1:     
-                msg.orientation_covariance[8] = (msg.accHeading * 1e-5 / 180.0 * math.pi) ** 2
+            # When heading is reported to be valid, use accuracy reported in radiance units
+            if parsed_data.relPosValid == 1:
+                msg.orientation_covariance[8] = (
+                    parsed_data.accHeading / 180.0 * math.pi
+                ) ** 2  
 
             self.heading_pub.publish(msg)
-            self.get_logger().info(
-                f"test: {msg}"
-            )
 
-#Need to config the nav-relposned for the lite board, for some reason it didn't save
-#And the covarience(accurcy from messages)
 
 
 def main(args=None):
