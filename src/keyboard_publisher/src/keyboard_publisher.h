@@ -27,6 +27,7 @@ class KeyboardPublisher : public rclcpp::Node {
   size_t count_;
   double defSpeed = 10;
   bool isOpen = true;
+  bool is_local_tf = false;
 };
 
 #endif

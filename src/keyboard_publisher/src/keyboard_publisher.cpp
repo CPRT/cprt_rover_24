@@ -8,8 +8,9 @@ KeyboardPublisher::KeyboardPublisher() : Node("minimal_publisher"), count_(0) {
   timer_ = this->create_wall_timer(
       500ms, std::bind(&KeyboardPublisher::timer_callback, this));
   std::cout << "Type w, a, s, d to move. Use zxrtfgcv to change orientation. "
-               "Type 'h' to change step size (default is 10 rviz units). Type "
-               "'n' to reset. Type 'm' to open/close gripper. Type 'b' to plan "
+               "Type 'h' to change step size (default is 10 rviz units). "
+               "Type 'o' to switch between global and local transformations. "
+               "Type 'n' to reset. Type 'm' to open/close gripper. Type 'b' to plan "
                "to the orange arm in rviz."
             << std::endl;
 }
@@ -58,11 +59,14 @@ void KeyboardPublisher::timer_callback() {
     double newSpeed = 0;
     std::cin >> newSpeed;
     defSpeed = newSpeed;
+  } else if (c == 'o'){
+    is_local_tf = !is_local_tf;
+    if (is_local_tf){
+    RCLCPP_INFO(this->get_logger(), "Local Transformations on");
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Local Transformations off");
   }
-    else if (c == 'o'){
-    poseCmd.toggle_transformations = true;
-  }
-    else if (c == 'n') {
+  } else if (c == 'n') {
     poseCmd.reset = true;
   } else if (c == 'm') {
     isOpen = !isOpen;
@@ -87,8 +91,7 @@ void KeyboardPublisher::timer_callback() {
     }
   }
  
-  RCLCPP_INFO(this->get_logger(), "Toggle Transformations %d", poseCmd.toggle_transformations
-                 );
+  poseCmd.is_local_tf = is_local_tf;
   publisher_->publish(poseCmd);
 }
 

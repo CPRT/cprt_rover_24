@@ -35,7 +35,6 @@ class MoveitController : public rclcpp::Node {
  private:
   static constexpr double JUMP_THRESHOLD = 0;
   static constexpr double EEF_STEP = 0.01;
-  bool local_transformations = false;
   rclcpp::Subscription<interfaces::msg::ArmCmd>::SharedPtr subscription_;
 
   moveit::planning_interface::MoveGroupInterfacePtr move_group_ptr_;

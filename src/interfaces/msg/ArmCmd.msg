@@ -10,4 +10,4 @@ bool reset
 uint8 end_effector
 bool query_goal_state
 float64[] goal_angles
-bool toggle_transformations
+bool is_local_tf
