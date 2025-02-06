@@ -113,10 +113,9 @@ class HeadingNode(Node):
             if parsed_data.relPosValid == 1:
                 msg.orientation_covariance[8] = (
                     parsed_data.accHeading / 180.0 * math.pi
-                ) ** 2  
+                ) ** 2
 
             self.heading_pub.publish(msg)
-
 
 
 def main(args=None):
