@@ -10,9 +10,7 @@ def generate_launch_description():
                 executable="heading_pub_node",
                 name="gps_heading_node",
                 parameters=[
-                    {"TimingMode": 1},  # Survey In mode
-                    {"MinTime": 600},  # Survey in time (s)
-                    {"MinAcc": 2.0},  # Survey In minimum accuracy (m)
+                    {"frame_id": "gps"},
                     {"Freq": 5.0},  # Publish rate (hz)
                     {"Baudrate": 115200},
                     {"Device": "/dev/ttyUSB0"},

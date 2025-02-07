@@ -1,14 +1,35 @@
+import pyubxutils.ubxload
 import rclpy
 import math
 from rclpy.node import Node
-
+import pyubxutils
 from sensor_msgs.msg import Imu
 from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH
 from pyubx2 import (
     UBX_PROTOCOL,
 )
-from .ubx_io_manager import UbxIoManager  # Took off .
+from .ubx_io_manager import UbxIoManager
+import os
 
+def quaternion_from_euler(roll, pitch, yaw):
+    """
+    Converts euler roll, pitch, yaw to quaternion (w in last place)
+    quat = [x, y, z, w]
+    """
+    cy = math.cos(yaw * 0.5)
+    sy = math.sin(yaw * 0.5)
+    cp = math.cos(pitch * 0.5)
+    sp = math.sin(pitch * 0.5)
+    cr = math.cos(roll * 0.5)
+    sr = math.sin(roll * 0.5)
+
+    q = [0] * 4
+    q[0] = cy * cp * sr - sy * sp * cr
+    q[1] = sy * cp * sr + cy * sp * cr
+    q[2] = sy * cp * cr - cy * sp * sr
+    q[3] = cy * cp * cr + sy * sp * sr
+
+    return q
 
 class HeadingNode(Node):
     """
@@ -40,26 +61,6 @@ class HeadingNode(Node):
             self.layers |= SET_LAYER_FLASH
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
 
-    def quaternion_from_euler(self, roll, pitch, yaw):
-        """
-        Converts euler roll, pitch, yaw to quaternion (w in last place)
-        quat = [x, y, z, w]
-        Bellow should be replaced when porting for ROS 2 Python tf_conversions is done.
-        """
-        cy = math.cos(yaw * 0.5)
-        sy = math.sin(yaw * 0.5)
-        cp = math.cos(pitch * 0.5)
-        sp = math.sin(pitch * 0.5)
-        cr = math.cos(roll * 0.5)
-        sr = math.sin(roll * 0.5)
-
-        q = [0] * 4
-        q[0] = cy * cp * sr - sy * sp * cr
-        q[1] = sy * cp * sr + cy * sp * cr
-        q[2] = sy * cp * cr - cy * sp * sr
-        q[3] = cy * cp * cr + sy * sp * sr
-
-        return q
 
     def load_params(self):
         """
@@ -84,6 +85,7 @@ class HeadingNode(Node):
         self.declare_parameter("Device", "/dev/ttyUSB0")
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
         self.declare_parameter("QueueDepth", 1)
+        self.declare_parameter("frame_id", "gps")
 
     def timer_callback(self):
         """
@@ -100,7 +102,7 @@ class HeadingNode(Node):
             msg.linear_acceleration_covariance[0] = -1
             msg.angular_velocity_covariance[0] = -1
             heading = math.pi / 2 - (parsed_data.relPosHeading / 180.0 * math.pi)
-            orientation = self.quaternion_from_euler(0, 0, heading)
+            orientation = quaternion_from_euler(0, 0, heading)
             msg.orientation.x = orientation[0]
             msg.orientation.y = orientation[1]
             msg.orientation.z = orientation[2]
@@ -108,6 +110,9 @@ class HeadingNode(Node):
             msg.orientation_covariance[0] = 1000.0
             msg.orientation_covariance[4] = 1000.0
             msg.orientation_covariance[8] = 1000.0
+            msg.header.frame_id = (
+                self.get_parameter("frame_id").get_parameter_value().string_value
+            )
 
             # When heading is reported to be valid, use accuracy reported in radiance units
             if parsed_data.relPosValid == 1:
@@ -124,6 +129,14 @@ def main(args=None):
 
     Initializes the ROS 2 system, creates the Heading node, and starts spinning the event loop.
     """
+    heading = 'ubxload --infile /home/declan/cprt_rover_24/src/gps/config/headingconfig.ubx --port /dev/ttyUSB0 --baudrate 115200'
+    Rover_heading = 'ubxload --infile /home/declan/cprt_rover_24/src/gps/config/Rover_heading_config.ubx --port /dev/ttyACM0 --baudrate 9600'
+    os.system(
+        heading
+    )  
+    os.system(
+        Rover_heading
+    )
     rclpy.init(args=args)
     heading_node = HeadingNode()
     rclpy.spin(heading_node)
