@@ -1,8 +1,6 @@
-import pyubxutils.ubxload
 import rclpy
 import math
 from rclpy.node import Node
-import pyubxutils
 from sensor_msgs.msg import Imu
 from pyubx2.ubxtypes_configdb import SET_LAYER_RAM, SET_LAYER_BBR, SET_LAYER_FLASH
 from pyubx2 import (
@@ -10,26 +8,6 @@ from pyubx2 import (
 )
 from .ubx_io_manager import UbxIoManager
 import os
-
-def quaternion_from_euler(roll, pitch, yaw):
-    """
-    Converts euler roll, pitch, yaw to quaternion (w in last place)
-    quat = [x, y, z, w]
-    """
-    cy = math.cos(yaw * 0.5)
-    sy = math.sin(yaw * 0.5)
-    cp = math.cos(pitch * 0.5)
-    sp = math.sin(pitch * 0.5)
-    cr = math.cos(roll * 0.5)
-    sr = math.sin(roll * 0.5)
-
-    q = [0] * 4
-    q[0] = cy * cp * sr - sy * sp * cr
-    q[1] = sy * cp * sr + cy * sp * cr
-    q[2] = sy * cp * cr - cy * sp * sr
-    q[3] = cy * cp * cr + sy * sp * sr
-
-    return q
 
 class HeadingNode(Node):
     """
@@ -60,6 +38,26 @@ class HeadingNode(Node):
         if self.persistent:
             self.layers |= SET_LAYER_FLASH
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
+    
+    def quaternion_from_euler(roll, pitch, yaw):
+        """
+        Converts euler roll, pitch, yaw to quaternion (w in last place)
+        quat = [x, y, z, w]
+        """
+        cy = math.cos(yaw * 0.5)
+        sy = math.sin(yaw * 0.5)
+        cp = math.cos(pitch * 0.5)
+        sp = math.sin(pitch * 0.5)
+        cr = math.cos(roll * 0.5)
+        sr = math.sin(roll * 0.5)
+
+        q = [0] * 4
+        q[0] = cy * cp * sr - sy * sp * cr
+        q[1] = sy * cp * sr + cy * sp * cr
+        q[2] = sy * cp * cr - cy * sp * sr
+        q[3] = cy * cp * cr + sy * sp * sr
+
+        return q
 
 
     def load_params(self):
@@ -102,7 +100,7 @@ class HeadingNode(Node):
             msg.linear_acceleration_covariance[0] = -1
             msg.angular_velocity_covariance[0] = -1
             heading = math.pi / 2 - (parsed_data.relPosHeading / 180.0 * math.pi)
-            orientation = quaternion_from_euler(0, 0, heading)
+            orientation = HeadingNode.quaternion_from_euler(0, 0, heading)
             msg.orientation.x = orientation[0]
             msg.orientation.y = orientation[1]
             msg.orientation.z = orientation[2]
