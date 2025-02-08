@@ -19,7 +19,6 @@ def generate_launch_description():
     )
     os.system(Rover_heading)
 
-
     ublox_remappings = [("fix", "gps/fix"), ("/navheading", "gps/heading")]
 
     ublox_gps_node = launch_ros.actions.Node(

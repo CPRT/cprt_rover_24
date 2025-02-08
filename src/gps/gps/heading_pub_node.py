@@ -84,7 +84,9 @@ class HeadingNode(Node):
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
         self.declare_parameter("QueueDepth", 1)
         self.declare_parameter("frame_id", "gps")
-        self.frame_id = self.get_parameter("frame_id").get_parameter_value().string_value
+        self.frame_id = (
+            self.get_parameter("frame_id").get_parameter_value().string_value
+        )
 
     def timer_callback(self):
         """
