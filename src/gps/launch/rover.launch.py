@@ -13,6 +13,13 @@ def generate_launch_description():
 
     params_file = os.path.join(config_dir, "gps.yaml")
 
+    Rover_config_file = os.path.join(config_dir, "Rover_config.ubx")
+    Rover_heading = (
+        "ubxload --port /dev/ttyACM0 --baudrate 9600 --infile " + Rover_config_file
+    )
+    os.system(Rover_heading)
+
+
     ublox_remappings = [("fix", "gps/fix"), ("/navheading", "gps/heading")]
 
     ublox_gps_node = launch_ros.actions.Node(

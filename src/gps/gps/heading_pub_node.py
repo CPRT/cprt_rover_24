@@ -9,6 +9,7 @@ from pyubx2 import (
 from .ubx_io_manager import UbxIoManager
 import os
 
+
 class HeadingNode(Node):
     """
     ROS 2 node for ending the via serial communication.
@@ -38,7 +39,7 @@ class HeadingNode(Node):
         if self.persistent:
             self.layers |= SET_LAYER_FLASH
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
-    
+
     def quaternion_from_euler(roll, pitch, yaw):
         """
         Converts euler roll, pitch, yaw to quaternion (w in last place)
@@ -58,7 +59,6 @@ class HeadingNode(Node):
         q[3] = cy * cp * cr + sy * sp * sr
 
         return q
-
 
     def load_params(self):
         """
@@ -84,6 +84,7 @@ class HeadingNode(Node):
         self.dev = self.get_parameter("Device").get_parameter_value().string_value
         self.declare_parameter("QueueDepth", 1)
         self.declare_parameter("frame_id", "gps")
+        self.frame_id = self.get_parameter("frame_id").get_parameter_value().string_value
 
     def timer_callback(self):
         """
@@ -108,10 +109,7 @@ class HeadingNode(Node):
             msg.orientation_covariance[0] = 1000.0
             msg.orientation_covariance[4] = 1000.0
             msg.orientation_covariance[8] = 1000.0
-            msg.header.frame_id = (
-                self.get_parameter("frame_id").get_parameter_value().string_value
-            )
-
+            msg.header.frame_id = self.frame_id
             # When heading is reported to be valid, use accuracy reported in radiance units
             if parsed_data.relPosValid == 1:
                 msg.orientation_covariance[8] = (
@@ -127,14 +125,6 @@ def main(args=None):
 
     Initializes the ROS 2 system, creates the Heading node, and starts spinning the event loop.
     """
-    heading = 'ubxload --infile /home/declan/cprt_rover_24/src/gps/config/headingconfig.ubx --port /dev/ttyUSB0 --baudrate 115200'
-    Rover_heading = 'ubxload --infile /home/declan/cprt_rover_24/src/gps/config/Rover_heading_config.ubx --port /dev/ttyACM0 --baudrate 9600'
-    os.system(
-        heading
-    )  
-    os.system(
-        Rover_heading
-    )
     rclpy.init(args=args)
     heading_node = HeadingNode()
     rclpy.spin(heading_node)
