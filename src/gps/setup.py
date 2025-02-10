@@ -12,7 +12,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        (os.path.join("share", package_name, "config"), glob("config/*.yaml")),
+        (os.path.join("share", package_name, "config"), glob("config/*")),
         (os.path.join("share", package_name, "launch"), glob("launch/*.launch.py")),
     ],
     install_requires=["setuptools"],
@@ -23,6 +23,9 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["rtcm_pub_node = gps.rtcm_pub_node:main"],
+        "console_scripts": [
+            "rtcm_pub_node = gps.rtcm_pub_node:main",
+            "heading_pub_node = gps.heading_pub_node:main",
+        ],
     },
 )
