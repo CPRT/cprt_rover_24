@@ -20,8 +20,8 @@ def generate_launch_description():
                 name="frontLeft",
                 parameters=[
                     {"id": 1},
-                    {"P": 5.0},
-                    {"I": 0.0},
+                    {"P": 2.0},
+                    {"I": 0.012},
                     {"D": 0.0},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
@@ -33,8 +33,8 @@ def generate_launch_description():
                 name="backLeft",
                 parameters=[
                     {"id": 2},
-                    {"P": 5.0},
-                    {"I": 0.0},
+                    {"P": 2.0},
+                    {"I": 0.012},
                     {"D": 0.0},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
@@ -46,8 +46,8 @@ def generate_launch_description():
                 name="frontRight",
                 parameters=[
                     {"id": 3},
-                    {"P": 5.0},
-                    {"I": 0.0},
+                    {"P": 2.0},
+                    {"I": 0.012},
                     {"D": 0.0},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
@@ -59,8 +59,8 @@ def generate_launch_description():
                 name="backRight",
                 parameters=[
                     {"id": 4},
-                    {"P": 5.0},
-                    {"I": 0.0},
+                    {"P": 2.0},
+                    {"I": 0.012},
                     {"D": 0.0},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
@@ -83,6 +83,7 @@ def generate_launch_description():
                     {"base_width": 0.9},
                     {"pub_odom": True},
                     {"pub_elec": True},
+                    {"wheel_rad": 0.105},
                 ],
             ),
             launch_ros.actions.Node(
