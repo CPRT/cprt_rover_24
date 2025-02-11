@@ -312,7 +312,9 @@ class tfKeyboard(Node):
               red[1] /= red[2]
               cv2.circle(frame,(int(red[0]), int(red[1])),5,colors[1],-1)
           
-          red = key_pos_dict["q"]
+          data = str(request.key)
+          print(f"Data {data}")
+          red = key_pos_dict[data] #please do not send anything other than invididual lowercase letters, I don't know what happens otherwise but it can't be good.
           
           purple = red.copy()
           for x in range(0, len(purple)):

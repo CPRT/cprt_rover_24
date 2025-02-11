@@ -16,13 +16,15 @@ TypingNode::TypingNode() : Node("Typing_controller")
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
   }
+  
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service active");
 }
 
 void TypingNode::topic_callback(const std_msgs::msg::String &msg)
 {
   RCLCPP_INFO(this->get_logger(), "I got %s", msg.data.c_str());
   auto request = std::make_shared<interfaces::srv::KeycapCmd::Request>();
-    request->keys = false;
+    request->key = "a";
     auto result = client->async_send_request(request);
     // Wait for the result.
     if (rclcpp::spin_until_future_complete(node, result) ==

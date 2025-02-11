@@ -39,8 +39,8 @@ def diff_rad_to_pos(diff1, diff2):
 
 def act1_pos_to_rad(node, pos):
     c = pos/5709.0 * 15.24 + 30.96
-    a = 20.0
-    b = 48.68
+    a = 20.1
+    b = 48.5
     d = (a*a+b*b-c*c)/(2*a*b)
     if (d > 1 or d < -1):
         return 0.0
@@ -86,10 +86,10 @@ def wristturn_pos_to_rad(node, pos):
     return pos/10000.0/4.0/(97.0/13.0)
 
 def wristtilt_rad_to_pos(node, rad):
-    return (rad*8300*300.0)
+    return ((rad+3.1415/6)/(3.14/2)*2476114.0)
 
 def wristtilt_pos_to_rad(node, pos):
-    return pos/300.0/8300.0
+    return pos/2476114.0*(3.14/2)  - (3.1415/6)
 
 class trajectoryInterpreter(Node):
     def __init__(self):
@@ -191,15 +191,18 @@ class trajectoryInterpreter(Node):
     ):  # 14 - 58 (lower turns 58/14 times, upper turns once)
         #base - 100:1, then 15:100
         self.baseAngle = base_pos_to_rad(self, msg.position)
+        self.basePos = msg.position
 
     def diff1_callback(self, msg: MotorStatus):
         # self.diff1Cont = self.diff1ZeroPoint + msg.position * ((2*pi)/1000 * 1/83 * 1/100)
         self.diff1Angle = act1_pos_to_rad(self, msg.position)
+        self.diff1Pos = msg.position
         #self.get_logger().info("bruh1" + str(self.diff1Angle)+" "+str(type(self.diff1Angle)))
 
     def diff2_callback(self, msg: MotorStatus):
         # self.diff2Cont = self.diff2ZeroPoint + msg.position * ((2*pi)/1000 * 1/83 * 1/100)
         self.diff2Angle = act2_pos_to_rad(self, msg.position)
+        self.diff2Pos = msg.position
         #self.get_logger().info("bruh2" + str(self.diff2Angle)+" "+str(type(self.diff2Angle)))
 
     def elbow_callback(self, msg: MotorStatus):
@@ -209,9 +212,11 @@ class trajectoryInterpreter(Node):
 
     def wrist_turn_callback(self, msg: MotorStatus):
         self.wristTurnAngle = wristturn_pos_to_rad(self, msg.position)
+        self.wristTurnPos = msg.position
 
     def wrist_tilt_callback(self, msg: MotorStatus):
         self.wristTiltAngle = wristtilt_pos_to_rad(self, msg.position)
+        self.wristTiltPos = msg.position
 
     '''def anglepublisher(self):
         out = SixFloats()
@@ -250,7 +255,15 @@ class trajectoryInterpreter(Node):
         self.wristTilt.value = wristtilt_rad_to_pos(self, request.wristtilt)
         
         if (self.shouldPub):
-            self.get_logger().info(f'diff1 rad: {request.diff1}, diff1 pos: {self.diff1.value}, diff2 rad: {request.diff2}, diff2 pos: {self.diff2.value}')
+            #self.get_logger().info(f'diff1 rad: {request.diff1}, diff1 pos: {self.diff1.value}, diff2 rad: {request.diff2}, diff2 pos: {self.diff2.value}')
+            self.get_logger().info(f"""
+            Active commands:
+                Base cmd: {self.base.value}, currently at {self.basePos}
+                Act1 cmd: {self.diff1.value}, currently at {self.diff1Pos}
+                Act2 cmd: {self.diff2.value}, currently at {self.diff2Pos}
+                Elbow cmd: {self.elbow.value}, currently at {self.elbowPos}
+                Wristturn cmd: {self.wristTurn.value}, currently at {self.wristTurnPos}
+                Wirsttilt cmd: {self.wristTilt.value}, currently at {self.wristTiltPos}""")
             self.diff1.mode = 1
             self.diff2.mode = 1
             self.base.mode = 1

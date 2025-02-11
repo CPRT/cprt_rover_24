@@ -54,7 +54,7 @@ TestNode::TestNode(const rclcpp::NodeOptions &options)
   move_group_ptr->setPoseTarget(target_pose);
 
   // Create a plan to that target pose
-  auto const [success, plan] = [&]{
+  /*auto const [success, plan] = [&]{
     moveit::planning_interface::MoveGroupInterface::Plan msg;
     auto const ok = static_cast<bool>(move_group_ptr->plan(msg));
     return std::make_pair(ok, msg);
@@ -67,7 +67,7 @@ TestNode::TestNode(const rclcpp::NodeOptions &options)
     move_group_ptr->execute(plan);
   } else {
     RCLCPP_ERROR(this->get_logger(), "Planing failed!");
-  }
+  }*/ //nah bro
   
 }
 
@@ -129,7 +129,7 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
   tf2::fromMsg(current_pose.orientation, quaternion);
   
   tf2::Vector3 localTransform = quatRotate(quaternion, dir);
-  /*auto const new_pose = [&]{
+  auto const new_pose = [&]{
     geometry_msgs::msg::Pose msg = current_pose;
     msg.position.x += poseMsg.position.x*stepSize;
     msg.position.y += poseMsg.position.y*stepSize;
@@ -137,9 +137,9 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
     
     
     return msg;
-  }();*/
+  }();
   
-  auto const new_pose = [&]{
+  /*auto const new_pose = [&]{
     geometry_msgs::msg::Pose msg = current_pose;
     msg.position.x += localTransform.getX()*stepSize;
     msg.position.y += localTransform.getY()*stepSize;
@@ -147,7 +147,7 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
     
     
     return msg;
-  }();
+  }();*/
   
   RCLCPP_INFO(this->get_logger(), "New pose: %f %f %f %f %f %f %f",
     new_pose.position.x,

@@ -60,9 +60,9 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="wristTilt",
                 parameters=[{"id": 5},
-                            {"P":5.0},
+                            {"P":1.5},
                             {"I":0.0},
-                            {"D":0.0},
+                            {"D":1.0},
                             {"max_voltage": 6.0},
                             {"invert_sensor":True}],
                 
@@ -72,9 +72,9 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="wristTurn",
                 parameters=[{"id": 6},
-                            {"P":5.0},
+                            {"P":1.5},
                             {"I":0.0},
-                            {"D":0.0},
+                            {"D":1.0},
                             {"max_voltage": 6.0},
                             {"invert_sensor":True}],
                 
