@@ -80,10 +80,12 @@ def base_pos_to_rad(node, pos):
     return -(pos/1100.0/(100.0/15.0))
 
 def wristturn_rad_to_pos(node, rad):
-    return (rad*(97.0/13.0)*4.0*10000.0)
+    #return (rad*(97.0/13.0)*4.0*10000.0)
+    return -(rad/(2*3.1415))*4000.0*498
 
 def wristturn_pos_to_rad(node, pos):
-    return pos/10000.0/4.0/(97.0/13.0)
+    #return pos/3997236.0*4*3.1415
+    return -(pos/(4000.0*498.0))*2*3.1415
 
 def wristtilt_rad_to_pos(node, rad):
     return ((rad+3.1415/6)/(3.14/2)*2476114.0)
@@ -262,7 +264,7 @@ class trajectoryInterpreter(Node):
                 Act1 cmd: {self.diff1.value}, currently at {self.diff1Pos}
                 Act2 cmd: {self.diff2.value}, currently at {self.diff2Pos}
                 Elbow cmd: {self.elbow.value}, currently at {self.elbowPos}
-                Wristturn cmd: {self.wristTurn.value}, currently at {self.wristTurnPos}
+                Wristturn cmd: {self.wristTurn.value}, currently at {self.wristTurnPos}, wants to be {request.wristturn}
                 Wirsttilt cmd: {self.wristTilt.value}, currently at {self.wristTiltPos}""")
             self.diff1.mode = 1
             self.diff2.mode = 1

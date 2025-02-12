@@ -20,9 +20,9 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="base",
                 parameters=[{"id": 1},
-                            {"P":1.0},
+                            {"P":2.0},
                             {"I":0.0},
-                            {"D":0.0}],
+                            {"D":1.0}],
                 
             ),
             ComposableNode(

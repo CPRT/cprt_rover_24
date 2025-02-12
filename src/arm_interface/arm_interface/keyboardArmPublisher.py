@@ -61,7 +61,7 @@ def base_rad_to_pos(node, rad):
     return (rad * (100.0/15.0) * 1100)
 
 def wristturn_rad_to_pos(node, rad):
-    return (rad*(97.0/13.0)*4.0*10000.0)
+    return (rad/(3.14*2)*(97.0/16.0)*4.0*10000.0)
 
 def wristtilt_rad_to_pos(node, rad):
     return (rad*8300*300.0)
@@ -218,7 +218,7 @@ class keyboardArmPublisher(Node):
         elif msg.data == "S":
           self.elbow.value = -1.0
         elif msg.data == "A":
-          self.wristTurn.value = wristturn_rad_to_pos(self, 3.14/2)
+          self.wristTurn.value = 80000.0#wristturn_rad_to_pos(self, 3.1415*2)
         elif msg.data == "D":
           self.wristTilt.value = wristtilt_rad_to_pos(self, 3.14/2)
           
