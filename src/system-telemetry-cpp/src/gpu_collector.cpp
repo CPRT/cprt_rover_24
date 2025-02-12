@@ -5,7 +5,7 @@
 #include <string>
 
 double GPUCollector::get_gpu_usage() {
-  FILE* pipe = popen("tegrastats --oneshot", "r");
+  FILE* pipe = popen("tegrastats | head -n 1", "r");
   if (!pipe) {
     return 0.0;
   }
@@ -16,7 +16,7 @@ double GPUCollector::get_gpu_usage() {
   }
   pclose(pipe);
 
-  std::regex gpu_regex("GPU\\s+(\\d+)%");
+  std::regex gpu_regex("GR3D_FREQ (\\d+)%");
   std::smatch match;
   if (std::regex_search(result, match, gpu_regex)) {
     if (match.size() >= 2) {
