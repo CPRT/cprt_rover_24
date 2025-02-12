@@ -25,6 +25,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PointArray.msg"
   "msg/ArmCmd.msg"
   "msg/VideoSource.msg"
+  "msg/SystemTelemetry.msg"
   "srv/ArmPos.srv"
   "msg/GPIOmsg.msg" #ik its goofy the actual gpio package is GPIO
   "msg/GasSensorReading.msg"
