@@ -86,18 +86,5 @@ def generate_launch_description():
                     {"wheel_rad": 0.105},
                 ],
             ),
-            launch_ros.actions.Node(
-                package="joy", executable="joy_node", name="joystick"
-            ),
-            launch_ros.actions.Node(
-                package="drive",
-                executable="joystick_controller",
-                name="joystick_controller",
-                parameters=[
-                    {"linear_axis_index": 3},
-                    {"turn_axis_index": 2},
-                    {"max_linear_speed": 1.0},
-                ],
-            ),
         ]
     )

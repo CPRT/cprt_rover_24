@@ -1,0 +1,17 @@
+thrustmaster_control_node:
+  ros__parameters:
+    drive_mode:
+      throttle_axis: 3
+      forward_axis: 1
+      yaw_axis: 0
+      cam_tilt_axis: 5
+      cam_pan_axis: 4
+      cam_reset: 1
+      cam_next: 3
+      cam_prev: 2
+      cruise_control: 0
+      max_linear: 2.0
+      max_angular: 1.0
+      max_increment: 0.1
+      
+    
