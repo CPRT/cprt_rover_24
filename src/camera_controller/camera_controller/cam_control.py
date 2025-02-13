@@ -6,6 +6,7 @@ from interfaces.srv import MoveServo
 from geometry_msgs.msg import Twist
 from interfaces.srv import Cam_Reset
 
+
 class Cam_Servo_Client(Node):
 
     def __init__(self):
@@ -23,7 +24,9 @@ class Cam_Servo_Client(Node):
             1.0 / self.get_parameter("frequency").get_parameter_value().double_value
         )
         self.timer = self.create_timer(period, self.camera_mover)
-        self.subscription = self.create_subscription(Twist, "Direction", self.direction_callback, 10)
+        self.subscription = self.create_subscription(
+            Twist, "Direction", self.direction_callback, 10
+        )
         self.start = self.create_service(Cam_Reset, "cam/reset", self.reset_callback)
 
     def load_params(self):
@@ -77,7 +80,6 @@ class Cam_Servo_Client(Node):
             return
         if not self.ready:
             return
-
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
         req = MoveServo.Request()
