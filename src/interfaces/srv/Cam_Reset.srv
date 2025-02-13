@@ -1,11 +1,7 @@
 # VideoOut.srv
 
-int32 height
-int32 width
-int8 framerate
-int8 num_sources
-
-VideoSource[] sources
+bool reset
 
 ---
-bool success
+float32 yaw
+float32 pitch
