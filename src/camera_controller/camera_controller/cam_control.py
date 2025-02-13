@@ -3,8 +3,8 @@
 import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
-from sensor_msgs.msg import Joy
-
+from geometry_msgs.msg import Twist
+from interfaces.srv import Cam_Reset
 
 class Cam_Servo_Client(Node):
 
@@ -23,9 +23,10 @@ class Cam_Servo_Client(Node):
             1.0 / self.get_parameter("frequency").get_parameter_value().double_value
         )
         self.timer = self.create_timer(period, self.camera_mover)
-        self.subscription = self.create_subscription(Joy, "joy", self.joy_callback, 10)
+        self.subscription = self.create_subscription(Twist, "Direction", self.direction_callback, 10)
+        self.start = self.create_service(Cam_Reset, "cam/reset", self.reset_callback)
 
-    def declare_parameters():
+    def load_params(self):
         self.declare_parameter("port_x", 0)
         self.declare_parameter("port_y", 1)
         self.declare_parameter("min_servo", 0)
@@ -60,19 +61,23 @@ class Cam_Servo_Client(Node):
             self.get_parameter("default_button").get_parameter_value().integer_value
         )
 
-    def joy_callback(self, msg: Joy) -> None:
-        if self.default_button != -1:
-            if msg.buttons[self.default_button] == 1:
-                self.goal_pos_x = self.default_pos
-                self.goal_pos_y = self.default_pos
-                return
-        if not self.ready:
-            return
-        self.goal_pos_x = self.last_pos_x + self.step_size * msg.axes[self.x_axis_index]
-        self.goal_pos_y = self.last_pos_y + self.step_size * msg.axes[self.y_axis_index]
+    def direction_callback(self, msg: Twist) -> None:
+        self.goal_pos_x = self.last_pos_x + msg.angular.y
+        self.goal_pos_y = self.last_pos_y + msg.angular.z
         self.goal_pos_x = max(self.min_servo, min(self.max_servo, self.goal_pos_x))
         self.goal_pos_y = max(self.min_servo, min(self.max_servo, self.goal_pos_y))
         self.ready = False
+
+    def reset_callback(self, request, response):
+        if request.reset == True:
+            self.goal_pos_x = self.default_pos
+            self.goal_pos_y = self.default_pos
+            response.yaw = self.goal_pos_x
+            response.pitch = self.goal_pos_y
+            return
+        if not self.ready:
+            return
+
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
         req = MoveServo.Request()
