@@ -19,7 +19,6 @@ class Cam_Servo_Client(Node):
         self.goal_pos_y = self.default_pos
         self.last_pos_x = self.default_pos
         self.last_pos_y = self.default_pos
-        self.ready = True
         period = (
             1.0 / self.get_parameter("frequency").get_parameter_value().double_value
         )
@@ -34,11 +33,9 @@ class Cam_Servo_Client(Node):
         self.declare_parameter("port_y", 1)
         self.declare_parameter("min_servo", 0)
         self.declare_parameter("max_servo", 180)
-        self.declare_parameter("default_pos", 90)
+        self.declare_parameter("default_x_pos", 90)
+        self.declare_parameter("default_y_pos", 90)
         self.declare_parameter("step_size", 2)
-        self.declare_parameter("x_axis_index", 1)
-        self.declare_parameter("y_axis_index", 0)
-        self.declare_parameter("default_button", -1)
         self.declare_parameter("frequency", 10.0)
         self.port_x = self.get_parameter("port_x").get_parameter_value().integer_value
         self.port_y = self.get_parameter("port_y").get_parameter_value().integer_value
@@ -48,37 +45,28 @@ class Cam_Servo_Client(Node):
         self.max_servo = (
             self.get_parameter("max_servo").get_parameter_value().integer_value
         )
-        self.default_pos = (
-            self.get_parameter("default_pos").get_parameter_value().integer_value
+        self.default_x_pos = (
+            self.get_parameter("default_x_pos").get_parameter_value().integer_value
+        )
+        self.default_y_pos = (
+            self.get_parameter("default_y_pos").get_parameter_value().integer_value
         )
         self.step_size = (
-            self.get_parameter("step_size").get_parameter_value().integer_value
-        )
-        self.x_axis_index = (
-            self.get_parameter("x_axis_index").get_parameter_value().integer_value
-        )
-        self.y_axis_index = (
-            self.get_parameter("y_axis_index").get_parameter_value().integer_value
-        )
-        self.default_button = (
-            self.get_parameter("default_button").get_parameter_value().integer_value
+            self.get_parameter("step_size").get_parameter_value().double_value
         )
 
     def direction_callback(self, msg: Twist) -> None:
-        self.goal_pos_x = self.last_pos_x + msg.angular.y
-        self.goal_pos_y = self.last_pos_y + msg.angular.z
+        self.goal_pos_x = self.last_pos_x + msg.angular.y * self.step_size
+        self.goal_pos_y = self.last_pos_y + msg.angular.z * self.step_size
         self.goal_pos_x = max(self.min_servo, min(self.max_servo, self.goal_pos_x))
         self.goal_pos_y = max(self.min_servo, min(self.max_servo, self.goal_pos_y))
-        self.ready = False
 
     def reset_callback(self, request, response):
         if request.reset == True:
-            self.goal_pos_x = self.default_pos
-            self.goal_pos_y = self.default_pos
+            self.goal_pos_x = self.default_x_pos
+            self.goal_pos_y = self.default_y_pos
             response.yaw = self.goal_pos_x
             response.pitch = self.goal_pos_y
-            return
-        if not self.ready:
             return
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
@@ -100,7 +88,6 @@ class Cam_Servo_Client(Node):
                 self.port_y, self.goal_pos_y, self.min_servo, self.max_servo
             )
             self.last_pos_y = self.goal_pos_y
-        self.ready = True
 
 
 def main(args=None):
