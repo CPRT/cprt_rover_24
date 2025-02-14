@@ -4,6 +4,10 @@ DriveMode::DriveMode(rclcpp::Node* node) : Mode("Drive", node) {
   RCLCPP_INFO(node_->get_logger(), "Drive Mode");
   twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>(
       "/drive/cmd_vel", 10);
+  cam_direction_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>(
+      "/cam/direction", 10);
+  cam_reset_pub_ = node_->create_client<interfaces::srv::Cam_Reset>(
+      "/cam/reset");
 }
 
 void DriveMode::processJoystickInput(
@@ -36,7 +40,19 @@ void DriveMode::handleTwist(
 }
 
 void DriveMode::handleCam(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
-  // TODO: Implement camera control
+  // TODO: Implement camera control. See if cam reset is true and set the cliant to that as well. use the axis ones to set the twist message. Pan is the z, tilt is the y
+  y = joystickMsg->axes[kCamTiltAxis] * kCamSpeed;
+  z = joystickMsg->axes[kCamPanAxis] * kCamSpeed;
+  auto twist = geometry_msgs::msg::Twist();
+  twist.linear.y = y;
+  twist.angular.z = z;
+  cam_direction_pub_->publish(twist);
+  auto cam_reset = interfaces::srv::Cam_Reset();
+  if (joystickMsg->buttons[kCamReset] == 1) {
+    cam_reset.reset = true;
+    cam_reset_pub_->async_send_request(cam_reset);
+  }
+  last_reset_button_ = joystickMsg->buttons[kCamReset];
 }
 
 void DriveMode::handleVideo(
@@ -57,6 +73,8 @@ void DriveMode::declare_parameters() {
   node_->declare_parameter("drive_mode.max_linear", 2);
   node_->declare_parameter("drive_mode.max_angular", 2);
   node_->declare_parameter("drive_mode.max_increment", 0.1);
+  node_->declare_parameter("drive_mode.cam_speed", 0.1);
+
 
   node_->get_parameter("drive_mode.throttle_axis", kThrottleAxis);
   node_->get_parameter("drive_mode.forward_axis", kForwardAxis);
@@ -70,4 +88,5 @@ void DriveMode::declare_parameters() {
   node_->get_parameter("drive_mode.max_linear", kMaxLinear);
   node_->get_parameter("drive_mode.max_angular", kMaxAngular);
   node_->get_parameter("drive_mode.max_increment", kMaxIncrement);
+  node_->get_parameter("drive_mode.cam_speed", kCamSpeed);
 }

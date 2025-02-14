@@ -9,7 +9,7 @@ class DriveMode : public Mode {
  public:
   DriveMode(rclcpp::Node& node);
   void processJoystickInput(
-      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override; // for nav delete all in private and add {} Constructor
 
  private:
   void handleTwist(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
@@ -29,8 +29,13 @@ class DriveMode : public Mode {
   double kMaxLinear;
   double kMaxAngular;
   double kMaxIncrement;
+  double kCamSpeed;
+  bool last_reset_button_;
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
+  rclcpp::Client<interfaces::srv::Cam_Reset>::SharedPtr cam_reset_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cam_direction_pub_;
+
 };
 
 #endif  // JOYSTICK_CONTROL__DRIVEMODE_HPP_
