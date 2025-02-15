@@ -46,7 +46,7 @@ class TypingNode : public rclcpp::Node
     string key;
     Cmd cmd;
     int currDim;
-    int currLetter;
+    long unsigned int currLetter;
     bool adjusted = false; //he just like me fr fr
     bool goingBack = false;
     bool hasJob = false;

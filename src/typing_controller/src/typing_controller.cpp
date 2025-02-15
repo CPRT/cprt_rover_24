@@ -42,14 +42,14 @@ TypingNode::TypingNode() : Node("Typing_controller")
 void TypingNode::getCmd(char k)
 {
   auto request = std::make_shared<interfaces::srv::KeycapCmd::Request>();
-    request->key = key[currLetter];
+    request->key = k;//key[currLetter];
     auto result = client->async_send_request(request);
     // Wait for the result.
     if (rclcpp::spin_until_future_complete(node, result) ==
       rclcpp::FutureReturnCode::SUCCESS)
     {
       auto resultCopy = result.get();
-      RCLCPP_INFO(this->get_logger(), "Centimeter: %f, %f, %f", resultCopy->x, resultCopy->y, resultCopy->z);
+      RCLCPP_INFO(this->get_logger(), "Letter %lu, Centimeter: %f, %f, %f", currLetter, resultCopy->x, resultCopy->y, resultCopy->z);
       cmd.x = resultCopy->x;
       cmd.y = resultCopy->y;
       cmd.z = resultCopy->z;
@@ -65,12 +65,12 @@ void TypingNode::topic_callback(const std_msgs::msg::String &msg)
   adjusted = true;
   hasJob = true;
   
-  getCmd();
+  getCmd(key[0]);
   
   //make the arm move the first thing
   interfaces::msg::ArmCmd poseCmd;
   emptyCmd(poseCmd);
-  poseCmd.speed = (cmd.x < 0) -0.2 : 0.2;
+  poseCmd.speed = (cmd.x < 0) ? -0.02 : 0.02;
   poseCmd.pose.position.x = 1;
   publisher_->publish(poseCmd);
 }
@@ -83,33 +83,33 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
   
   if (data == "IDLE" && hasJob) //idle death gambit? jjk reference??
   {
+    interfaces::msg::ArmCmd poseCmd;
+		emptyCmd(poseCmd);
     //previous trajectory finished executing, now do next one
     if (!adjusted && !goingBack)
     {
       /*adjusted = true;
       interfaces::msg::ArmCmd poseCmd;
   		emptyCmd(poseCmd);
-  		poseCmd.speed = 0.2;
+  		poseCmd.speed = 0.02;
   		poseCmd.pose.position.y = 1;
   		publisher_->publish(poseCmd);*/
-  		interfaces::msg::ArmCmd poseCmd;
-  		emptyCmd(poseCmd);
   		if (currDim == 0) //about to do x
   		{
-  		  poseCmd.speed = (cmd.x < 0) -0.2 : 0.2;
-  		  poseCmd.pose.position.x = 1
+  		  poseCmd.speed = (cmd.x < 0) ? -0.02 : 0.02;
+  		  poseCmd.pose.position.x = 1;
   		}
   		else if (currDim == 1) //about to do y
   		{
-  		  poseCmd.speed = (cmd.y < 0) -0.2 : 0.2;
-  		  poseCmd.pose.position.y = 1
+  		  poseCmd.speed = (cmd.y < 0) ? -0.02 : 0.02;
+  		  poseCmd.pose.position.y = 1;
   		}
   		else
   		{
-  		  poseCmd.speed = (cmd.z < 0) -0.2 : 0.2;
-  		  poseCmd.pose.position.z = 1
+  		  poseCmd.speed = (cmd.z < 0) ? -0.02 : 0.02;
+  		  poseCmd.pose.position.z = 1;
   		}
-  		currDim++;
+  		/*currDim++;
   		if (currDim >= 3)
   		{
   		  currDim = 0;
@@ -122,34 +122,45 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
 				  }
 				}
 				adjusted = true;
-  		}
+  		}*/
+  		adjusted = true;
     }
     else //it adjusted itself already lol
     {
       if (!goingBack)
       {
-      	getCmd(); //re-read the stuff
+      	getCmd(key[currLetter]); //re-read the stuff
       }
+      int d = (goingBack) ? -1 : 1;
+      double e = (goingBack) ? d*0.02 : 0;
       if (currDim == 0) //about to do x
   		{
-  		  poseCmd.speed = cmd.x/100.0;
-  		  poseCmd.pose.position.x = 1
+  		  poseCmd.speed = cmd.x/100.0*d + e;
+  		  poseCmd.pose.position.x = 1;
   		}
   		else if (currDim == 1) //about to do y
   		{
-  		  poseCmd.speed = cmd.y/100.0;
-  		  poseCmd.pose.position.y = 1
+  		  poseCmd.speed = cmd.y/100.0*d + e;
+  		  poseCmd.pose.position.y = 1;
   		}
   		else
   		{
-  		  poseCmd.speed = cmd.z/100.0;
-  		  poseCmd.pose.position.z = 1
+  		  poseCmd.speed = cmd.z/100.0*d + e;
+  		  poseCmd.pose.position.z = 1;
   		}
   		
-  		currDim++;
-  		if (currDim >= 3)
+  		if (goingBack)
   		{
-  		  currDim = 0;
+  			currDim--;
+  		}
+  		else
+  		{
+  		  currDim++;
+  		  adjusted = false;
+  		}
+  		if (currDim >= 3 || currDim < 0)
+  		{
+  		  currDim = (goingBack) ? 0 : 2;
   		  if (goingBack)
   		  {
 				  currLetter++;
@@ -158,10 +169,11 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
 				    hasJob = false;
 				  }
 				}
-				goingBack = !goingBack
+				goingBack = !goingBack;
   		}
       
     }
+    publisher_->publish(poseCmd);
   }
 }
 

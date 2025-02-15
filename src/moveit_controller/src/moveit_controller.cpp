@@ -76,14 +76,15 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
 {
   geometry_msgs::msg::Pose poseMsg = armMsg.pose;
   double stepSize = armMsg.speed;
-  RCLCPP_INFO(this->get_logger(), "I heard: %f %f %f %f %f %f %f",
+  RCLCPP_INFO(this->get_logger(), "I heard: %f %f %f %f %f %f %f %f",
     poseMsg.position.x,
     poseMsg.position.y,
     poseMsg.position.z,
     poseMsg.orientation.x,
     poseMsg.orientation.y,
     poseMsg.orientation.z,
-    poseMsg.orientation.w);//*/
+    poseMsg.orientation.w,
+    armMsg.speed);//*/
   
   
   move_group_ptr->stop();
@@ -114,7 +115,7 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
   points.push_back(current_pose);
   
   // Print the current pose of the end effector
-  RCLCPP_INFO(this->get_logger(), "Current pose: %f %f %f %f %f %f %f",
+  /*RCLCPP_INFO(this->get_logger(), "Current pose: %f %f %f %f %f %f %f",
     current_pose.position.x,
     current_pose.position.y,
     current_pose.position.z,
@@ -149,14 +150,14 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
     return msg;
   }();*/
   
-  RCLCPP_INFO(this->get_logger(), "New pose: %f %f %f %f %f %f %f",
+  /*RCLCPP_INFO(this->get_logger(), "New pose: %f %f %f %f %f %f %f",
     new_pose.position.x,
     new_pose.position.y,
     new_pose.position.z,
     new_pose.orientation.x,
     new_pose.orientation.y,
     new_pose.orientation.z,
-    new_pose.orientation.w);
+    new_pose.orientation.w);//*/
   if (armMsg.reset == true) //reset something
   {
     geometry_msgs::msg::Pose target_pose = []{
@@ -178,7 +179,6 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
 
     // Execute the plan
     if(success) {
-      RCLCPP_INFO(this->get_logger(), "Number of joint trajectory points: %li, number of multiDOFjointtrajectorypoints: %li", std::size(plan.trajectory_.joint_trajectory.points), std::size(plan.trajectory_.multi_dof_joint_trajectory.points));
       publisher_->publish(plan.trajectory_.joint_trajectory);
       move_group_ptr->execute(plan);
     } else {
@@ -219,7 +219,6 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
 
     // Execute the plan
     if(success) {
-      RCLCPP_INFO(this->get_logger(), "Number of joint trajectory points: %li, number of multiDOFjointtrajectorypoints: %li", std::size(plan.trajectory_.joint_trajectory.points), std::size(plan.trajectory_.multi_dof_joint_trajectory.points));
       publisher_->publish(plan.trajectory_.joint_trajectory);
       move_group_ptr->execute(plan);
     } else {
@@ -292,25 +291,6 @@ void TestNode::topic_callback(const interfaces::msg::ArmCmd & armMsg)
     //move_group_ptr->execute(trajectory);
     
     //launch thread
-    RCLCPP_INFO(this->get_logger(), "What");
-    RCLCPP_INFO(this->get_logger(), "What??");
-    RCLCPP_INFO(this->get_logger(), "Number of joint trajectory points: %li, number of multiDOFjointtrajectorypoints: %li", std::size(trajectory.joint_trajectory.points), std::size(trajectory.multi_dof_joint_trajectory.points));
-    for (int i = 0; i < (int)std::size(trajectory.joint_trajectory.points); i++)
-    {
-      RCLCPP_INFO(this->get_logger(), "Positions: %li, Velocity: %li, Accelerations: %li, effort: %li, duration: %u", std::size(trajectory.joint_trajectory.points[i].positions), std::size(trajectory.joint_trajectory.points[i].velocities), std::size(trajectory.joint_trajectory.points[i].accelerations), std::size(trajectory.joint_trajectory.points[i].effort), trajectory.joint_trajectory.points[i].time_from_start.nanosec);
-      for (int j = 0; j < (int)std::size(trajectory.joint_trajectory.points[i].positions); j++)
-      {
-        RCLCPP_INFO(this->get_logger(), "positions: %f", trajectory.joint_trajectory.points[i].positions[j]);
-      }
-      for (int j = 0; j < (int)std::size(trajectory.joint_trajectory.points[i].positions); j++)
-      {
-        RCLCPP_INFO(this->get_logger(), "velocity: %f", trajectory.joint_trajectory.points[i].velocities[j]);
-      }
-      for (int j = 0; j < (int)std::size(trajectory.joint_trajectory.points[i].positions); j++)
-      {
-        RCLCPP_INFO(this->get_logger(), "acceleration: %f", trajectory.joint_trajectory.points[i].accelerations[j]);
-      }
-    }
     publisher_->publish(trajectory.joint_trajectory);
     th = std::thread(executeTrajectory, std::ref(trajectory), move_group_ptr);
     RCLCPP_INFO(this->get_logger(), "Why");
