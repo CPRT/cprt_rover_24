@@ -212,6 +212,11 @@ class tfKeyboard(Node):
           plt.show()''' #it could be useful later no cope
           
     def keyboard_callback(self, request, response):
+        response.x = 1.0
+        response.y = 2.0
+        response.z = 25.0
+        return response
+        
         cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
           print("Error: Could not access the camera.")
