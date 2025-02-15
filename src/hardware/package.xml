@@ -17,7 +17,10 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
+<<<<<<< HEAD
   <depend>interfaces</depend>
+=======
+>>>>>>> bccf4b8 (Adding srdf (#18))
 
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>forward_command_controller</exec_depend>
