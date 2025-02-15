@@ -64,7 +64,7 @@ def wristturn_rad_to_pos(node, rad):
     return (rad/(3.14*2)*(97.0/16.0)*4.0*10000.0)
 
 def wristtilt_rad_to_pos(node, rad):
-    return (rad*8300*300.0)
+    return ((-rad)/(3.14/2)*7760215.0)
 
 class keyboardArmPublisher(Node):
     def __init__(self):
