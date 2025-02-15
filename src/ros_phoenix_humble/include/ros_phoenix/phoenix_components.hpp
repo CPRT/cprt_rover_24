@@ -8,7 +8,7 @@ namespace ros_phoenix {
 template <class PhoenixNodeType>
 class PhoenixComponent : public PhoenixNodeType {
  public:
-  PhoenixComponent(const NodeOptions& options = NodeOptions())
+  PhoenixComponent(const NodeOptions &options = NodeOptions())
       : PhoenixNodeType("phoenix_component", options) {
     const std::string name(this->get_name());
     this->pub_ = this->template create_publisher<ros_phoenix::msg::MotorStatus>(

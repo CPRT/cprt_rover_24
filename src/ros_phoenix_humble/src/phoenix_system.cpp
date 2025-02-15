@@ -9,7 +9,7 @@
 hardware_interface::return_type set_parameters(
     const std::unordered_map<std::string, std::string> parameters,
     rclcpp::Node::SharedPtr node) {
-  for (const auto& p : parameters) {
+  for (const auto &p : parameters) {
     std::string name(p.first);
     std::string value(p.second);
 
@@ -59,8 +59,8 @@ const std::string PhoenixSystem::PERCENT_OUTPUT = "percent_output";
 const std::string PhoenixSystem::POSITION = hardware_interface::HW_IF_POSITION;
 const std::string PhoenixSystem::VELOCITY = hardware_interface::HW_IF_VELOCITY;
 
-BaseNode::SharedPtr create_node(const std::string& name,
-                                const std::string& type) {
+BaseNode::SharedPtr create_node(const std::string &name,
+                                const std::string &type) {
   if (type == "ros_phoenix::TalonFX") {
     return std::shared_ptr<TalonFXNode>(new TalonFXNode(name));
   } else if (type == "ros_phoenix::TalonSRX") {
@@ -72,7 +72,7 @@ BaseNode::SharedPtr create_node(const std::string& name,
   return nullptr;
 }
 
-ControlMode PhoenixSystem::str_to_interface(const std::string& str) {
+ControlMode PhoenixSystem::str_to_interface(const std::string &str) {
   if (str == PhoenixSystem::PERCENT_OUTPUT) {
     return ControlMode::PercentOutput;
 
@@ -90,16 +90,16 @@ ControlMode PhoenixSystem::str_to_interface(const std::string& str) {
 PhoenixSystem::PhoenixSystem() : logger_(rclcpp::get_logger("PhoenixSystem")) {}
 
 hardware_interface::return_type PhoenixSystem::configure(
-    const hardware_interface::HardwareInfo& info) {
+    const hardware_interface::HardwareInfo &info) {
   this->logger_ = rclcpp::get_logger(info.name);
   this->exec_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   std::shared_ptr<ros_phoenix::PhoenixManager> phoenix_manager = nullptr;
   try {
     phoenix_manager = ros_phoenix::PhoenixManager::getInstance(this->exec_);
-  } catch (const std::runtime_error& exec) {
+  } catch (const std::runtime_error &exec) {
     RCLCPP_FATAL(this->logger_,
-                 "Multiple instance of PhoenixSystem were detected. Only one "
-                 "per process is allowed!");
+                 "Multiple instance of PhoenixSystem were "
+                 "detected. Only one per process is allowed!");
     return hardware_interface::return_type::ERROR;
   }
 
@@ -152,7 +152,7 @@ hardware_interface::return_type PhoenixSystem::configure(
     }
     control->mode = static_cast<int>(cmd_interface);
 
-    for (auto& state_intf : joint.state_interfaces) {
+    for (auto &state_intf : joint.state_interfaces) {
       if (str_to_interface(state_intf.name) == ControlMode::Disabled) {
         RCLCPP_FATAL(this->logger_,
                      "Joint '%s' has an invalid state interface: %s",
@@ -171,8 +171,8 @@ std::vector<hardware_interface::StateInterface>
 PhoenixSystem::export_state_interfaces() {
   std::vector<hardware_interface::StateInterface> state_interfaces;
 
-  for (auto& joint : this->joints_) {
-    for (auto& state_inter : joint.info.state_interfaces) {
+  for (auto &joint : this->joints_) {
+    for (auto &state_inter : joint.info.state_interfaces) {
       if (state_inter.name == PhoenixSystem::PERCENT_OUTPUT) {
         state_interfaces.emplace_back(joint.info.name,
                                       PhoenixSystem::PERCENT_OUTPUT,
@@ -196,7 +196,7 @@ std::vector<hardware_interface::CommandInterface>
 PhoenixSystem::export_command_interfaces() {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-  for (auto& joint : this->joints_) {
+  for (auto &joint : this->joints_) {
     command_interfaces.emplace_back(joint.info.name,
                                     joint.info.command_interfaces[0].name,
                                     &(joint.control->value));
@@ -218,17 +218,17 @@ hardware_interface::return_type PhoenixSystem::stop() {
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type PhoenixSystem::read(const rclcpp::Time&,
-                                                    const rclcpp::Duration&) {
-  for (auto& joint : this->joints_) {
+hardware_interface::return_type PhoenixSystem::read(const rclcpp::Time &,
+                                                    const rclcpp::Duration &) {
+  for (auto &joint : this->joints_) {
     *(joint.status) = *(joint.node->status());
   }
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type PhoenixSystem::write(const rclcpp::Time&,
-                                                     const rclcpp::Duration&) {
-  for (auto& joint : this->joints_) {
+hardware_interface::return_type PhoenixSystem::write(const rclcpp::Time &,
+                                                     const rclcpp::Duration &) {
+  for (auto &joint : this->joints_) {
     joint.node->set(joint.control);
   }
   return hardware_interface::return_type::OK;

@@ -2,10 +2,10 @@
 
 namespace ros_phoenix {
 
-TalonFXNode::TalonFXNode(const std::string& name, const NodeOptions& options)
+TalonFXNode::TalonFXNode(const std::string &name, const NodeOptions &options)
     : PhoenixNode(name, options) {}
 
-void TalonFXNode::configure_current_limit(TalonFXConfiguration& config) {
+void TalonFXNode::configure_current_limit(TalonFXConfiguration &config) {
   SupplyCurrentLimitConfiguration supply;
   supply.currentLimit = this->get_parameter("max_current").as_double();
   supply.triggerThresholdCurrent =
@@ -27,10 +27,10 @@ double TalonFXNode::get_output_current() {
   return this->controller_->GetOutputCurrent();
 }
 
-TalonSRXNode::TalonSRXNode(const std::string& name, const NodeOptions& options)
+TalonSRXNode::TalonSRXNode(const std::string &name, const NodeOptions &options)
     : PhoenixNode(name, options) {}
 
-void TalonSRXNode::configure_current_limit(TalonSRXConfiguration& config) {
+void TalonSRXNode::configure_current_limit(TalonSRXConfiguration &config) {
   config.continuousCurrentLimit =
       this->get_parameter("max_current").as_double();
   config.peakCurrentLimit = this->get_parameter("max_current").as_double();
@@ -52,11 +52,11 @@ double TalonSRXNode::get_output_current() {
   return this->controller_->GetOutputCurrent();
 }
 
-VictorSPXNode::VictorSPXNode(const std::string& name,
-                             const NodeOptions& options)
+VictorSPXNode::VictorSPXNode(const std::string &name,
+                             const NodeOptions &options)
     : PhoenixNode(name, options) {}
 
-void VictorSPXNode::configure_current_limit(VictorSPXConfiguration& config
+void VictorSPXNode::configure_current_limit(VictorSPXConfiguration &config
                                             __attribute__((unused))) {}
 void VictorSPXNode::configure_sensor() {}
 

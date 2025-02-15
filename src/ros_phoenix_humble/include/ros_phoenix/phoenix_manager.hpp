@@ -24,12 +24,12 @@ class PhoenixManager : public rclcpp_components::ComponentManager {
   static const std::string PARAMETER_WATCHDOG_MS;
 
   rcl_interfaces::msg::SetParametersResult reconfigure(
-      const std::vector<rclcpp::Parameter>& params);
+      const std::vector<rclcpp::Parameter> &params);
 
  protected:
   PhoenixManager(
       std::weak_ptr<rclcpp::Executor> exec,
-      const rclcpp::NodeOptions& node_options = rclcpp::NodeOptions());
+      const rclcpp::NodeOptions &node_options = rclcpp::NodeOptions());
 
  private:
   static std::mutex singleton_mutex_;
