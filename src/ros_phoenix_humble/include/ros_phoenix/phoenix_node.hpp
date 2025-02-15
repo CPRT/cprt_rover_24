@@ -21,8 +21,8 @@ template <class MotorController, class Configuration, class FeedbackDevice,
           class ControlMode>
 class PhoenixNode : public BaseNode {
  public:
-  explicit PhoenixNode(const std::string& name,
-                       const NodeOptions& options = NodeOptions())
+  explicit PhoenixNode(const std::string &name,
+                       const NodeOptions &options = NodeOptions())
       : BaseNode(name, options) {
     this->controller_ =
         std::make_shared<MotorController>(this->id_, this->interface_);
@@ -81,10 +81,10 @@ class PhoenixNode : public BaseNode {
   }
 
   virtual rcl_interfaces::msg::SetParametersResult reconfigure(
-      const std::vector<rclcpp::Parameter>& params) {
+      const std::vector<rclcpp::Parameter> &params) {
     std::lock_guard<std::mutex> guard(this->config_mutex_);
 
-    for (auto& param : params) {
+    for (auto &param : params) {
       if (param.get_name() == Parameter::ID) {
         this->id_ = param.as_int();
         this->controller_ =
@@ -168,7 +168,7 @@ class PhoenixNode : public BaseNode {
   }
 
   // Methods to be reimplemented by specific motor controllers
-  virtual void configure_current_limit(Configuration& config) = 0;
+  virtual void configure_current_limit(Configuration &config) = 0;
   virtual void configure_sensor() = 0;
   virtual double get_output_current() = 0;
 

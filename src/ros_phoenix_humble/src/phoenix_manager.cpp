@@ -33,7 +33,7 @@ bool PhoenixManager::instanceCreated() {
 }
 
 PhoenixManager::PhoenixManager(std::weak_ptr<rclcpp::Executor> exec,
-                               const rclcpp::NodeOptions& options)
+                               const rclcpp::NodeOptions &options)
     : ComponentManager(exec, "PhoenixManager", options) {
   this->declare_parameter<int>(PARAMETER_PERIOD_MS, 50);
   this->declare_parameter<int>(PARAMETER_WATCHDOG_MS, 200);
@@ -42,7 +42,7 @@ PhoenixManager::PhoenixManager(std::weak_ptr<rclcpp::Executor> exec,
                      this->get_parameter(PARAMETER_WATCHDOG_MS)});
 
   this->set_parameters_callback_ = this->add_on_set_parameters_callback(
-      [this](const std::vector<rclcpp::Parameter>& params) {
+      [this](const std::vector<rclcpp::Parameter> &params) {
         return this->reconfigure(params);
       });
 
@@ -54,8 +54,8 @@ void PhoenixManager::feedEnable() const {
 }
 
 rcl_interfaces::msg::SetParametersResult PhoenixManager::reconfigure(
-    const std::vector<rclcpp::Parameter>& params) {
-  for (const auto& param : params) {
+    const std::vector<rclcpp::Parameter> &params) {
+  for (const auto &param : params) {
     if (param.get_name() == PARAMETER_PERIOD_MS) {
       this->timer_ =
           this->create_wall_timer(std::chrono::milliseconds(param.as_int()),

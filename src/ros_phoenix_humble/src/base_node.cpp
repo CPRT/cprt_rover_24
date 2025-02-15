@@ -7,7 +7,7 @@ namespace ros_phoenix {
 const std::string BaseNode::Parameter::ID = "id";
 const std::string BaseNode::Parameter::INTERFACE = "interface";
 
-BaseNode::BaseNode(const std::string& name, const rclcpp::NodeOptions& options)
+BaseNode::BaseNode(const std::string &name, const rclcpp::NodeOptions &options)
     : rclcpp::Node(name, options) {
   // Detect if component run outside of a phoenix container
   if (!PhoenixManager::instanceCreated()) {
@@ -53,7 +53,7 @@ BaseNode::BaseNode(const std::string& name, const rclcpp::NodeOptions& options)
       std::bind(&BaseNode::onTimer, this));
 
   this->set_parameters_callback_ = this->add_on_set_parameters_callback(
-      [this](const std::vector<rclcpp::Parameter>& params) {
+      [this](const std::vector<rclcpp::Parameter> &params) {
         return this->reconfigure(params);
       });
   this->reconfigure({});
@@ -87,7 +87,7 @@ void BaseNode::set(MotorControl::SharedPtr control_msg
 }
 
 rcl_interfaces::msg::SetParametersResult BaseNode::reconfigure(
-    const std::vector<rclcpp::Parameter>& params) {
+    const std::vector<rclcpp::Parameter> &params) {
   for (auto param : params) {
     RCLCPP_DEBUG(this->get_logger(), "Parameter changed: %s=%s",
                  param.get_name().c_str(), param.value_to_string().c_str());

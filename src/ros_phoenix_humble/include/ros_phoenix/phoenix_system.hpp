@@ -26,12 +26,12 @@ class PhoenixSystem : public hardware_interface::SystemInterface {
 
   PhoenixSystem();
 
-  PhoenixSystem(PhoenixSystem&& other) = default;
+  PhoenixSystem(PhoenixSystem &&other) = default;
 
   ~PhoenixSystem() = default;
 
   hardware_interface::return_type configure(
-      const hardware_interface::HardwareInfo& info);
+      const hardware_interface::HardwareInfo &info);
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces();
 
@@ -41,11 +41,11 @@ class PhoenixSystem : public hardware_interface::SystemInterface {
 
   hardware_interface::return_type stop();
 
-  hardware_interface::return_type read(const rclcpp::Time& time,
-                                       const rclcpp::Duration& period) override;
+  hardware_interface::return_type read(const rclcpp::Time &time,
+                                       const rclcpp::Duration &period) override;
 
   hardware_interface::return_type write(
-      const rclcpp::Time& time, const rclcpp::Duration& period) override;
+      const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
  private:
   struct JointInfo {
@@ -55,7 +55,7 @@ class PhoenixSystem : public hardware_interface::SystemInterface {
     ros_phoenix::msg::MotorStatus::SharedPtr status;
   };
 
-  static ControlMode str_to_interface(const std::string& str);
+  static ControlMode str_to_interface(const std::string &str);
 
   rclcpp::Logger logger_;
 

@@ -19,7 +19,7 @@ class BaseNode : public Node {
 
   RCLCPP_SHARED_PTR_DEFINITIONS(BaseNode)
 
-  BaseNode(const std::string& name, const NodeOptions& options = NodeOptions());
+  BaseNode(const std::string &name, const NodeOptions &options = NodeOptions());
 
   virtual ~BaseNode();
 
@@ -28,7 +28,7 @@ class BaseNode : public Node {
   virtual void set(MotorControl::SharedPtr control_msg);
 
   virtual rcl_interfaces::msg::SetParametersResult reconfigure(
-      const std::vector<rclcpp::Parameter>& params);
+      const std::vector<rclcpp::Parameter> &params);
 
  protected:
   virtual void configure() = 0;

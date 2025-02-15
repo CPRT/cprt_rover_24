@@ -5,7 +5,7 @@
 #include "rclcpp_components/component_manager.hpp"
 #include "ros_phoenix/phoenix_manager.hpp"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   auto exec = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   auto phoenix_manager = ros_phoenix::PhoenixManager::getInstance(exec);

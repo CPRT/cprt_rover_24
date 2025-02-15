@@ -18,12 +18,12 @@ class PhoenixBridge : public hardware_interface::SystemInterface {
 
   PhoenixBridge();
 
-  PhoenixBridge(PhoenixBridge&& other) = default;
+  PhoenixBridge(PhoenixBridge &&other) = default;
 
   ~PhoenixBridge() = default;
 
   hardware_interface::return_type configure(
-      const hardware_interface::HardwareInfo& info);
+      const hardware_interface::HardwareInfo &info);
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces();
 
@@ -33,11 +33,11 @@ class PhoenixBridge : public hardware_interface::SystemInterface {
 
   hardware_interface::return_type stop();
 
-  hardware_interface::return_type read(const rclcpp::Time& time,
-                                       const rclcpp::Duration& period) override;
+  hardware_interface::return_type read(const rclcpp::Time &time,
+                                       const rclcpp::Duration &period) override;
 
   hardware_interface::return_type write(
-      const rclcpp::Time& time, const rclcpp::Duration& period) override;
+      const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
  private:
   enum InterfaceType {
@@ -47,7 +47,7 @@ class PhoenixBridge : public hardware_interface::SystemInterface {
     VELOCITY = 2,
   };
 
-  static InterfaceType str_to_interface(const std::string& str);
+  static InterfaceType str_to_interface(const std::string &str);
 
   rclcpp::Logger logger_;
 
