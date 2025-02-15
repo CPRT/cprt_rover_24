@@ -88,10 +88,11 @@ def wristturn_pos_to_rad(node, pos):
     return -(pos/(4000.0*498.0))*2*3.1415
 
 def wristtilt_rad_to_pos(node, rad):
-    return ((rad+3.1415/6)/(3.14/2)*2476114.0)
+    return (-(rad+3.1415/6)/(3.14/2)*7760215.0)
 
 def wristtilt_pos_to_rad(node, pos):
-    return pos/2476114.0*(3.14/2)  - (3.1415/6)
+    pos *= -1
+    return pos/7760215.0*(3.14/2)  - (3.1415/6)
 
 class trajectoryInterpreter(Node):
     def __init__(self):
@@ -331,3 +332,4 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
+
