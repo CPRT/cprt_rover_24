@@ -15,7 +15,7 @@ void DriveMode::processJoystickInput(
 }
 
 double DriveMode::getThrottleValue(
-    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const{
+    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   if (kThrottleAxis != -1) {
     double throttle = joystickMsg->axes[kThrottleAxis];
     throttle = std::max(kThrottleMin, std::min(kThrottleMax, throttle));
@@ -25,7 +25,7 @@ double DriveMode::getThrottleValue(
   return 1.0;
 }
 
-void DriveMode::handleTwist (
+void DriveMode::handleTwist(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   static double last_forward = 0;
   double forward, yaw, throttle;
@@ -54,7 +54,8 @@ void DriveMode::handleTwist (
   twist_pub_->publish(twist);
 }
 
-void DriveMode::handleCam(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
+void DriveMode::handleCam(
+    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   // TODO: Implement camera control
 }
 
