@@ -21,16 +21,16 @@ local_ekf:
     base_link_frame: base_link
     world_frame: odom
 
-    odom0: icp/odom
+    odom0: /zed/zed_node/odom
     odom0_config: [
         # position
-        false, false, false,
+        true, true, true,
         # orientation
-        false, false, false,
+        true, true, true,
         # lineal vel 
-        true, true, false,
+        false, true, false,
         # angular vel
-        false, false, true,
+        false, false, false,
         # lineal acc
         false, false, false,
       ]
@@ -41,10 +41,10 @@ local_ekf:
     # odom0_pose_rejection_threshold: 5.0
     # odom0_twist_rejection_threshold: 1.0
 
-    odom1: /dev/roboclaws/front/odom_roboclaw
+    odom1: /drive/odom
     odom1_config: [
         # position
-        false, false, true,
+        false, false, false,
         # orientation
         false, false, false,
         # lineal vel
@@ -57,51 +57,11 @@ local_ekf:
     # odom1_queue_size: 2
     # odom1_nodelay: false
     odom1_differential: true
-    odom_relative: false
+    odom1_relative: false
     # odom1_pose_rejection_threshold: 5.0
     # odom1_twist_rejection_threshold: 1.0
 
-    odom2: /dev/roboclaws/mid/odom_roboclaw
-    odom2_config: [
-        # position
-        false, false, false,
-        # orientation
-        false, false, false,
-        # lineal vel
-        true, true, false,
-        # angular vel
-        false, false, true,
-        # lineal acc
-        false, false, false,
-      ]
-    # odom2_queue_size: 2
-    # odom2_nodelay: false
-    odom2_differential: true
-    odom2_relative: false
-    # odom2_pose_rejection_threshold: 5.0
-    # odom2_twist_rejection_threshold: 1.0
-
-    odom3: /dev/roboclaws/back/odom_roboclaw
-    odom3_config: [
-        # position
-        false, false, false,
-        # orientation
-        false, false, false,
-        # lineal vel
-        true, true, false,
-        # angular vel
-        false, false, true,
-        # lineal acc
-        false, false, false,
-      ]
-    # odom3_queue_size: 2
-    # odom3_nodelay: false
-    odom3_differential: true
-    odom3_relative: false
-    # odom3_pose_rejection_threshold: 5.0
-    # odom3_twist_rejection_threshold: 1.0
-
-    imu0: zed/imu_data
+    imu0: /zed/zed_node/imu/data
     imu0_config: [
         # position
         false, false, false,
@@ -123,18 +83,18 @@ local_ekf:
     # imu0_linear_acceleration_rejection_threshold: 0.8
     imu0_remove_gravitational_acceleration: true
 
-    imu1: imu/filtered
+    imu1: gps/heading
     imu1_config: [
         # position
         false, false, false,
         # orientation
-        false, false, false,
+        false, false, true,
         # lineal vel
         false, false, false,
         # angular vel
         false, false, false,
         # lineal acc
-        true, false, false,
+        false, false, false,
       ]
     # imu1_nodelay: false
     imu1_differential: false
@@ -143,29 +103,7 @@ local_ekf:
     # imu1_pose_rejection_threshold: 0.8
     # imu1_twist_rejection_threshold: 0.8
     # imu1_linear_acceleration_rejection_threshold: 0.8
-    imu1_remove_gravitational_acceleration: true
-
-    imu2: gps/heading
-    imu2_config: [
-        # position
-        false, false, false,
-        # orientation
-        false, false, false,
-        # lineal vel
-        false, false, false,
-        # angular vel
-        false, false, false,
-        # lineal acc
-        false, false, false,
-      ]
-    # imu2_nodelay: false
-    imu2_differential: false
-    imu2_relative: true
-    # imu2_queue_size: 5
-    # imu2_pose_rejection_threshold: 0.8
-    # imu2_twist_rejection_threshold: 0.8
-    # imu2_linear_acceleration_rejection_threshold: 0.8
-    imu2_remove_gravitational_acceleration: true
+    imu1_remove_gravitational_acceleration: false
 
     # use_control: false
     # stamped_control: false
