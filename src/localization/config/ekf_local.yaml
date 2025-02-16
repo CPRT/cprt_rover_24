@@ -38,7 +38,7 @@ local_ekf:
     # odom0_nodelay: false
     odom0_differential: true
     odom0_relative: false
-    # odom0_pose_rejection_threshold: 5.0
+    odom0_pose_rejection_threshold: 5.0 # Mahalanobis Distance
     # odom0_twist_rejection_threshold: 1.0
 
     odom1: /drive/odom

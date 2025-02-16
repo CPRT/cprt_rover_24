@@ -58,7 +58,7 @@ def generate_launch_description():
         ("rgb/image", "zed/zed_node/rgb/image_rect_color"),
         ("rgb/camera_info", "zed/zed_node/rgb/camera_info"),
         ("depth/image", "zed/zed_node/depth/depth_registered"),
-        ("odom", "odometry/filtered/local"),
+        ("odom", "/zed/zed_node/odom"),
         ("imu", "zed/zed_node/imu/data"),
         ("map", "map"),
     ]
