@@ -38,7 +38,7 @@ global_ekf:
     # odom0_nodelay: false
     odom0_differential: true
     odom0_relative: false
-    # odom0_pose_rejection_threshold: 5.0
+    odom0_pose_rejection_threshold: 5.0 # Mahalanobis Distance
     # odom0_twist_rejection_threshold: 1.0
 
     odom1: /drive/odom
@@ -116,12 +116,30 @@ global_ekf:
       ]
     # imu1_nodelay: false
     imu1_differential: false
-    imu1_relative: true
+    imu1_relative: false
     # imu1_queue_size: 5
     # imu1_pose_rejection_threshold: 0.8
     # imu1_twist_rejection_threshold: 0.8
     # imu1_linear_acceleration_rejection_threshold: 0.8
     imu1_remove_gravitational_acceleration: false
+
+    pose0: /localization_pos
+    pose0_config: [
+        # position
+        true, true, true,
+        # orientation
+        false, false, true,
+        # lineal vel
+        false, false, false,
+        # angular vel
+        false, false, false,
+        # lineal acc
+        false, false, false,
+      ]
+    pose0_differential: true
+    pose0_relative: false
+    # pose0_queue_size: 5
+    pose0_rejection_threshold: 5.0
 
     # use_control: false
     # stamped_control: false
