@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
-project(drive_cpp)
+project(joystick_control)
 
 # Find the required packages
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(ros_phoenix REQUIRED)
+find_package(joy REQUIRED)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
@@ -15,19 +15,19 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(include/${PROJECT_NAME})
 
 # Declare the executables for the nodes
-add_executable(drive_cpp src/TalonDriveController.cpp src/WheelControl.cpp)
+add_executable(thrustmaster_control src/ThrustmasterControl.cpp src/DriveMode.cpp )
 
 # Link the dependencies to the executable
-ament_target_dependencies(drive_cpp
+ament_target_dependencies(thrustmaster_control
   rclcpp
   geometry_msgs
   nav_msgs
-  ros_phoenix
+  joy
 )
 
 # Install the executable
 install(TARGETS
-  drive_cpp
+thrustmaster_control
   DESTINATION lib/${PROJECT_NAME})
 
 # Install header files
@@ -41,9 +41,9 @@ install(DIRECTORY launch
 )
 
 # Install configuration files (if any)
-# install(DIRECTORY config
-#   DESTINATION share/${PROJECT_NAME}
-# )
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_export_include_directories("include/${PROJECT_NAME}")
 
