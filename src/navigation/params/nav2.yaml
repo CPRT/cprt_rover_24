@@ -94,38 +94,60 @@ controller_server:
       shorten_transformed_plan: True
       debug_trajectory_details: True
       forward_prune_distance: 5.0
-      min_vel_x: 0.0
-      min_vel_y: 0.0
-      max_vel_x: 0.26
-      max_vel_y: 0.0
-      max_vel_theta: 1.0
-      min_speed_xy: 0.0
-      max_speed_xy: 0.26
-      min_speed_theta: 0.0
-      acc_lim_x: 2.5
-      acc_lim_y: 0.0
-      acc_lim_theta: 3.2
-      decel_lim_x: -2.5
-      decel_lim_y: 0.0
-      decel_lim_theta: -3.2
-      vx_samples: 20
-      vy_samples: 5
-      vtheta_samples: 20
-      linear_granularity: 0.05
-      angular_granularity: 0.025
-      transform_tolerance: 0.2
+
+      ### Kinematic Parameters of the DWBController (https://docs.nav2.org/configuration/packages/dwb-params/kinematic.html)
+      min_vel_x: 0.0 # Minimum velocity X (m/s).
+      min_vel_y: 0.0 # Minimum velocity Y (m/s).
+      max_vel_x: 0.26 # Maximum velocity X (m/s).
+      max_vel_y: 0.0 # Maximum velocity Y (m/s).
+      max_vel_theta: 1.0 # Maximum angular velocity (rad/s).
+      min_speed_xy: 0.0 # Minimum translational speed (m/s).
+      max_speed_xy: 0.26 # Maximum translational speed (m/s).
+      min_speed_theta: 0.0 # Minimum angular speed (rad/s).
+      acc_lim_x: 2.5 # Maximum acceleration X (m/s^2).
+      acc_lim_y: 0.0 # Maximum acceleration Y (m/s^2).
+      acc_lim_theta: 3.2 # Maximum acceleration rotation (rad/s^2).
+      decel_lim_x: -2.5 # Maximum deceleration X (m/s^2).
+      decel_lim_y: 0.0 # Maximum deceleration Y (m/s^2).
+      decel_lim_theta: -3.2 # Maximum deceleration rotation (rad/s^2).
+
+      ### XYTheta Iterator of the DWBController (https://docs.nav2.org/configuration/packages/dwb-params/iterator.html)
+      vx_samples: 20 # Number of velocity samples in the X velocity direction. Default: 20
+      vy_samples: 5 # Number of velocity samples in the Y velocity direction. Default: 5
+      vtheta_samples: 20 # Number of velocity samples in the angular directions. Default: 20
+
+      ### Standard Trajectory Generator (https://docs.nav2.org/configuration/packages/dwb-plugins/standard_traj_generator.html)
+      linear_granularity: 0.05 # Linear distance forward to project. Default: 0.5
+      angular_granularity: 0.025 # Angular distance to project. Default: 0.025
+      # discretize_by_time: False # If true, forward simulate by time. If False, forward simulate by linear and angular granularity. Default: False
+      limit_vel_cmd_in_traj: False # Whether to limit velocity command in trajectory using sampled velocity instead of the commanded velocity. Default: False
+
+      transform_tolerance: 0.2 # TF transform tolerance (s).  Default: 0.1
       xy_goal_tolerance: 0.25
       trans_stopped_velocity: 0.25
-      short_circuit_trajectory_evaluation: True
-      limit_vel_cmd_in_traj: False
+      short_circuit_trajectory_evaluation: True # Stop evaluating scores after best score is found. Default: True
+      
       stateful: True
-      critics: ["ObstacleFootprint", "PathDistCritic", "BaseObstacle"]
+      critics: [
+        "ObstacleFootprint", # Scores a trajectory based on verifying all points along the robot's footprint don't touch an obstacle marked in the costmap.
+        "BaseObstacle", # Scores a trajectory based on where the path passes over the costmap. (Requires inflation layer).
+        # "Oscillation", #  Prevents the robot from just moving backwards and forwards.
+        # "RotateToGoal", # Only allows the robot to rotate to the goal orientation when it is sufficiently close to the goal location
+        # "PathAlign", # Scores a trajectory based on how well it is aligned to the path provided by the global planner.
+        # "GoalAlign", # Scores a trajectory based on how well aligned the trajectory is with the goal pose.
+        "PathDist", # Scores a trajectory based on how far it ends up from the path provided by the global planner.
+        # "GoalDist", # Scores a trajectory based on how close the trajectory gets the robot to the goal pose.
+      ]
+
       ObstacleFootprint:
-        sum_scores: True
+        sum_scores: True # Whether to allow for scores to be summed up. Default: False
         scale: 10.0
       PathDistCritic:
-        aggregation_type: "last"
+        aggregation_type: "last" # last, sum, or product combination methods. Default: "last"
         scale: 10.1
+      # BaseObstacle:
+      #   sum_scores: True # Whether to allow for scores to be summed up. Default: False
+      #   scale: 1.0
 
 local_costmap:
   local_costmap:
