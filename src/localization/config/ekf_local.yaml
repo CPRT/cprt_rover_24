@@ -44,7 +44,7 @@ local_ekf:
     odom1: /drive/odom
     odom1_config: [
         # position
-        false, false, false,
+        false, false, true,
         # orientation
         false, false, false,
         # lineal vel

@@ -43,12 +43,14 @@ def generate_launch_description():
             "Grid/RangeMin": "0.5",
             "Grid/RangeMax": "10.0",
             "Grid/MinClusterSize": "10",
-            "Grid/MaxGroundAngle": "30",
+            "Grid/MaxGroundAngle": "20",
             "Grid/NormalK": "10",
-            "Grid/CellSize": "0.05",
+            "Grid/CellSize": "0.1",
             "Grid/FlatObstacleDetected": "false",
+            "Grid/MapFrameProjection": "true",
             "GridGlobal/UpdateError": "0.01",
             "GridGlobal/MinSize": "200",
+            "GridGlobal/OccupancyThr": "0.5",
             "Reg/Strategy": "1",
         }
     ]

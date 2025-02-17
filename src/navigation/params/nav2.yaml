@@ -93,6 +93,7 @@ controller_server:
       prune_plan: True
       shorten_transformed_plan: True
       debug_trajectory_details: True
+      forward_prune_distance: 5.0
       min_vel_x: 0.0
       min_vel_y: 0.0
       max_vel_x: 0.26
@@ -110,7 +111,6 @@ controller_server:
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 20
-      sim_time: 1.7
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2
@@ -119,17 +119,13 @@ controller_server:
       short_circuit_trajectory_evaluation: True
       limit_vel_cmd_in_traj: False
       stateful: True
-      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 0.02
-      PathAlign.scale: 32.0
-      GoalAlign.scale: 24.0
-      PathAlign.forward_point_distance: 0.1
-      GoalAlign.forward_point_distance: 0.1
-      PathDist.scale: 32.0
-      GoalDist.scale: 24.0
-      RotateToGoal.scale: 32.0
-      RotateToGoal.slowing_factor: 5.0
-      RotateToGoal.lookahead_time: -1.0
+      critics: ["ObstacleFootprint", "PathDistCritic", "BaseObstacle"]
+      ObstacleFootprint:
+        sum_scores: True
+        scale: 10.0
+      PathDistCritic:
+        aggregation_type: "last"
+        scale: 10.1
 
 local_costmap:
   local_costmap:
@@ -145,19 +141,14 @@ local_costmap:
       width: 10
       height: 10
       resolution: 0.05
-      footprint: "[[0.55, 0.45], [0.55, -0.45], [-0.55, -0.45], [-0.55, 0.45]]"
-      plugins: [obstacle_layer, inflation_layer]
+      footprint: "[[0.56, 0.48], [0.56, -0.48], [-0.56, -0.48], [-0.56, 0.48]]"
+      plugins: [obstacle_layer]
       obstacle_layer:
         plugin: "cprt_costmap_plugins::GridmapLayer"
         enabled: true
         map_topic: "/trasversability_map"
         layer_name: "traversability"
-      inflation_layer:
-        plugin: nav2_costmap_2d::InflationLayer
-        enabled: True
-        cost_scaling_factor: 10.0
-        inflation_radius: 0.55
-      always_send_full_costmap: True
+      always_send_full_costmap: False
 
 global_costmap:
   global_costmap:
@@ -170,12 +161,12 @@ global_costmap:
       width: 100
       use_sim_time: True
       footprint: "[[0.55, 0.45], [0.55, -0.45], [-0.55, -0.45], [-0.55, 0.45]]"
-      resolution: 0.05
+      resolution: 0.2
       track_unknown_space: true
       trinary_costmap: True
       plugins: [static_layer, obstacle_layer, inflation_layer]
       static_layer:
-        enabled: true
+        enabled: false
         plugin: nav2_costmap_2d::StaticLayer
         map_subscribe_transient_local: True
         subscribe_to_updates: True
@@ -187,7 +178,7 @@ global_costmap:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
         inflation_radius: 15.0
-      always_send_full_costmap: True
+      always_send_full_costmap: False
 
 map_server:
   ros__parameters:
