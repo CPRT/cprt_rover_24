@@ -21,8 +21,7 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
       node_ptr_(std::make_shared<rclcpp::Node>("example_moveit")),
       executor_ptr_(
           std::make_shared<rclcpp::executors::SingleThreadedExecutor>()) {
-      
-      subscription_ = this->create_subscription<interfaces::msg::ArmCmd>(
+  subscription_ = this->create_subscription<interfaces::msg::ArmCmd>(
       "arm_base_commands", 10,
       std::bind(&MoveitController::topic_callback, this,
                 std::placeholders::_1));
@@ -65,9 +64,9 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               poseMsg.orientation.x, poseMsg.orientation.y,
               poseMsg.orientation.z,
               poseMsg.orientation.w);  //*/
-  
+
   RCLCPP_INFO(this->get_logger(), "Local Transformations %d",
-      armMsg.is_local_tf); 
+              armMsg.is_local_tf);
   move_group_ptr_->stop();
   if (move_it_thread_.joinable()) {
     move_it_thread_.join();
@@ -115,24 +114,20 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       RCLCPP_ERROR(this->get_logger(), "Planing failed!");
     }
   } else {
-    
-    geometry_msgs::msg::Pose new_pose;
-    
+    geometry_msgs::msg::Pose new_pose = current_pose;
+    tf2::Vector3 multiplier(poseMsg.position.x, poseMsg.position.y,
+                            poseMsg.position.z);
+
     // check to see whether arm operates with global or local transformations
-    if (armMsg.is_local_tf){
+    if (armMsg.is_local_tf) {
       // local transformations for position
       tf2::Vector3 dir;
       tf2::convert(poseMsg.position, dir);
       tf2::Quaternion quaternion;
       tf2::convert(current_pose.orientation, quaternion);
-    
-      tf2::Vector3 localTransform = quatRotate(quaternion, dir);
-    
-      new_pose = current_pose;
 
-      new_pose.position.x += localTransform.getX()*stepSize;
-      new_pose.position.y += localTransform.getY()*stepSize;
-      new_pose.position.z += localTransform.getZ()*stepSize;
+      multiplier = quatRotate(quaternion, dir);
+
       // local transformations for orientation
       tf2::Quaternion current;
       tf2::Quaternion desired;
@@ -140,16 +135,11 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       tf2::convert(poseMsg.orientation, desired);
       current *= desired;
       tf2::convert(current, new_pose.orientation);
-      }
-      // global transformations
-    else {
-      new_pose = current_pose;
-
-      new_pose.position.x += poseMsg.position.x*stepSize;
-      new_pose.position.y += poseMsg.position.y*stepSize;
-      new_pose.position.z += poseMsg.position.z*stepSize;
     }
-    
+    // position changes (depends on global or local transformations)
+    new_pose.position.x += multiplier.getX() * stepSize;
+    new_pose.position.y += multiplier.getY() * stepSize;
+    new_pose.position.z += multiplier.getZ() * stepSize;
     if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
         poseMsg.orientation.z != 0 ||
         poseMsg.orientation.w != 0)  // rotation required
