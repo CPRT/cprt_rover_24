@@ -30,7 +30,8 @@ python3-dev \
 python3-pip \
 clang-format \
 clang-tidy \
-ninja-build
+ninja-build \
+ros-humble-rmw-cyclonedds-cpp
 
 source /opt/ros/humble/setup.bash
 
@@ -38,6 +39,10 @@ if ! grep -q "source /opt/ros/humble/setup.bash" ~/.bashrc; then
   echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
   echo "ROS 2 sourced in bashrc"
 fi
+
+if ! grep -q "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" ~/.bashrc; then
+  echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
+  echo "cyclone dds exported in bashrc"
 
 pip3 install black
 pip3 install pylint
