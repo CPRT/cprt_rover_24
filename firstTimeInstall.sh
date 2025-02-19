@@ -43,6 +43,7 @@ fi
 if ! grep -q "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" ~/.bashrc; then
   echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
   echo "cyclone dds exported in bashrc"
+fi
 
 pip3 install black
 pip3 install pylint
