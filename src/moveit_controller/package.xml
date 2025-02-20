@@ -12,10 +12,7 @@
   <depend>moveit_ros_planning_interface</depend>
   <build_depend>moveit_core</build_depend>
   <depend>rclcpp</depend>
-<<<<<<< HEAD
   <depend>interfaces</depend>
-=======
->>>>>>> bccf4b8 (Adding srdf (#18))
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
