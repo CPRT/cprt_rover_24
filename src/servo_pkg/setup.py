@@ -28,6 +28,7 @@ setup(
             "USB_Servo = servo_pkg.USB_Servo:main",
             "servo_client = servo_pkg.servo_client:main",
             "i2c_Servo = servo_pkg.i2c_Servo:main",
+            "keyboard_servo_client = servo_pkg.keyboard_servo_client:main"
         ],
     },
     py_modules=[
