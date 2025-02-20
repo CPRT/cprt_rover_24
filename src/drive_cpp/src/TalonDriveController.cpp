@@ -84,7 +84,7 @@ void TalonDriveController::odom_pub_callback() {
   odom.header.stamp = this->get_clock()->now();
   odom.child_frame_id = frameId_;
   odom.twist.twist.linear.x = (vr + vl) / 2;
-  odom.twist.twist.angular.z = (vr - vl) / baseWidth_;
+  odom.twist.twist.angular.z = (vl - vr) / baseWidth_;
   odom.twist.covariance = {0};
   odom.twist.covariance[0] = linearCov_;
   odom.twist.covariance[35] = angularCov_;
@@ -113,8 +113,8 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
     linearX = -maxSpeed_;
   }
 
-  double vr = linearX - msg->angular.z * baseWidth_ / 2;
-  double vl = linearX + msg->angular.z * baseWidth_ / 2;
+  double vr = linearX + msg->angular.z * baseWidth_ / 2;
+  double vl = linearX - msg->angular.z * baseWidth_ / 2;
 
   for (auto &wheel : wheels_) {
     if (wheel.getWheelSide() == WheelSide::LEFT) {

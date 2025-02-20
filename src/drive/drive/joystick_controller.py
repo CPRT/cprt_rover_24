@@ -158,9 +158,7 @@ class JoystickController(Node):
 
         twist = Twist()
         twist.linear.x = self.curve(self.layout.linear(msg)) * self.max_linear_speed
-        twist.angular.z = (
-            -1 * self.curve(self.layout.angular(msg)) * self.max_angular_speed
-        )
+        twist.angular.z = self.curve(self.layout.angular(msg)) * self.max_angular_speed
 
         if self.layout.turbo(msg):
             twist.linear.x *= self.turbo_multiplier
