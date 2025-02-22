@@ -65,6 +65,8 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
               poseMsg.orientation.z,
               poseMsg.orientation.w);  //*/
 
+  RCLCPP_DEBUG(this->get_logger(), "Local Transformations %d",
+               armMsg.is_local_tf);
   move_group_ptr_->stop();
   if (move_it_thread_.joinable()) {
     move_it_thread_.join();
@@ -113,24 +115,46 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     }
   } else {
     geometry_msgs::msg::Pose new_pose = current_pose;
-    new_pose.position.x += poseMsg.position.x * stepSize;
-    new_pose.position.y += poseMsg.position.y * stepSize;
-    new_pose.position.z += poseMsg.position.z * stepSize;
+    tf2::Vector3 position_transformation(poseMsg.position.x, poseMsg.position.y,
+                                         poseMsg.position.z);
+    tf2::Quaternion q1;
+    tf2::convert(current_pose.orientation, q1);
+    tf2::Quaternion q2;
+    q2.setRPY(poseMsg.orientation.x, poseMsg.orientation.y,
+              poseMsg.orientation.z);
+    // function that handles orientation transformations
+    auto orientation_transformation = [&](tf2::Quaternion &q1,
+                                          tf2::Quaternion &q2) {
+      if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
+          poseMsg.orientation.z != 0 ||
+          poseMsg.orientation.w != 0)  // rotation required
+      {
+        q1 *= q2;
+        geometry_msgs::msg::Quaternion q3;
+        tf2::convert(q1, q3);
+        return q3;
+      } else {
+        return current_pose.orientation;
+      }
+    };
+    // check to see whether arm operates with global or local transformations
+    if (armMsg.is_local_tf) {
+      // local transformations for position
+      tf2::Vector3 dir;
+      tf2::convert(poseMsg.position, dir);
+      tf2::Quaternion quaternion;
+      tf2::convert(current_pose.orientation, quaternion);
 
-    if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
-        poseMsg.orientation.z != 0 ||
-        poseMsg.orientation.w != 0)  // rotation required
-    {
-      tf2::Quaternion q1;
-      tf2::convert(current_pose.orientation, q1);
-      tf2::Quaternion q2;
-      q2.setRPY(poseMsg.orientation.x, poseMsg.orientation.y,
-                poseMsg.orientation.z);
-      tf2::Quaternion q3 = q1 * q2;
-      geometry_msgs::msg::Quaternion q4 = tf2::toMsg(q3);
-
-      new_pose.orientation = q4;
+      position_transformation = quatRotate(quaternion, dir);
+      new_pose.orientation = orientation_transformation(q1, q2);
+    } else {
+      new_pose.orientation = orientation_transformation(q2, q1);
     }
+    // position changes (depends on global or local transformations)
+    new_pose.position.x += position_transformation.getX() * stepSize;
+    new_pose.position.y += position_transformation.getY() * stepSize;
+    new_pose.position.z += position_transformation.getZ() * stepSize;
+
     points.push_back(new_pose);
     move_group_ptr_->computeCartesianPath(points, EEF_STEP, JUMP_THRESHOLD,
                                           trajectory_);
