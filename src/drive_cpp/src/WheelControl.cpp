@@ -17,9 +17,7 @@ WheelControl::WheelControl(std::string wheel_name, rclcpp::Node* node)
         "Wheel name must contain either 'Left' or 'Right'");
   }
   pub_ = node->create_publisher<MotorControl>(wheel_name + "/set", 10);
-  control_.mode = MotorControl::PERCENT_OUTPUT;
-  // TODO: move to velocity control
-  // control_.mode = MotorControl::VELOCITY;
+  control_.mode = MotorControl::VELOCITY;
 }
 
 void WheelControl::setVelocity(double value) { control_.value = value; }

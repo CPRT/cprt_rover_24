@@ -64,6 +64,8 @@ class joystickArmController(Node):
         self.estopTimestamp = 0.0
         self.lastTimestamp = 0
 
+        self.toggleArmControl = False
+
         self.MAX_ACTUATION = 71
         self.MIN_ACTUATION = 8
         self.SERVO_MAX = 180
@@ -112,12 +114,13 @@ class joystickArmController(Node):
             or self.estop.data == True
         ):
             return
-        self.baseCommand.publish(self.base)
-        self.diff1Command.publish(self.diff1)
-        self.diff2Command.publish(self.diff2)
-        self.elbowCommand.publish(self.elbow)
-        self.wristTiltCommand.publish(self.wristTilt)
-        self.wristTurnCommand.publish(self.wristTurn)
+        if self.toggleArmControl == True:
+            self.baseCommand.publish(self.base)
+            self.diff1Command.publish(self.diff1)
+            self.diff2Command.publish(self.diff2)
+            self.elbowCommand.publish(self.elbow)
+            self.wristTiltCommand.publish(self.wristTilt)
+            self.wristTurnCommand.publish(self.wristTurn)
 
     def joy_callback(self, msg: Joy):
         self.lastTimestamp = msg.header.stamp.sec
@@ -127,7 +130,9 @@ class joystickArmController(Node):
         self.elbow.mode = 0
         self.wristTilt.mode = 0
         self.wristTurn.mode = 0
-        # self.get_logger().info("bruh")
+
+        if msg.buttons[13] == 1:  # toggle arm control
+            self.toggleArmControl = not self.toggleArmControl
 
         if msg.axes[0] < -0.1:  # RIGHT BASE, TM AXIS-0 -
             self.base.value = -msg.axes[0]

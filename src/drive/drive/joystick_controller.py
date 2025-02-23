@@ -147,6 +147,8 @@ class JoystickController(Node):
         self.twist_pub = self.create_publisher(Twist, "/cmd_vel", 10)
         self.joy_sub = self.create_subscription(Joy, "/joy", self.joy_callback, 10)
 
+        self.toggleArmControl = False
+
     def joy_callback(self, msg: Joy):
         """
         Callback function to handle joystick messages.
@@ -154,6 +156,12 @@ class JoystickController(Node):
         :param msg: Joy message.
         """
         if not self.layout.deadman(msg):
+            return
+
+        if msg.buttons[12] == 1:
+            self.toggleArmControl = not self.toggleArmControl
+
+        if self.toggleArmControl == False:
             return
 
         twist = Twist()

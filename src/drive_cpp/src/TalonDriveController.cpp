@@ -118,9 +118,9 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
 
   for (auto &wheel : wheels_) {
     if (wheel.getWheelSide() == WheelSide::LEFT) {
-      wheel.setVelocity(vl);
+      wheel.setVelocity(vl * ticksPerMeter_);
     } else {
-      wheel.setVelocity(-vr);
+      wheel.setVelocity(-vr * ticksPerMeter_);
     }
   }
 }
