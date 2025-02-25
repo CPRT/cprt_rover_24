@@ -15,10 +15,27 @@ class Keyboard_Servo_Client(Node):
         #self.timer = self.create_timer(2, self.servo_tester)
         while True:
             i = input()
-            if (i == "w"):
+            if (i == "q"):
+              self.servo_request(0, 00, 0, 180)
+            elif (i == "w"):
+              self.servo_request(0, 10, 0, 180)
+            elif (i == "e"):
+              self.servo_request(0, 20, 0, 180)
+            elif (i == "r"):
               self.servo_request(0, 30, 0, 180)
-            else if (i == "s"):
-              self.servo_request(0, 100, 0, 180)
+            elif (i == "t"):
+              self.servo_request(0, 40, 0, 180)
+            elif (i == "y"):
+              self.servo_request(0, 50, 0, 180)
+            elif (i == "u"):
+              self.servo_request(0, 60, 0, 180)
+            elif (i == "i"):
+              self.servo_request(0, 70, 0, 180)
+            elif (i == "o"):
+              self.servo_request(0, 80, 0, 180)
+            elif (i == "p"):
+              self.servo_request(0, 90, 0, 180)
+            
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
         req = MoveServo.Request()
@@ -29,7 +46,7 @@ class Keyboard_Servo_Client(Node):
         future = self.cli.call_async(req)
 
     def servo_request(self, req_port, req_pos, req_min, req_max) -> None:
-        Servo_Client.get_logger(self).info("Sending Request for: %s" % (req_pos))
+        Keyboard_Servo_Client.get_logger(self).info("Sending Request for: %s" % (req_pos))
         self.send_request(port=req_port, pos=req_pos, min=req_min, max=req_max)
 
     def servo_tester(self) -> None:
