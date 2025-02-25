@@ -12,8 +12,8 @@ def generate_launch_description():
             ),
             launch_ros.actions.Node(
                 package="servo_pkg",
-                executable="i2c_Servo",
-                name="i2c_servo_node",
+                executable="USB_Servo",
+                name="USB_servo_node",
             ),
             launch_ros.actions.Node(
                 package="gpio_controller",

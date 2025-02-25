@@ -27,7 +27,7 @@ class Servo_Client(Node):
         self.send_request(port=req_port, pos=req_pos, min=req_min, max=req_max)
 
     def servo_tester(self) -> None:
-        random_pos = random.randint(0, 180)
+        random_pos = random.randint(8, 71)
 
         self.servo_request(0, random_pos, 0, 180)
 

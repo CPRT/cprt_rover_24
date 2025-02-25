@@ -113,7 +113,7 @@ void JoystickReader::topic_callback(
     std_msgs::msg::Bool sol_msg;
     sol_msg.data = false;
     sol_publisher_->publish(sol_msg);
-  }else{
+  } else {
     std_msgs::msg::Bool sol_msg;
     sol_msg.data = true;
     sol_publisher_->publish(sol_msg);
