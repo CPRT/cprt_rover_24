@@ -13,6 +13,9 @@ joint_limits:
     max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
+    has_position_limits: true
+    max_position: 1.57
+    min_position: -1.57
   Joint_2:
     has_velocity_limits: true
     max_velocity: 0.0234 #23.5 s per 45 degrees - cosine stuff

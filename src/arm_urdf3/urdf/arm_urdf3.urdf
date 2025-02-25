@@ -86,7 +86,7 @@
   </link>
   <joint
     name="Joint_1"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0 0 0.0207625000000001"
       rpy="0 0 0" />
@@ -96,6 +96,7 @@
       link="Link_2" />
     <axis
       xyz="0 0 1" />
+    <limit effort="100.0" velocity="1.0" lower="-1.57" upper="1.57"/>
   </joint>
   <link
     name="Link_3">
@@ -139,7 +140,7 @@
   </link>
   <joint
     name="Joint_2"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0 0 0.1"
       rpy="0 0 0" />
@@ -149,6 +150,7 @@
       link="Link_3" />
     <axis
       xyz="0 -1 0" />
+    <limit effort="100.0" velocity="0.0234" lower="-0.3858" upper="0.4626"/>
   </joint>
   <link
     name="Link_4">
@@ -192,7 +194,7 @@
   </link>
   <joint
     name="Joint_3"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0.558012701892218 0 0.466506350946108"
       rpy="0 0 0" />
@@ -202,6 +204,7 @@
       link="Link_4" />
     <axis
       xyz="0 -1 0" />
+    <limit effort="100.0" velocity="0.03688" lower="-0.6578" upper="0.3033"/>
   </joint>
   <link
     name="Link_5">
@@ -245,7 +248,7 @@
   </link>
   <joint
     name="Joint_4"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="-0.0209336725054375 -0.000155363339502348 0.0120860614561421"
       rpy="0 0 0" />
@@ -255,6 +258,7 @@
       link="Link_5" />
     <axis
       xyz="-0.866025403784437 0 0.500000000000002" />
+    <limit effort="100.0" velocity="0.03688" lower="-3.14" upper="3.14"/>
   </joint>
   <link
     name="Link_6">
@@ -298,7 +302,7 @@
   </link>
   <joint
     name="Joint_5"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0.63745932252309 0 -0.368037311456142"
       rpy="0 0 0" />
@@ -308,6 +312,7 @@
       link="Link_6" />
     <axis
       xyz="0 -1 0" />
+    <limit effort="100.0" velocity="1.0" lower="-2.0944" upper="1.0472"/>
   </joint>
   <link
     name="Link_7">
@@ -351,7 +356,7 @@
   </link>
   <joint
     name="Joint_6"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0.0621500000000025 -0.0285875000000056 0"
       rpy="0 0 0" />
@@ -361,5 +366,6 @@
       link="Link_7" />
     <axis
       xyz="-1 0 0" />
+    <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"/>
   </joint>
 </robot>

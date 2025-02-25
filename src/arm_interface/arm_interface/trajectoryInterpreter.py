@@ -62,7 +62,6 @@ def act2_pos_to_rad(node, pos):
     if (d > 1 or d < -1):
         return 0.0
     ret = -math.acos(d)*1.0+0.89151
-    #node.get_logger().info("Bro why "+str(type(ret)))
     return ret
 
 def act2_rad_to_pos(node, rad):
