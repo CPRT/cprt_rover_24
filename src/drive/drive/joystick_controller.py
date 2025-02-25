@@ -147,7 +147,7 @@ class JoystickController(Node):
         self.twist_pub = self.create_publisher(Twist, "/cmd_vel", 10)
         self.joy_sub = self.create_subscription(Joy, "/joy", self.joy_callback, 10)
 
-        self.toggleArmControl = False
+        self.toggleArmControl = True
 
     def joy_callback(self, msg: Joy):
         """

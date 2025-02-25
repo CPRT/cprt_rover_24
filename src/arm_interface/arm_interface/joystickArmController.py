@@ -64,7 +64,7 @@ class joystickArmController(Node):
         self.estopTimestamp = 0.0
         self.lastTimestamp = 0
 
-        self.toggleArmControl = False
+        self.toggleArmControl = True
 
         self.MAX_ACTUATION = 71
         self.MIN_ACTUATION = 8
@@ -114,13 +114,12 @@ class joystickArmController(Node):
             or self.estop.data == True
         ):
             return
-        if self.toggleArmControl == True:
-            self.baseCommand.publish(self.base)
-            self.diff1Command.publish(self.diff1)
-            self.diff2Command.publish(self.diff2)
-            self.elbowCommand.publish(self.elbow)
-            self.wristTiltCommand.publish(self.wristTilt)
-            self.wristTurnCommand.publish(self.wristTurn)
+        self.baseCommand.publish(self.base)
+        self.diff1Command.publish(self.diff1)
+        self.diff2Command.publish(self.diff2)
+        self.elbowCommand.publish(self.elbow)
+        self.wristTiltCommand.publish(self.wristTilt)
+        self.wristTurnCommand.publish(self.wristTurn)
 
     def joy_callback(self, msg: Joy):
         self.lastTimestamp = msg.header.stamp.sec
@@ -130,9 +129,13 @@ class joystickArmController(Node):
         self.elbow.mode = 0
         self.wristTilt.mode = 0
         self.wristTurn.mode = 0
-
-        if msg.buttons[13] == 1:  # toggle arm control
-            self.toggleArmControl = not self.toggleArmControl
+        
+        #if (msg.buttons[13] == 1):
+        #    self.toggleArmControl = (not self.toggleArmControl)
+        #    joystickArmController.get_logger(self).info("Switching Modes to:" + self.toggleArmControl)
+       # 
+       # if self.toggleArmControl == False:
+       #     return
 
         if msg.axes[0] < -0.1:  # RIGHT BASE, TM AXIS-0 -
             self.base.value = -msg.axes[0]
@@ -180,7 +183,7 @@ class joystickArmController(Node):
         # self.diff1.value = float(diff1)
         # self.diff2.value = float(diff2)
 
-        if msg.buttons[15]:
+        if msg.buttons[13]:
             self.estop.data = True
             self.estopTimestamp = msg.header.stamp.sec
         if msg.buttons[14] and msg.header.stamp.sec - self.estopTimestamp > 2:

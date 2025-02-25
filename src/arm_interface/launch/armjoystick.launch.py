@@ -19,7 +19,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="base",
                 parameters=[
-                    {"id": 1},
+                    {"id": 10},
                     {"P": 5.0},
                     {"I": 0.0},
                     {"D": 0.0},
@@ -31,26 +31,26 @@ def generate_launch_description():
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="diff1",
-                parameters=[{"id": 2}, {"P": 100.0}, {"I": 0.0}, {"D": 0.0}],
+                parameters=[{"id": 11}, {"P": 100.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="diff2",
-                parameters=[{"id": 3}, {"P": 100.0}, {"I": 0.0}, {"D": 0.0}],
+                parameters=[{"id": 12}, {"P": 100.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="elbow",
-                parameters=[{"id": 4}, {"P": 100.0}, {"I": 0.0}, {"D": 0.0}],
+                parameters=[{"id": 13}, {"P": 100.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="wristTilt",
                 parameters=[
-                    {"id": 5},
+                    {"id": 14},
                     {"P": 5.0},
                     {"I": 0.0},
                     {"D": 0.0},
@@ -63,7 +63,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="wristTurn",
                 parameters=[
-                    {"id": 6},
+                    {"id": 15},
                     {"P": 5.0},
                     {"I": 0.0},
                     {"D": 0.0},
