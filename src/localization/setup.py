@@ -24,6 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "imu_filter = localization.imu_filter:main",
+            "position_logger = localization.position_logger:main"
         ],
     },
 )

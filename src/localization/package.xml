@@ -17,6 +17,9 @@
   <depend>robot_localization</depend>
   <depend>rclpy</depend>
   <depend>nav_msgs</depend>
+  <depend>interfaces</depend>
+  <depend>std_srvs</depend>
+  
 
 
   <export>
