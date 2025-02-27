@@ -5,16 +5,17 @@ import board
 import busio
 import adafruit_bno08x
 
+
 class BNO08XPublisher(Node):
     def __init__(self):
-        super().__init__('bno08x_publisher')
+        super().__init__("bno08x_publisher")
 
         # Initialize I2C communication
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = adafruit_bno08x.BNO08X_I2C(i2c)
 
         # IMU Publisher
-        self.publisher_ = self.create_publisher(Imu, 'imu/data', 10)
+        self.publisher_ = self.create_publisher(Imu, "imu/data", 10)
 
         # Timer to publish data
         self.timer = self.create_timer(0.05, self.publish_imu_data)
@@ -47,6 +48,7 @@ class BNO08XPublisher(Node):
         self.publisher_.publish(msg)
         self.get_logger().info("Published IMU Data")
 
+
 def main(args=None):
     rclpy.init(args=args)
     node = BNO08XPublisher()
@@ -54,5 +56,6 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
