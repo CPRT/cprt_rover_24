@@ -170,7 +170,6 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
   // Set properties for the elements
   g_object_set(G_OBJECT(stable_source), "pattern", 2, nullptr);
   g_object_set(G_OBJECT(stable_source), "is-live", TRUE, nullptr);
-  // g_object_set(G_OBJECT(compositor_), "ignore-inactive-pads", TRUE, nullptr);
   g_object_set(G_OBJECT(queue), "max-size-buffers", 1, nullptr);
   GstCaps *caps = gst_caps_from_string("video/x-raw");
   g_object_set(G_OBJECT(capsfilter), "caps", caps, nullptr);
