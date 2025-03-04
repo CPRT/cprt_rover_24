@@ -8,20 +8,23 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch.conditions import IfCondition
 
-#Make launch configeration, defult false, launch talon on rover. Defult True for xbox
+
+# Make launch configeration, defult false, launch talon on rover. Defult True for xbox
 def generate_launch_description():
     """Generate launch description with multiple components."""
     pkg_drive = get_package_share_directory("drive")
     launch_backend = LaunchConfiguration("launch_backend")
     launch_backend_cmd = DeclareLaunchArgument(
-        "launch_backend", default_value="False", description="Launch the motor controller if True"
+        "launch_backend",
+        default_value="False",
+        description="Launch the motor controller if True",
     )
 
     backend_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_drive, "launch", "talon.launch.py")
         ),
-        condition= IfCondition(launch_backend)
+        condition=IfCondition(launch_backend),
     )
 
     return launch.LaunchDescription(
