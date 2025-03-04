@@ -12,7 +12,7 @@ D = 0.0000000001
 def generate_launch_description():
     """Generate launch description with multiple components."""
     subprocess.run(["bash", "./enablecan.sh"], check=True)
-    container = ComposableNodeContainer( 
+    container = ComposableNodeContainer(
         name="PhoenixContainer",
         namespace="",
         package="ros_phoenix",
@@ -90,6 +90,6 @@ def generate_launch_description():
                     {"pub_elec": True},
                     {"wheel_rad": 0.10},
                 ],
-            ), 
+            ),
         ]
     )
