@@ -39,6 +39,9 @@ if ! grep -q "source /opt/ros/humble/setup.bash" ~/.bashrc; then
   echo "ROS 2 sourced in bashrc"
 fi
 
+sudo cp enablecan.sh /bin || (echo "Could not find enablecan script. Run from the root directory of the repository" && exit 1)
+echo "$USER ALL=(ALL) NOPASSWD: /bin/enablecan.sh" | sudo tee -a /etc/sudoers > /dev/null
+
 pip3 install black
 pip3 install pylint
 pip3 install pyserial
