@@ -2,6 +2,7 @@ import launch
 import launch_ros.actions
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
+import subprocess
 
 P = 2.00
 I = 0.000002
@@ -10,8 +11,8 @@ D = 0.0000000001
 
 def generate_launch_description():
     """Generate launch description with multiple components."""
-
-    container = ComposableNodeContainer(
+    subprocess.run(["bash", "./enablecan.sh"], check=True)
+    container = ComposableNodeContainer( 
         name="PhoenixContainer",
         namespace="",
         package="ros_phoenix",
@@ -89,19 +90,6 @@ def generate_launch_description():
                     {"pub_elec": True},
                     {"wheel_rad": 0.10},
                 ],
-            ),
-            launch_ros.actions.Node(
-                package="joy", executable="joy_node", name="joystick"
-            ),
-            launch_ros.actions.Node(
-                package="drive",
-                executable="joystick_controller",
-                name="joystick_controller",
-                parameters=[
-                    {"linear_axis_index": 1},
-                    {"turn_axis_index": 0},
-                    {"max_linear_speed": 2.0},
-                ],
-            ),
+            ), 
         ]
     )
