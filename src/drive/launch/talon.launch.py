@@ -11,7 +11,7 @@ D = 0.0000000001
 
 def generate_launch_description():
     """Generate launch description with multiple components."""
-    subprocess.run(["bash", "./enablecan.sh"], check=True)
+    subprocess.run(["bash", "sudo enablecan.sh"], check=True)
     container = ComposableNodeContainer(
         name="PhoenixContainer",
         namespace="",
