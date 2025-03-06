@@ -12,7 +12,7 @@ from launch.conditions import IfCondition
 def generate_launch_description():
     """Generate launch description with multiple components."""
     pkg_drive = get_package_share_directory("drive")
-    launch_backend = LaunchConfiguration("launch_backend")
+    launch_backend = LaunchConfiguration("launch_backend", default="True")
     launch_backend_cmd = DeclareLaunchArgument(
         "launch_backend",
         default_value="True",
