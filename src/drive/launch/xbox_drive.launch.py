@@ -16,7 +16,7 @@ def generate_launch_description():
     launch_backend_cmd = DeclareLaunchArgument(
         "launch_backend",
         default_value="True",
-        description="Launch the motor controller if False",
+        description="Launch the motor controller if True",
     )
 
     backend_cmd = IncludeLaunchDescription(

@@ -30,7 +30,7 @@ def generate_launch_description():
     return launch.LaunchDescription(
         [
             launch_backend_cmd,
-            # backend_cmd,
+            backend_cmd,
             launch_ros.actions.Node(
                 package="joy", executable="joy_node", name="joystick"
             ),
