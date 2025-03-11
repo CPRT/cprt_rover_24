@@ -69,15 +69,13 @@ def generate_launch_description():
             # Declare launch arguments
             use_sim_time_cmd,
             launch_rtabmapviz_cmd,
-            #IMU_publisher
+            # IMU_publisher
             Node(
-                package="localization", 
-                executable="imu_publisher", 
+                package="localization",
+                executable="imu_publisher",
                 output="screen",
-                arguments = ["imu_link"],
+                arguments=["imu_link"],
             ),
-  
-
             # RTAB-Map Node
             Node(
                 package="rtabmap_slam",

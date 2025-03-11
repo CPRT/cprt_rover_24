@@ -9,7 +9,7 @@ import os
 
 
 class BNO08XPublisher(Node):
-    def __init__(self, frame_id = "imu_link"):
+    def __init__(self, frame_id="imu_link"):
         super().__init__("imu_publisher")
 
         # Initialize I2C communication
@@ -21,27 +21,30 @@ class BNO08XPublisher(Node):
         self.load_covariance_config()
 
         # Timer to publish data
-        Rate = 0.05 
+        Rate = 0.05
         self.timer = self.create_timer(Rate, self.publish_imu_data)
 
         self.get_logger().info(f"BNO08X IMU Node Started! Frame ID : {self.frame_id}")
 
     def load_covariance_config(self):
         config_path = "/src/localization/config/imu_config.yaml"
-        
+
         try:
             with open(config_path, "r") as file:
                 config = yaml.safe_load(file)
                 self.orientation_covariance = config["orientation_covariance"]
                 self.angular_velocity_covariance = config["angular_velocity_covariance"]
-                self.linear_acceleration_covariance = config["linear_acceleration_covariance"]
+                self.linear_acceleration_covariance = config[
+                    "linear_acceleration_covariance"
+                ]
                 self.get_logger().info("Loaded covariance values from config file.")
         except Exception as e:
-            self.get_logger().warn(f"Failed to load covariance config: {e}. Using defaults.")
+            self.get_logger().warn(
+                f"Failed to load covariance config: {e}. Using defaults."
+            )
             self.orientation_covariance = [0.01] * 9
             self.angular_velocity_covariance = [0.01] * 9
             self.linear_acceleration_covariance = [0.01] * 9
-
 
     def publish_imu_data(self):
         msg = Imu()
@@ -65,14 +68,13 @@ class BNO08XPublisher(Node):
         msg.linear_acceleration.y = accel[1]
         msg.linear_acceleration.z = accel[2]
 
-
         msg.orientation_covariance = self.orientation_covariance
         msg.angular_velocity_covariance = self.angular_velocity_covariance
         msg.linear_acceleration_covariance = self.linear_acceleration_covariance
 
         # Publish the IMU message
         self.publisher_.publish(msg)
-        #self.get_logger().info("Published IMU Data")
+        # self.get_logger().info("Published IMU Data")
 
 
 def main(args=None):
