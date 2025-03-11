@@ -59,7 +59,7 @@ def generate_launch_description():
         ("rgb/camera_info", "zed/zed_node/rgb/camera_info"),
         ("depth/image", "zed/zed_node/depth/depth_registered"),
         ("odom", "odometry/filtered/local"),
-        ("imu", "zed/zed_node/imu/data"),
+        ("imu", "imu/data"),
         ("map", "map"),
     ]
 
@@ -69,6 +69,15 @@ def generate_launch_description():
             # Declare launch arguments
             use_sim_time_cmd,
             launch_rtabmapviz_cmd,
+            #IMU_publisher
+            Node(
+                package="localization", 
+                executable="imu_publisher", 
+                output="screen",
+                arguments = ["imu_link"],
+            ),
+  
+
             # RTAB-Map Node
             Node(
                 package="rtabmap_slam",
