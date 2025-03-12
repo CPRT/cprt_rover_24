@@ -4,6 +4,8 @@ from launch_param_builder import ParameterBuilder
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 import os
+import yaml
+from ament_index_python.packages import get_package_share_directory
  
 from launch import LaunchDescription
 from launch.actions import (
@@ -23,7 +25,18 @@ from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
     DeclareBooleanLaunchArg,
 )
- 
+
+def load_yaml(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+
+    try:
+        with open(absolute_file_path, "r") as file:
+            return yaml.safe_load(file)
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
+
+
 def test_launch(moveit_config, launch_package_path=None):
     """
     Launches a self contained demo
@@ -129,13 +142,15 @@ def test_launch(moveit_config, launch_package_path=None):
     )
     
     # Get parameters for the Servo node
-    servo_params = {
+    '''servo_params = {
         "moveit_servo":ParameterBuilder("arm_srdf3")
         .yaml(
             file_path="config/arm_config.yaml",
         )
         .to_dict()
-    }
+    }'''
+    servo_yaml = load_yaml("arm_srdf3", "config/arm_config.yaml")
+    servo_params = {"moveit_servo": servo_yaml}
     
     
     '''ld.add_action(
