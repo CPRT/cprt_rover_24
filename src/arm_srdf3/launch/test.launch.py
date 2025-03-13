@@ -2,7 +2,7 @@ from moveit_configs_utils import MoveItConfigsBuilder
 from moveit_configs_utils.launches import generate_demo_launch
 
 import os
- 
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -11,23 +11,24 @@ from launch.actions import (
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
- 
+
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
- 
+
 from srdfdom.srdf import SRDF
 
 from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
     DeclareBooleanLaunchArg,
 )
- 
+
+
 def test_launch(moveit_config, launch_package_path=None):
     """
     Launches a self contained demo
- 
+
     launch_package_path is optional to use different launch and config packages
- 
+
     Includes
      * static_virtual_joint_tfs
      * robot_state_publisher
@@ -38,7 +39,7 @@ def test_launch(moveit_config, launch_package_path=None):
     """
     if launch_package_path == None:
         launch_package_path = moveit_config.package_path
- 
+
     ld = LaunchDescription()
     ld.add_action(
         DeclareBooleanLaunchArg(
@@ -59,14 +60,14 @@ def test_launch(moveit_config, launch_package_path=None):
     virtual_joints_launch = (
         launch_package_path / "launch/static_virtual_joint_tfs.launch.py"
     )
- 
+
     if virtual_joints_launch.exists():
         ld.add_action(
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
             )
         )
- 
+
     # Given the published joint states, publish tf for the robot links
     ld.add_action(
         IncludeLaunchDescription(
@@ -75,7 +76,7 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
- 
+
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -83,17 +84,17 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
- 
+
     # Run Rviz and load the default config to see the state of the move_group node
-    '''ld.add_action(
+    """ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 str(launch_package_path / "launch/moveit_rviz.launch.py")
             ),
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
-    )'''
- 
+    )"""
+
     # If database loading was enabled, start mongodb as well
     ld.add_action(
         IncludeLaunchDescription(
@@ -103,7 +104,7 @@ def test_launch(moveit_config, launch_package_path=None):
             condition=IfCondition(LaunchConfiguration("db")),
         )
     )
- 
+
     # Fake joint driver
     ld.add_action(
         Node(
@@ -117,7 +118,7 @@ def test_launch(moveit_config, launch_package_path=None):
             ],
         )
     )
- 
+
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -125,9 +126,12 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
- 
+
     return ld
 
+
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("arm_urdf3", package_name="arm_srdf3").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder(
+        "arm_urdf3", package_name="arm_srdf3"
+    ).to_moveit_configs()
     return test_launch(moveit_config)

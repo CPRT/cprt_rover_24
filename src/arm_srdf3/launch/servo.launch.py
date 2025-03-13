@@ -6,7 +6,7 @@ from launch_ros.descriptions import ComposableNode
 import os
 import yaml
 from ament_index_python.packages import get_package_share_directory
- 
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -15,16 +15,17 @@ from launch.actions import (
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
- 
+
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
- 
+
 from srdfdom.srdf import SRDF
 
 from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
     DeclareBooleanLaunchArg,
 )
+
 
 def load_yaml(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -40,9 +41,9 @@ def load_yaml(package_name, file_path):
 def test_launch(moveit_config, launch_package_path=None):
     """
     Launches a self contained demo
- 
+
     launch_package_path is optional to use different launch and config packages
- 
+
     Includes
      * static_virtual_joint_tfs
      * robot_state_publisher
@@ -53,7 +54,7 @@ def test_launch(moveit_config, launch_package_path=None):
     """
     if launch_package_path == None:
         launch_package_path = moveit_config.package_path
- 
+
     ld = LaunchDescription()
     ld.add_action(
         DeclareBooleanLaunchArg(
@@ -74,14 +75,14 @@ def test_launch(moveit_config, launch_package_path=None):
     virtual_joints_launch = (
         launch_package_path / "launch/static_virtual_joint_tfs.launch.py"
     )
- 
+
     if virtual_joints_launch.exists():
         ld.add_action(
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
             )
         )
- 
+
     # Given the published joint states, publish tf for the robot links
     ld.add_action(
         IncludeLaunchDescription(
@@ -90,7 +91,7 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
- 
+
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -98,7 +99,7 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
- 
+
     # Run Rviz and load the default config to see the state of the move_group node
     ld.add_action(
         IncludeLaunchDescription(
@@ -108,17 +109,17 @@ def test_launch(moveit_config, launch_package_path=None):
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
     )
- 
+
     # If database loading was enabled, start mongodb as well
-    '''ld.add_action(
+    """ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 str(launch_package_path / "launch/warehouse_db.launch.py")
             ),
             condition=IfCondition(LaunchConfiguration("db")),
         )
-    )'''
- 
+    )"""
+
     # Fake joint driver
     ld.add_action(
         Node(
@@ -132,7 +133,7 @@ def test_launch(moveit_config, launch_package_path=None):
             ],
         )
     )
- 
+
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -140,20 +141,19 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
-    
+
     # Get parameters for the Servo node
-    '''servo_params = {
+    """servo_params = {
         "moveit_servo":ParameterBuilder("arm_srdf3")
         .yaml(
             file_path="config/arm_config.yaml",
         )
         .to_dict()
-    }'''
+    }"""
     servo_yaml = load_yaml("arm_srdf3", "config/arm_config.yaml")
     servo_params = {"moveit_servo": servo_yaml}
-    
-    
-    '''ld.add_action(
+
+    """ld.add_action(
       # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
       Node(
@@ -169,8 +169,8 @@ def test_launch(moveit_config, launch_package_path=None):
         ],
         output="screen",
       )
-    )'''
-    
+    )"""
+
     # Launch as much as possible in components
     container = ComposableNodeContainer(
         name="moveit_servo_demo_container",
@@ -223,12 +223,17 @@ def test_launch(moveit_config, launch_package_path=None):
         ],
         output="screen",
     )
-    
+
     ld.add_action(container)
     ld.add_action(servo_node)
- 
+
     return ld
 
+
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("arm_urdf3", package_name="arm_srdf3").robot_description(file_path="config/arm_urdf3.urdf.xacro").to_moveit_configs()
+    moveit_config = (
+        MoveItConfigsBuilder("arm_urdf3", package_name="arm_srdf3")
+        .robot_description(file_path="config/arm_urdf3.urdf.xacro")
+        .to_moveit_configs()
+    )
     return test_launch(moveit_config)
