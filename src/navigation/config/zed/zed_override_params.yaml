@@ -20,6 +20,26 @@
             svo_loop: true # Enable loop mode when using an SVO as input source
             svo_realtime: false # if true the SVO will be played trying to respect the original framerate eventually skipping frames, otherwise every frame will be processed respecting the `pub_frame_rate` setting
 
+        object_detection: # Only stereo cameras
+            od_enabled: true # True to enable Object Detection
+            model: 'CUSTOM_YOLOLIKE_BOX_OBJECTS' # 'MULTI_CLASS_BOX_FAST', 'MULTI_CLASS_BOX_MEDIUM', 'MULTI_CLASS_BOX_ACCURATE', 'PERSON_HEAD_BOX_FAST', 'PERSON_HEAD_BOX_ACCURATE', 'CUSTOM_YOLOLIKE_BOX_OBJECTS'
+            custom_onnx_file: '/home/cprt/cprt_rover_24/best.onnx' # Only used if 'model' is 'CUSTOM_YOLOLIKE_BOX_OBJECTS'. Path to the YOLO-like ONNX file for custom object detection directly performed by the ZED SDK.
+            custom_onnx_input_size: 512 # Resolution used with the YOLO-like ONNX file. For example, 512 means a input tensor "1x3x512x512"
+            custom_label_yaml: '/home/cprt/cprt_rover_24/labels.yaml' # Only used if 'model' is 'CUSTOM_YOLOLIKE_BOX_OBJECTS'. Path to the COCO-like YAML file storing the custom class labels.
+            allow_reduced_precision_inference: true # Allow inference to run at a lower precision to improve runtime and memory usage
+            max_range: 20.0 # [m] Defines a upper depth range for detections
+            confidence_threshold: 75.0 # [DYNAMIC] - Minimum value of the detection confidence of an object [0,99]
+            prediction_timeout: 0.5 # During this time [sec], the object will have OK state even if it is not detected. Set this parameter to 0 to disable SDK predictions
+            enable_tracking: true # Defines if the object detection will track objects across images flow
+            filtering_mode: 1 # '0': NONE - '1': NMS3D - '2': NMS3D_PER_CLASS
+            mc_people: true # [DYNAMIC] - Enable/disable the detection of persons for 'MULTI_CLASS_X' models
+            mc_vehicle: true # [DYNAMIC] - Enable/disable the detection of vehicles for 'MULTI_CLASS_X' models
+            mc_bag: true # [DYNAMIC] - Enable/disable the detection of bags for 'MULTI_CLASS_X' models
+            mc_animal: true # [DYNAMIC] - Enable/disable the detection of animals for 'MULTI_CLASS_X' models
+            mc_electronics: true # [DYNAMIC] - Enable/disable the detection of electronic devices for 'MULTI_CLASS_X' models
+            mc_fruit_vegetable: true # [DYNAMIC] - Enable/disable the detection of fruits and vegetables for 'MULTI_CLASS_X' models
+            mc_sport: true # [DYNAMIC] - Enable/disable the detection of sport-related objects for 'MULTI_CLASS_X' models
+
         video:
             brightness: 4 # [DYNAMIC] Not available for ZED X/ZED X Mini
             contrast: 4 # [DYNAMIC] Not available for ZED X/ZED X Mini
