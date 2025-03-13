@@ -1,11 +1,11 @@
-#include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <control_msgs/msg/joint_jog.hpp>
-
 #include <signal.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
+
+#include <control_msgs/msg/joint_jog.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 // Define used keys
 #define KEYCODE_RIGHT 0x43
@@ -30,15 +30,13 @@
 const std::string TWIST_TOPIC = "/servo_node/delta_twist_cmds";
 const std::string JOINT_TOPIC = "/servo_node/delta_joint_cmds";
 const size_t ROS_QUEUE_SIZE = 10;
-const std::string EEF_FRAME_ID = "Link_1";
-const std::string BASE_FRAME_ID = "Link_7";
+const std::string EEF_FRAME_ID = "Link_7";
+const std::string BASE_FRAME_ID = "Link_1";
 
 // A class for reading the key inputs from the terminal
-class KeyboardReader
-{
-public:
-  KeyboardReader() : kfd(0)
-  {
+class KeyboardReader {
+ public:
+  KeyboardReader() : kfd(0) {
     // get the console in raw mode
     tcgetattr(kfd, &cooked);
     struct termios raw;
@@ -49,32 +47,27 @@ public:
     raw.c_cc[VEOF] = 2;
     tcsetattr(kfd, TCSANOW, &raw);
   }
-  void readOne(char* c)
-  {
+  void readOne(char* c) {
     int rc = read(kfd, c, 1);
-    if (rc < 0)
-    {
+    if (rc < 0) {
       throw std::runtime_error("read failed");
     }
   }
-  void shutdown()
-  {
-    tcsetattr(kfd, TCSANOW, &cooked);
-  }
+  void shutdown() { tcsetattr(kfd, TCSANOW, &cooked); }
 
-private:
+ private:
   int kfd;
   struct termios cooked;
 };
 
-// Converts key-presses to Twist or Jog commands for Servo, in lieu of a controller
-class KeyboardServo
-{
-public:
+// Converts key-presses to Twist or Jog commands for Servo, in lieu of a
+// controller
+class KeyboardServo {
+ public:
   KeyboardServo();
   int keyLoop();
 
-private:
+ private:
   void spin();
 
   rclcpp::Node::SharedPtr nh_;
@@ -86,26 +79,26 @@ private:
   double joint_vel_cmd_;
 };
 
-KeyboardServo::KeyboardServo() : frame_to_publish_(BASE_FRAME_ID), joint_vel_cmd_(1.0)
-{
+KeyboardServo::KeyboardServo()
+    : frame_to_publish_(BASE_FRAME_ID), joint_vel_cmd_(1.0) {
   nh_ = rclcpp::Node::make_shared("servo_keyboard_input");
 
-  twist_pub_ = nh_->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, ROS_QUEUE_SIZE);
-  joint_pub_ = nh_->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, ROS_QUEUE_SIZE);
+  twist_pub_ = nh_->create_publisher<geometry_msgs::msg::TwistStamped>(
+      TWIST_TOPIC, ROS_QUEUE_SIZE);
+  joint_pub_ = nh_->create_publisher<control_msgs::msg::JointJog>(
+      JOINT_TOPIC, ROS_QUEUE_SIZE);
 }
 
 KeyboardReader input;
 
-void quit(int sig)
-{
+void quit(int sig) {
   (void)sig;
   input.shutdown();
   rclcpp::shutdown();
   exit(0);
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   KeyboardServo keyboard_servo;
 
@@ -118,38 +111,35 @@ int main(int argc, char** argv)
   return rc;
 }
 
-void KeyboardServo::spin()
-{
-  while (rclcpp::ok())
-  {
+void KeyboardServo::spin() {
+  while (rclcpp::ok()) {
     rclcpp::spin_some(nh_);
   }
 }
 
-int KeyboardServo::keyLoop()
-{
+int KeyboardServo::keyLoop() {
   char c;
   bool publish_twist = false;
   bool publish_joint = false;
 
-  std::thread{ std::bind(&KeyboardServo::spin, this) }.detach();
+  std::thread{std::bind(&KeyboardServo::spin, this)}.detach();
 
   puts("Reading from keyboard");
   puts("---------------------------");
   puts("Use arrow keys and the '.' and ';' keys to Cartesian jog");
-  puts("Use 'W' to Cartesian jog in the world frame, and 'E' for the End-Effector frame");
-  puts("Use 1|2|3|4|5|6|7 keys to joint jog. 'R' to reverse the direction of jogging.");
+  puts(
+      "Use 'W' to Cartesian jog in the world frame, and 'E' for the "
+      "End-Effector frame");
+  puts(
+      "Use 1|2|3|4|5|6|7 keys to joint jog. 'R' to reverse the direction of "
+      "jogging.");
   puts("'Q' to quit.");
 
-  for (;;)
-  {
+  for (;;) {
     // get the next event from the keyboard
-    try
-    {
+    try {
       input.readOne(&c);
-    }
-    catch (const std::runtime_error&)
-    {
+    } catch (const std::runtime_error&) {
       perror("read():");
       return -1;
     }
@@ -161,8 +151,7 @@ int KeyboardServo::keyLoop()
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
 
     // Use read key-press
-    switch (c)
-    {
+    switch (c) {
       case KEYCODE_LEFT:
         RCLCPP_DEBUG(nh_->get_logger(), "LEFT");
         twist_msg->twist.linear.y = -1.0;
@@ -247,15 +236,12 @@ int KeyboardServo::keyLoop()
     }
 
     // If a key requiring a publish was pressed, publish the message now
-    if (publish_twist)
-    {
+    if (publish_twist) {
       twist_msg->header.stamp = nh_->now();
       twist_msg->header.frame_id = frame_to_publish_;
       twist_pub_->publish(std::move(twist_msg));
       publish_twist = false;
-    }
-    else if (publish_joint)
-    {
+    } else if (publish_joint) {
       joint_msg->header.stamp = nh_->now();
       joint_msg->header.frame_id = BASE_FRAME_ID;
       joint_pub_->publish(std::move(joint_msg));

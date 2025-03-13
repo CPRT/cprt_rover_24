@@ -4,7 +4,7 @@ from launch_param_builder import ParameterBuilder
 
 import os
 import yaml
- 
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -13,10 +13,10 @@ from launch.actions import (
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
- 
+
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
- 
+
 from srdfdom.srdf import SRDF
 
 from launch_ros.actions import ComposableNodeContainer
@@ -29,6 +29,7 @@ from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
     DeclareBooleanLaunchArg,
 )
+
 
 def load_yaml(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -44,9 +45,9 @@ def load_yaml(package_name, file_path):
 def test_launch(moveit_config, launch_package_path=None):
     """
     Launches a self contained demo
- 
+
     launch_package_path is optional to use different launch and config packages
- 
+
     Includes
      * static_virtual_joint_tfs
      * robot_state_publisher
@@ -57,41 +58,39 @@ def test_launch(moveit_config, launch_package_path=None):
     """
     if launch_package_path == None:
         launch_package_path = moveit_config.package_path
- 
+
     ld = LaunchDescription()
-    
+
     # Get parameters for the Servo node
-    '''servo_params = {
+    """servo_params = {
         "moveit_servo":ParameterBuilder("arm_srdf3")
         .yaml(
             file_path="config/arm_config.yaml",
         )
         .to_dict()
-    }'''
-    
+    }"""
+
     # Get parameters for the Servo node
     servo_yaml = load_yaml("arm_srdf3", "config/arm_config.yaml")
     servo_params = {"moveit_servo": servo_yaml}
-    
-    
+
     ld.add_action(
-      # Launch a standalone Servo node.
-    # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
-      Node(
-        package="moveit_servo",
-        executable="servo_node_main",
-        parameters=[
-            servo_params,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            {'use_intra_process_comms' : True}
-            
-        ],
-        output="screen",
-      )
+        # Launch a standalone Servo node.
+        # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
+        Node(
+            package="moveit_servo",
+            executable="servo_node_main",
+            parameters=[
+                servo_params,
+                moveit_config.robot_description,
+                moveit_config.robot_description_semantic,
+                moveit_config.robot_description_kinematics,
+                {"use_intra_process_comms": True},
+            ],
+            output="screen",
+        )
     )
-    '''
+    """
     
     container = ComposableNodeContainer(
        name="moveit_servo_demo_container",
@@ -116,10 +115,13 @@ def test_launch(moveit_config, launch_package_path=None):
        output="screen",
     )
     
-    ld.add_action(container)'''
- 
+    ld.add_action(container)"""
+
     return ld
 
+
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("arm_urdf3", package_name="arm_srdf3").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder(
+        "arm_urdf3", package_name="arm_srdf3"
+    ).to_moveit_configs()
     return test_launch(moveit_config)
