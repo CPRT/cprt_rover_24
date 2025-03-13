@@ -42,7 +42,7 @@ ament_target_dependencies(
   "rclcpp"
 )
 
-install(TARGETS moveit_controller moveit_servo servo_keyboard
+install(TARGETS moveit_controller servo_keyboard
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
   PATTERN "setup_assistant.launch" EXCLUDE)
