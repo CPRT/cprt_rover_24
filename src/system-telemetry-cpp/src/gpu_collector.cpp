@@ -7,6 +7,7 @@
 double GPUCollector::get_gpu_usage() {
   FILE* pipe = popen("tegrastats | head -n 1", "r");
   if (!pipe) {
+    RCLCPP_WARN(logger_, "%s: Failed to run command", __FUNCTION__);
     return 0.0;
   }
   char buffer[256];
@@ -23,6 +24,7 @@ double GPUCollector::get_gpu_usage() {
       return std::stod(match[1].str());
     }
   }
+  RCLCPP_ERROR(logger_, "%s: Failed to parse GPU usage", __FUNCTION__);
   return 0.0;
 }
 

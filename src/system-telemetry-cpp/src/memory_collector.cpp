@@ -4,11 +4,14 @@
 #include <sstream>
 #include <string>
 
+MemoryCollector::MemoryCollector() : meminfo_file_("/proc/meminfo") {}
+
 void MemoryCollector::collect(interfaces::msg::SystemTelemetry& msg) {
-  std::ifstream mem_file("/proc/meminfo");
   std::string line;
+  meminfo_file_.clear();
+  meminfo_file_.seekg(0, std::ios::beg);
   double mem_total = 0.0, mem_free = 0.0, buffers = 0.0, cached = 0.0;
-  while (std::getline(mem_file, line)) {
+  while (std::getline(meminfo_file_, line)) {
     std::istringstream iss(line);
     std::string key;
     double value;
