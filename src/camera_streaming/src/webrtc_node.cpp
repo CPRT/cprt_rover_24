@@ -14,6 +14,8 @@ WebRTCStreamer::WebRTCStreamer()
   this->declare_parameter("camera_name", std::vector<std::string>());
   this->get_parameter("web_server", web_server_);
   this->get_parameter("web_server_path", web_server_path_);
+  this->declare_parameter("signal_server", false);
+  this->get_parameter("signal_server", signal_server_);
 
   // Set up the service for starting video
   start_video_service_ = this->create_service<interfaces::srv::VideoOut>(
@@ -174,7 +176,9 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
   GstCaps *caps = gst_caps_from_string("video/x-raw");
   g_object_set(G_OBJECT(capsfilter), "caps", caps, nullptr);
   gst_caps_unref(caps);
-  g_object_set(G_OBJECT(webrtcsink), "run-signalling-server", TRUE, nullptr);
+  if (signal_server_) {
+    g_object_set(G_OBJECT(webrtcsink), "run-signalling-server", TRUE, nullptr);
+  }
   if (web_server_) {
     g_object_set(G_OBJECT(webrtcsink), "run-web-server", TRUE, nullptr);
     g_object_set(G_OBJECT(webrtcsink), "web-server-host-addr",

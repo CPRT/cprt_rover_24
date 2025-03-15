@@ -16,3 +16,4 @@ webrtc_node:
       type: 1
     web_server: true
     web_server_path: "/home/cprt/gstreamer/webrtc/gstwebrtc-api/dist"
+    signal_server: true
