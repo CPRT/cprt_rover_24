@@ -10,7 +10,6 @@ from interfaces.srv import StopNode
 
 from .node_info import NodeInfo
 from .node_monitor import NodeMonitor
-from .output_monitor import OutputMonitor
 from . import node_launcher, node_terminator
 
 import logging
@@ -30,7 +29,6 @@ class NodeManager(Node):
         self._mutex: threading.Lock = threading.Lock()
 
         self.node_monitor = NodeMonitor()
-        self.output_monitor = OutputMonitor()
 
         threading.Thread(target=self._node_monitor_loop, daemon=True)
 
@@ -117,9 +115,6 @@ class NodeManager(Node):
             threading.Thread(
                 target=self._discover_children, args=(node_info,), daemon=True
             ).start()
-        self.output_monitor.start_capture(
-            name, proc, node_logger.info, node_logger.error
-        )
         return True
 
     def launch_node_callback(
@@ -128,12 +123,16 @@ class NodeManager(Node):
         response.success = self.launch_node(
             request.name,
             request.package,
-            None
-            if request.executable == LaunchNode.Request.NONE_FILENAME
-            else request.executable,
-            None
-            if request.launch_file == LaunchNode.Request.NONE_FILENAME
-            else request.launch_file,
+            (
+                None
+                if request.executable == LaunchNode.Request.NONE_FILENAME
+                else request.executable
+            ),
+            (
+                None
+                if request.launch_file == LaunchNode.Request.NONE_FILENAME
+                else request.launch_file
+            ),
             request.respawn,
         )
         if response.success:
@@ -340,7 +339,7 @@ class NodeManager(Node):
 def main(args=None):
     rclpy.init(args=args)
     service = NodeManager()
-    executor = MultiThreadedExecutor(8)
+    executor = MultiThreadedExecutor()
     executor.add_node(service)
     executor.spin()
     service.destroy_node()
