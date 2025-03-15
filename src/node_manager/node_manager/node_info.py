@@ -1,17 +1,19 @@
 import subprocess
 import psutil
 
+
 class NodeInfo:
     """
     Represents a managed node (or group) with its launch parameters and state.
     """
+
     def __init__(
         self,
         name: str,
         package: str,
         executable: str | None = None,
         launch_file: str | None = None,
-        respawn: bool = True
+        respawn: bool = True,
     ):
         """
         Parameters
@@ -34,10 +36,14 @@ class NodeInfo:
         If neither or both of `executable` and `launch_file` are provided.
         """
 
-        if (executable is None and launch_file is None):
-            raise ValueError("Specify exactly one of 'executable' or 'launch_file' (neither were provided).")
-        if (executable is not None and launch_file is not None):
-            raise ValueError("Specify exactly one of 'executable' or 'launch_file' (both were provided).")
+        if executable is None and launch_file is None:
+            raise ValueError(
+                "Specify exactly one of 'executable' or 'launch_file' (neither were provided)."
+            )
+        if executable is not None and launch_file is not None:
+            raise ValueError(
+                "Specify exactly one of 'executable' or 'launch_file' (both were provided)."
+            )
 
         self.name: str = name
         self.package: str = package

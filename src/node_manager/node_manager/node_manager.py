@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 
 from interfaces.srv import GetNodeStatus
 from interfaces.srv import LaunchNode
@@ -21,26 +22,36 @@ import psutil
 node_logger = logging.getLogger(__name__)
 logging.basicConfig()
 
+
 class NodeManager(Node):
     def __init__(self):
         super().__init__("node_manager")
         self._nodes: dict[str, NodeInfo] = {}
         self._mutex: threading.Lock = threading.Lock()
-        
+
         self.node_monitor = NodeMonitor()
         self.output_monitor = OutputMonitor()
 
         threading.Thread(target=self._node_monitor_loop, daemon=True)
 
-        self.launcher_service = self.create_service(LaunchNode, "node_manager/launch_node", self.launch_node_callback)
-        self.stopper_service = self.create_service(StopNode, "node_manager/stop_node", self.stop_node_callback)
-        self.node_status_service = self.create_service(GetNodeStatus, "node_manager/get_node_status", self.get_node_status_callback)
-        self.node_listing_service = self.create_service(ListNodes, "node_manager/list_nodes", self.list_nodes_callback)
-        self.shutdown_service = self.create_service(ShutdownAllNodes, "node_manager/shutdown_all", self.shutdown_all_callback)
+        self.launcher_service = self.create_service(
+            LaunchNode, "node_manager/launch_node", self.launch_node_callback
+        )
+        self.stopper_service = self.create_service(
+            StopNode, "node_manager/stop_node", self.stop_node_callback
+        )
+        self.node_status_service = self.create_service(
+            GetNodeStatus, "node_manager/get_node_status", self.get_node_status_callback
+        )
+        self.node_listing_service = self.create_service(
+            ListNodes, "node_manager/list_nodes", self.list_nodes_callback
+        )
+        self.shutdown_service = self.create_service(
+            ShutdownAllNodes, "node_manager/shutdown_all", self.shutdown_all_callback
+        )
 
         logger = self.get_logger()
         logger.info("node manager is set up")
-
 
     def launch_node(
         self,
@@ -48,7 +59,7 @@ class NodeManager(Node):
         package: str,
         executable: str | None = None,
         launch_file: str | None = None,
-        respawn: bool = True
+        respawn: bool = True,
     ) -> bool:
         """
         Launch a node or node group.
@@ -83,7 +94,11 @@ class NodeManager(Node):
             return False
 
         with self._mutex:
-            if name in self._nodes and self._nodes[name].process and self._nodes[name].process.poll() is None:
+            if (
+                name in self._nodes
+                and self._nodes[name].process
+                and self._nodes[name].process.poll() is None
+            ):
                 node_logger.warning(f"Node '{name}' is already running.")
                 return False
 
@@ -99,20 +114,33 @@ class NodeManager(Node):
                 return False
 
         if node_info.mode == "launch":
-            threading.Thread(target=self._discover_children, args=(node_info,), daemon=True).start()
-        self.output_monitor.start_capture(name, proc, node_logger.info, node_logger.error)
+            threading.Thread(
+                target=self._discover_children, args=(node_info,), daemon=True
+            ).start()
+        self.output_monitor.start_capture(
+            name, proc, node_logger.info, node_logger.error
+        )
         return True
 
-    def launch_node_callback(self, request: LaunchNode.Request, response: LaunchNode.Response) -> LaunchNode.Response:
+    def launch_node_callback(
+        self, request: LaunchNode.Request, response: LaunchNode.Response
+    ) -> LaunchNode.Response:
         response.success = self.launch_node(
             request.name,
             request.package,
-            None if request.executable == LaunchNode.Request.NONE_FILENAME else request.executable,
-            None if request.launch_file == LaunchNode.Request.NONE_FILENAME else request.launch_file,
-            request.respawn
+            None
+            if request.executable == LaunchNode.Request.NONE_FILENAME
+            else request.executable,
+            None
+            if request.launch_file == LaunchNode.Request.NONE_FILENAME
+            else request.launch_file,
+            request.respawn,
         )
+        if response.success:
+            self.get_logger().info(f"Node `{request.name}` launched")
+        else:
+            self.get_logger().error(f"Node `{request.name}` failed to launch")
         return response
-
 
     def stop_node(self, name: str) -> bool:
         """
@@ -144,10 +172,11 @@ class NodeManager(Node):
             traceback.print_exc()
             return False
 
-    def stop_node_callback(self, request: StopNode.Request, response: StopNode.Response) -> StopNode.Response:
+    def stop_node_callback(
+        self, request: StopNode.Request, response: StopNode.Response
+    ) -> StopNode.Response:
         response.success = self.stop_node(request.name)
         return response
-
 
     def get_node_status(self, name: str) -> str:
         """
@@ -169,10 +198,11 @@ class NodeManager(Node):
             proc = self._nodes[name].process
             return "running" if proc and proc.poll() is None else "stopped"
 
-    def get_node_status_callback(self, request: GetNodeStatus.Request, response: GetNodeStatus.Response) -> GetNodeStatus.Response:
+    def get_node_status_callback(
+        self, request: GetNodeStatus.Request, response: GetNodeStatus.Response
+    ) -> GetNodeStatus.Response:
         response.status = self.get_node_status(request.name)
         return response
-
 
     def list_nodes(self) -> list[str]:
         """
@@ -186,10 +216,11 @@ class NodeManager(Node):
         with self._mutex:
             return list(self._nodes.keys())
 
-    def list_nodes_callback(self, _: ListNodes.Request, response: ListNodes.Response) -> ListNodes.Response:
+    def list_nodes_callback(
+        self, _: ListNodes.Request, response: ListNodes.Response
+    ) -> ListNodes.Response:
         response.names = self.list_nodes()
         return response
-
 
     def shutdown_all(self) -> None:
         """
@@ -201,10 +232,11 @@ class NodeManager(Node):
             node_logger.info(f"Shutting down '{name}'.")
             _ = self.stop_node(name)
 
-    def shutdown_all_callback(self, _: ShutdownAllNodes.Request, response: ShutdownAllNodes.Response) -> ShutdownAllNodes.Response:
+    def shutdown_all_callback(
+        self, _: ShutdownAllNodes.Request, response: ShutdownAllNodes.Response
+    ) -> ShutdownAllNodes.Response:
         self.shutdown_all()
         return response
-
 
     def _node_monitor_loop(self) -> None:
         """
@@ -219,15 +251,27 @@ class NodeManager(Node):
                 if proc is None:
                     continue
                 if proc.poll() is not None:
-                    node_logger.warning(f"Node '{name}' terminated unexpectedly with code {proc.poll()}.")
+                    node_logger.warning(
+                        f"Node '{name}' terminated unexpectedly with code {proc.poll()}."
+                    )
                     if node_info.respawn:
                         node_info.retries += 1
                         delay = min(5, 2 * node_info.retries)
-                        node_logger.info(f"Respawning '{name}' in {delay} seconds (attempt {node_info.retries}).")
+                        node_logger.info(
+                            f"Respawning '{name}' in {delay} seconds (attempt {node_info.retries})."
+                        )
                         with self._mutex:
                             _ = self._nodes.pop(name, None)
-                        threading.Timer(delay, lambda ni=node_info: self.launch_node(
-                            ni.name, ni.package, ni.executable, ni.launch_file, ni.respawn)).start()
+                        threading.Timer(
+                            delay,
+                            lambda ni=node_info: self.launch_node(
+                                ni.name,
+                                ni.package,
+                                ni.executable,
+                                ni.launch_file,
+                                ni.respawn,
+                            ),
+                        ).start()
                     else:
                         node_logger.info(f"Not respawning '{name}' (respawn disabled).")
                         with self._mutex:
@@ -240,13 +284,25 @@ class NodeManager(Node):
                             current_pids = {child.pid for child in current_children}
                             recorded_pids = {child.pid for child in node_info.children}
                             if recorded_pids and (recorded_pids - current_pids):
-                                node_logger.warning(f"One or more child processes of '{name}' have died. Restarting group.")
+                                node_logger.warning(
+                                    f"One or more child processes of '{name}' have died. Restarting group."
+                                )
                                 with self._mutex:
                                     self._nodes.pop(name, None)
-                                threading.Timer(2.0, lambda ni=node_info: self.launch_node(
-                                    ni.name, ni.package, ni.executable, ni.launch_file, ni.respawn)).start()
+                                threading.Timer(
+                                    2.0,
+                                    lambda ni=node_info: self.launch_node(
+                                        ni.name,
+                                        ni.package,
+                                        ni.executable,
+                                        ni.launch_file,
+                                        ni.respawn,
+                                    ),
+                                ).start()
                         except Exception as e:
-                            node_logger.error(f"Error monitoring children for '{name}': {e}")
+                            node_logger.error(
+                                f"Error monitoring children for '{name}': {e}"
+                            )
             time.sleep(1.0)
 
     @staticmethod
@@ -266,18 +322,27 @@ class NodeManager(Node):
                 children = parent.children(recursive=True)
                 if children:
                     node_info.children = children
-                    node_logger.info(f"Discovered {len(children)} child processes for '{node_info.name}'.")
+                    node_logger.info(
+                        f"Discovered {len(children)} child processes for '{node_info.name}'."
+                    )
                     return
             except psutil.NoSuchProcess:
                 break
             time.sleep(0.5)
-        node_logger.warning(f"No child processes discovered for '{node_info.name}' within timeout.")
+        node_logger.warning(
+            f"No child processes discovered for '{node_info.name}' within timeout."
+        )
+
+    def __del__(self):
+        self.shutdown_all()
 
 
 def main(args=None):
     rclpy.init(args=args)
     service = NodeManager()
-    rclpy.spin(service)
+    executor = MultiThreadedExecutor(8)
+    executor.add_node(service)
+    executor.spin()
     service.destroy_node()
     rclpy.shutdown()
 
