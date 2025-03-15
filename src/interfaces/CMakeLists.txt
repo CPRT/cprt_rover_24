@@ -33,6 +33,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/NavToGPSGeopose.srv"
   "srv/VideoOut.srv"
   "srv/MoveServo.srv"
+  "srv/node_management/GetNodeStatus.srv"
+  "srv/node_management/LaunchNode.srv"
+  "srv/node_management/ListNodes.srv"
+  "srv/node_management/ShutdownAllNodes.srv"
+  "srv/node_management/StopNode.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 
