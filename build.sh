@@ -2,12 +2,23 @@
 
 # Find all files tracked by git that are not part of a submodule
 files=$(git ls-files -- ':!:(*/)' ':!:(*/**/*)' ':!:(*/**/*/*)')
+
+# Filter out python files into one variable
+python_files=$(
+  for file in $files; do
+    if [[ $file == *.py ]]; then
+      echo "$file"
+    fi
+  done
+)
+
+# Launch one instance of `black` for all python files
+IFS=$'\n' black $python_files
+
+# Format C/C++ source & header files
 for file in $files; do
   if [[ $file == *.cpp || $file == *.hpp || $file == *.c || $file == *.h ]]; then
     clang-format -i "$file"
-  fi
-  if [[ $file == *.py ]]; then
-    black "$file"
   fi
 done
 
