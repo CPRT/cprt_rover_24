@@ -2,13 +2,19 @@ import subprocess
 import threading
 from typing import Callable
 
+
 class OutputMonitor:
     """
     Captures stdout and stderr from a subprocess and logs the output.
     """
-    def start_capture(self, name: str, proc: subprocess.Popen[str],
-                      log_info: Callable[[str], None],
-                      log_error: Callable[[str], None]) -> None:
+
+    def start_capture(
+        self,
+        name: str,
+        proc: subprocess.Popen[str],
+        log_info: Callable[[str], None],
+        log_error: Callable[[str], None],
+    ) -> None:
         """
         Start capturing output from the process.
 
@@ -23,12 +29,17 @@ class OutputMonitor:
         log_error : callable
             Function to log error messages.
         """
-        threading.Thread(target=self._capture, args=(name, proc, log_info, log_error), daemon=True).start()
+        threading.Thread(
+            target=self._capture, args=(name, proc, log_info, log_error), daemon=True
+        ).start()
 
     @staticmethod
-    def _capture(name: str, proc: subprocess.Popen[str],
-                 log_info: Callable[[str], None],
-                 log_error: Callable[[str], None]) -> None:
+    def _capture(
+        name: str,
+        proc: subprocess.Popen[str],
+        log_info: Callable[[str], None],
+        log_error: Callable[[str], None],
+    ) -> None:
         """
         Capture and log the output of the process.
 
@@ -45,11 +56,11 @@ class OutputMonitor:
         """
         try:
             if proc.stdout:
-                for line in iter(proc.stdout.readline, ''):
+                for line in iter(proc.stdout.readline, ""):
                     if line:
                         log_info(f"[{name} STDOUT] {line.strip()}")
             if proc.stderr:
-                for line in iter(proc.stderr.readline, ''):
+                for line in iter(proc.stderr.readline, ""):
                     if line:
                         log_error(f"[{name} STDERR] {line.strip()}")
         except Exception as e:

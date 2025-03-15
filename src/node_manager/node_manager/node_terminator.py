@@ -4,7 +4,8 @@ import subprocess
 
 from .node_info import NodeInfo
 
-def terminate_node(node_info: NodeInfo, grace_timeout: float = 5.0) -> None:
+
+def terminate(node_info: NodeInfo, grace_timeout: float = 5.0) -> None:
     """
     Terminate the process associated with the node.
 
