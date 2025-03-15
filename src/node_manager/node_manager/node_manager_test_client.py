@@ -1,6 +1,8 @@
 import rclpy
+from time import sleep
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 from interfaces.srv import GetNodeStatus
 from interfaces.srv import LaunchNode
@@ -18,12 +20,26 @@ import rclpy.timer
 
 
 def get_stdout(process: list[str]) -> str:
-    subprocess.Popen(process).stdout.read()
+    output = subprocess.Popen(process, stdout=subprocess.PIPE).stdout
+    if output is None:
+        return ""
+    return output.read().decode("utf-8").replace('\n', '')
+
+def is_in_list(name: str, timeout: float = 0) -> bool:
+    start = rclpy.clock.Clock().now()
+    while True:
+        ret = get_stdout(["ros2", "node", "list"])
+        if name in ret:
+            return True
+        if rclpy.clock.Clock().now() - start > rclpy.time.Duration(seconds=timeout):
+            return False
+        sleep(0.1)
 
 
 class NodeManagerTestClient(Node):
     def __init__(self):
         super().__init__("node_manager_test_client")
+        self.timer_callback_group = MutuallyExclusiveCallbackGroup()
 
         self.launcher_client = self.create_client(
             LaunchNode, "node_manager/launch_node"
@@ -45,21 +61,56 @@ class NodeManagerTestClient(Node):
         self.attempted_tests = 0
         self.successful_tests = 0
 
-        self.timer = self.create_timer(1.0, self.test_manager)
-        self.launch_request = LaunchNode.Request()
+        self.timer = self.create_timer(1.0, self.test_manager, callback_group=self.timer_callback_group)
 
     def test_manager(self):
-        self.timer.destroy()
+        self.get_logger().info("running tests")
+        self.assert_okay(self.test_launch, "launch")
+        self.assert_okay(self.test_list, "list")
+        self.assert_okay(self.test_status, "status")
+        self.assert_okay(self.test_stop, "stop")
+        self.assert_okay(self.test_launch, "launch")
+        self.assert_okay(self.test_shutdown, "shutdown")
+        self.get_logger().info(f"tests complete: {self.successful_tests}/{self.attempted_tests}")
 
-        self.launch_request = LaunchNode.Request()
-        self.launch_request.package = "node_manager"
-        self.launch_request.executable = "test_node"
-        self.launch_request.name = "test"
-        self.get_logger().info("testing launch")
-        # TODO: this future always pends and never actually completes
-        self.future = self.launcher_client.call_async(self.launch_request)
-        rclpy.spin_until_future_complete(self, self.future)
-        self.get_logger().info("asdfqwerty")
+    def test_launch(self):
+        self.timer.destroy()
+        launch_request = LaunchNode.Request()
+        launch_request.package = "node_manager"
+        launch_request.executable = "test_node"
+        launch_request.name = "test"
+        assert not is_in_list("node_manager_test_node", timeout=0.5)
+        future = self.launcher_client.call_async(launch_request)
+        rclpy.spin_until_future_complete(self, future)
+        assert is_in_list("node_manager_test_node", timeout=0.5)
+    
+    def test_stop(self):
+        stop_request = StopNode.Request()
+        stop_request.name = "test"
+        assert is_in_list("node_manager_test_node")
+        future = self.stopper_client.call_async(stop_request)
+        rclpy.spin_until_future_complete(self, future)
+        assert not is_in_list("node_manager_test_node", timeout=0.5)
+    
+    def test_list(self):
+        list_request = ListNodes.Request()
+        future = self.node_listing_client.call_async(list_request)
+        rclpy.spin_until_future_complete(self, future)
+        assert future.result() is not None
+    
+    def test_status(self):
+        status_request = GetNodeStatus.Request()
+        status_request.name = "test"
+        future = self.node_status_client.call_async(status_request)
+        rclpy.spin_until_future_complete(self, future)
+        assert future.result() is not None
+
+    def test_shutdown(self):
+        shutdown_request = ShutdownAllNodes.Request()
+        future = self.shutdown_client.call_async(shutdown_request)
+        rclpy.spin_until_future_complete(self, future)
+        assert is_in_list("node_manager", timeout=0.5)
+        assert not is_in_list("node_manager_test_node", timeout=0.5)
 
     def assert_okay(self, function: Callable[[], None], test_name: str):
         self.get_logger().info(f"running test `{test_name}`")
@@ -87,7 +138,7 @@ class NodeManagerTestClient(Node):
 def main(args=None):
     rclpy.init(args=args)
     client = NodeManagerTestClient()
-    executor = MultiThreadedExecutor(8)
+    executor = MultiThreadedExecutor()
     executor.add_node(client)
     executor.spin()
     client.destroy_node()
