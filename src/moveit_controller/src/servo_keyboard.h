@@ -53,6 +53,7 @@ class KeyboardReader {
 class KeyboardServo {
  public:
   KeyboardServo();
+  ~KeyboardServo();
   int keyLoop();
 
  private:
@@ -65,8 +66,7 @@ class KeyboardServo {
 
   std::string frame_to_publish_;
   double joint_vel_cmd_;
+  KeyboardReader input;
 };
-
-KeyboardReader input;
 
 #endif

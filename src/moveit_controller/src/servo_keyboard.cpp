@@ -35,6 +35,11 @@ void KeyboardServo::spin() {
   }
 }
 
+KeyboardServo::~KeyboardServo()
+{
+  input.shutdown();
+}
+
 int KeyboardServo::keyLoop() {
   char c;
   bool publish_twist = false;
@@ -170,21 +175,11 @@ int KeyboardServo::keyLoop() {
   return 0;
 }
 
-void quit(int sig) {
-  (void)sig;
-  input.shutdown();
-  rclcpp::shutdown();
-  exit(0);
-}
-
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   KeyboardServo keyboard_servo;
 
-  signal(SIGINT, quit);
-
   int rc = keyboard_servo.keyLoop();
-  input.shutdown();
   rclcpp::shutdown();
 
   return rc;
