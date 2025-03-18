@@ -24,6 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "imu_filter = localization.imu_filter:main",
+            "imu_pub_node = localization.imu_pub_node:main",
         ],
     },
 )

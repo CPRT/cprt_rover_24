@@ -5,21 +5,23 @@ import board
 import busio
 import adafruit_bno08x
 import os
+from adafruit_bno08x.i2c import BNO08X_I2C
 
 
 class BNO08XPublisher(Node):
-    def __init__(self, frame_id="imu_link"):
+    def __init__(self):  #frame_id="imu_link"
         super().__init__("imu_pub_node")
+        # Initialize I2C communication
+        i2c = busio.I2C(board.SCL, board.SDA)
+        self.sensor = BNO08X_I2C(i2c)
         self.load_params()
+
         # IMU Publisher
         queue_depth = (
             self.get_parameter("QueueDepth").get_parameter_value().integer_value
         )
         self.imu_pub = self.create_publisher(Imu, "imu/data", queue_depth)
         
-        # Initialize I2C communication
-        i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensor = adafruit_bno08x.BNO08X_I2C(i2c)
 
         # Timer to publish data
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
@@ -27,17 +29,23 @@ class BNO08XPublisher(Node):
         self.get_logger().info(f"BNO08X IMU Node Started! Frame ID : {self.frame_id}")
 
     def load_params(self):
-        self.declare_parameter("orientation_covariance", [0.01]*9)
+        self.declare_parameter("orientation_covariance", [0.01] * 9)
         self.orientation_covariance = (
-            self.get_parameter("orientation_covariance").get_parameter_value().double_array_value
+            self.get_parameter("orientation_covariance")
+            .get_parameter_value()
+            .double_array_value
         )
-        self.declare_parameter("angular_velocity_covariance", [0.01]*9)
+        self.declare_parameter("angular_velocity_covariance", [0.01] * 9)
         self.angular_velocity_covariance = (
-            self.get_parameter("angular_velocity_covariance").get_parameter_value().double_array_value
+            self.get_parameter("angular_velocity_covariance")
+            .get_parameter_value()
+            .double_array_value
         )
-        self.declare_parameter("linear_acceleration_covariance", [0.01]*9)
+        self.declare_parameter("linear_acceleration_covariance", [0.01] * 9)
         self.linear_acceleration_covariance = (
-            self.get_parameter("linear_acceleration_covariance").get_parameter_value().double_array_value
+            self.get_parameter("linear_acceleration_covariance")
+            .get_parameter_value()
+            .double_array_value
         )
         self.declare_parameter("Freq", 2.0)
         self.freq = self.get_parameter("Freq").get_parameter_value().double_value
@@ -84,3 +92,5 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
+if __name__ == "__main__":
+    main()
