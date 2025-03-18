@@ -44,8 +44,8 @@ ament_target_dependencies(
 
 install(TARGETS moveit_controller servo_keyboard
   DESTINATION lib/${PROJECT_NAME})
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
-  PATTERN "setup_assistant.launch" EXCLUDE)
+#install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
+#  PATTERN "setup_assistant.launch" EXCLUDE)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

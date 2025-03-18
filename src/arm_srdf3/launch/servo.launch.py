@@ -110,16 +110,6 @@ def test_launch(moveit_config, launch_package_path=None):
         )
     )
 
-    # If database loading was enabled, start mongodb as well
-    """ld.add_action(
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                str(launch_package_path / "launch/warehouse_db.launch.py")
-            ),
-            condition=IfCondition(LaunchConfiguration("db")),
-        )
-    )"""
-
     # Fake joint driver
     ld.add_action(
         Node(
@@ -141,35 +131,10 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
-
-    # Get parameters for the Servo node
-    """servo_params = {
-        "moveit_servo":ParameterBuilder("arm_srdf3")
-        .yaml(
-            file_path="config/arm_config.yaml",
-        )
-        .to_dict()
-    }"""
+    
     servo_yaml = load_yaml("arm_srdf3", "config/arm_config.yaml")
     servo_params = {"moveit_servo": servo_yaml}
 
-    """ld.add_action(
-      # Launch a standalone Servo node.
-    # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
-      Node(
-        package="moveit_servo",
-        executable="servo_node_main",
-        parameters=[
-            servo_params,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            {'use_intra_process_comms' : True}
-            
-        ],
-        output="screen",
-      )
-    )"""
 
     # Launch as much as possible in components
     container = ComposableNodeContainer(
