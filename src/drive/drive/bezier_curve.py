@@ -6,17 +6,17 @@ def bernstein_poly(i, n, t):
 
 def bezier_curve(points, nTimes=1000):
     nPoints = len(points)
-    horizontalPoints = np.array([p[0] for p in points])
-    verticalPoints = np.array([p[1] for p in points])
+    inputPoints = np.array([p[0] for p in points])
+    outputPoints = np.array([p[1] for p in points])
 
     t = np.linspace(0.0, 1.0, nTimes)
 
     polynomial_array = np.array([bernstein_poly(i, nPoints-1, t) for i in range(0, nPoints)   ])
 
-    hor_vals = np.dot(horizontalPoints, polynomial_array)
-    vert_vals = np.dot(verticalPoints, polynomial_array)
+    input_vals = np.dot(inputPoints, polynomial_array)
+    output_vals = np.dot(outputPoints, polynomial_array)
 
-    return hor_vals, vert_vals
+    return input_vals, output_vals
 
 bezier_points = [
     (-1.206, -2),
@@ -25,8 +25,10 @@ bezier_points = [
     (1.206, 2)
 ]
 
-def vertical_axis_bezier(horizontal_value):
-    horizontal,vertical = bezier_curve(bezier_points)
-    index = np.argmin(np.absolute(horizontal - horizontal_value))
+#desmos link if anyone wants to tweak the curve: https://www.desmos.com/calculator/x0bo7r5ncj
+
+def output_bezier(input_value):
+    input,output = bezier_curve(bezier_points)
+    index = np.argmin(np.absolute(input - input_value))
     
-    return vertical[index]
+    return output[index]

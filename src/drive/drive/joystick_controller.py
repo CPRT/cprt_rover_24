@@ -2,9 +2,8 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
-from joystick_drive import bezier_curve
 
-from bezier_curve import vertical_axis_bezier
+from bezier_curve import output_bezier
 
 class Curve:
     """
@@ -29,7 +28,7 @@ class Curve:
         if curve_type == "linear":
             self.curve = lambda x: x
         elif curve_type == "Bezier":   
-            self.curve = vertical_axis_bezier
+            self.curve = output_bezier
         else:
             rclpy.logging.get_logger("joystick_controller").warn(
                 f"Failed to change curve type. Unknown curve {curve_type}."
