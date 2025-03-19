@@ -66,7 +66,7 @@ class joystickArmController(Node):
 
         self.toggleArmControl = True
 
-        self.MAX_ACTUATION = 71
+        self.MAX_ACTUATION = 62
         self.MIN_ACTUATION = 8
         self.SERVO_MAX = 180
         self.SERVO_MIN = 0
@@ -81,7 +81,7 @@ class joystickArmController(Node):
         self.wristTiltCommand = self.create_publisher(MotorControl, "/wristTilt/set", 1)
         self.wristTurnCommand = self.create_publisher(MotorControl, "/wristTurn/set", 1)
 
-        self.joystick = self.create_subscription(Joy, "/joy", self.joy_callback, 5)
+        self.joystick = self.create_subscription(Joy, "/joy", self.joy_callback, 10)
 
         self.cli = self.create_client(MoveServo, "servo_service")
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -120,6 +120,13 @@ class joystickArmController(Node):
         self.elbowCommand.publish(self.elbow)
         self.wristTiltCommand.publish(self.wristTilt)
         self.wristTurnCommand.publish(self.wristTurn)
+        
+    def map_range(value, old_min, old_max, new_min, new_max):
+        old_range = old_max - old_min
+        new_range = new_max - new_min
+        scaled_value = (value - old_min) / old_range
+        mapped_value = new_min + scaled_value * new_range
+        return mapped_value
 
     def joy_callback(self, msg: Joy):
         self.lastTimestamp = msg.header.stamp.sec
@@ -129,64 +136,58 @@ class joystickArmController(Node):
         self.elbow.mode = 0
         self.wristTilt.mode = 0
         self.wristTurn.mode = 0
-        
-        #if (msg.buttons[13] == 1):
-        #    self.toggleArmControl = (not self.toggleArmControl)
-        #    joystickArmController.get_logger(self).info("Switching Modes to:" + self.toggleArmControl)
-       # 
-       # if self.toggleArmControl == False:
-       #     return
+
+        throttle = map_range(msg.axes[2], -1.0, 1.0, 0.25, 1.0)
 
         if msg.axes[0] < -0.1:  # RIGHT BASE, TM AXIS-0 -
-            self.base.value = -msg.axes[0]
+            self.base.value = -(msg.axes[0] / 2 * throttle)
         elif msg.axes[0] > 0.1:  # LEFT BASE, TM AXIS-0 +
-            self.base.value = -msg.axes[0]
+            self.base.value = -(msg.axes[0] / 2 * throttle)
         else:
             self.base.value = 0.0
 
         if msg.axes[4] == -1:  # RIGHT WRIST TURN, TM AXIS-4 +
-            self.wristTurn.value = 1.0
+            self.wristTurn.value = 1.0 * throttle
         elif msg.axes[4] == 1:  # LEFT WRIST TURN, TM AXIS-4 -
-            self.wristTurn.value = -1.0
+            self.wristTurn.value = -1.0 * throttle
         else:
             self.wristTurn.value = 0.0
 
-        if msg.buttons[2]:  # RIGHT WRIST TILT, TM BUTTON 2
+        if msg.buttons[4]:  # RIGHT WRIST TILT, TM BUTTON 4
             self.wristTilt.value = 1.0
-        elif msg.buttons[3]:  # LEFT WRIST TILT, TM BUTTON 3
+        elif msg.buttons[5]:  # LEFT WRIST TILT, TM BUTTON 5
             self.wristTilt.value = -1.0
         else:
             self.wristTilt.value = 0.0
 
-        if msg.axes[5] < -0.2:  # DIFF2 FORWARD, TM AXIS-0 -
-            self.diff2.value = 1.0
-        elif msg.axes[5] > 0.2:  # DIFF2 BACKWARD, TM AXIS-0 +
-            self.diff2.value = -1.0
+        if msg.axes[5] < -0.2:  # DIFF2 FORWARD, TM AXIS-5 -
+            self.diff2.value = 1.0 * throttle
+        elif msg.axes[5] > 0.2:  # DIFF2 BACKWARD, TM AXIS-5 +
+            self.diff2.value = -1.0 * throttle
         else:
             self.diff2.value = 0.0
 
-        # self.elbow.value = msg.axes[4]  # ELBOW ROTATION, TM AXIS-2 +/-
-
-        if msg.axes[2] < -0.2:  # ELBOW LEFT, TM AXIS-0 +
+        if msg.axes[3] < -0.2:  # ELBOW LEFT, TM AXIS-3 +
             self.elbow.value = 0.2
-        elif msg.axes[2] > 0.2:  # EBLOW RIGHT, TM AXIS-0 -
+        elif msg.axes[3] > 0.2:  # EBLOW RIGHT, TM AXIS-3 -
             self.elbow.value = -0.2
         else:
             self.elbow.value = 0.0
 
-        self.diff1.value = -msg.axes[1]  # DIFF1 CONTROL, TM AXIS-1 +/-
+        self.diff1.value = -msg.axes[1] * throttle  # DIFF1 CONTROL, TM AXIS-1 +/-
 
-        # old diff drive control for other arm
-        #
-        # diff1, diff2 = joystick_to_motor_control(msg.axes[0], msg.axes[1])
-        # self.get_logger().info(f'diff1: {self.diff1.value}, diff2: {self.diff2.value}')
-        # self.diff1.value = float(diff1)
-        # self.diff2.value = float(diff2)
+        # attempting straight line movement forward/backward
+        if msg.buttons[2]:  # back
+            self.diff2.value = -1.0 * throttle
+            self.diff1.value = -0.75 * throttle
+        elif msg.buttons[3]:  # forward
+            self.diff2.value = 1.0 * throttle
+            self.diff1.value = 0.75 * throttle
 
-        if msg.buttons[13]:
+        if msg.buttons[11]:
             self.estop.data = True
             self.estopTimestamp = msg.header.stamp.sec
-        if msg.buttons[14] and msg.header.stamp.sec - self.estopTimestamp > 2:
+        if msg.buttons[10] and msg.header.stamp.sec - self.estopTimestamp > 2:
             self.estop.data = False
 
         if msg.buttons[0] == 1:
