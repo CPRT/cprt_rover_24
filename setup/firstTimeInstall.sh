@@ -16,3 +16,6 @@ source ~/.bashrc
 ./install_nav_deps.sh
 source ~/.bashrc
 ./setup_service.sh
+
+sudo cp enablecan.sh /usr/local/bin || exit 1
+echo "$USER ALL=(ALL) NOPASSWD: /usr/local/bin/enablecan.sh" | sudo tee -a /etc/sudoers > /dev/null
