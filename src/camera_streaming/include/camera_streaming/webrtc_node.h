@@ -3,19 +3,33 @@
  * @brief Header file for the WebRTCStreamer class.
  * @author Connor Needham
  *
- * This file contains the declaration of the WebRTCStreamer class, which is responsible
- * for handling video streaming using WebRTC and GStreamer.
+ * This file contains the declaration of the WebRTCStreamer class, which is
+ * responsible for handling video streaming using WebRTC and GStreamer.
  */
 
 #ifndef WEBRTC_STREAMER_HPP
 #define WEBRTC_STREAMER_HPP
 
 #include <gst/gst.h>
+
 #include <interfaces/srv/video_out.hpp>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
+
+template <typename T>
+struct GstDeleter {
+  void operator()(T* object) const {
+    if (object) {
+      gst_object_unref(object);
+    }
+  }
+};
+
+// Type alias for unique_ptr managing a GStreamer object
+template <typename T>
+using GstUniquePtr = std::unique_ptr<T, GstDeleter<T>>;
 
 /**
  * @class WebRTCStreamer
@@ -41,7 +55,7 @@ class WebRTCStreamer : public rclcpp::Node {
    * @enum CameraType
    * @brief Enum representing the type of camera source.
    */
-  enum class CameraType { 
+  enum class CameraType {
     V4l2Src = 0, /**< V4L2 source */
     TestSrc      /**< Test source */
   };
@@ -113,10 +127,12 @@ class WebRTCStreamer : public rclcpp::Node {
 
   bool web_server_; /**< Flag indicating if the web server is enabled */
   std::string web_server_path_; /**< Path to the web server */
-  std::vector<GstElement*> connected_sources_; /**< List of connected GStreamer source elements */
-  GstElement* pipeline_; /**< GStreamer pipeline element */
-  GstElement* compositor_; /**< GStreamer compositor element */
-  rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr start_video_service_; /**< ROS2 service for starting video output */
+  std::vector<GstElement*>
+      connected_sources_; /**< List of connected GStreamer source elements */
+  GstUniquePtr<GstElement> pipeline_; /**< GStreamer pipeline element */
+  GstElement* compositor_;            /**< GStreamer compositor element */
+  rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr
+      start_video_service_; /**< ROS2 service for starting video output */
 
   /**
    * @brief Callback function for handling GStreamer bus messages.
