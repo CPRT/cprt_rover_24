@@ -25,6 +25,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PointArray.msg"
   "msg/ArmCmd.msg"
   "msg/VideoSource.msg"
+  "msg/LaunchInfo.msg"
   "msg/SystemTelemetry.msg"
   "srv/ArmPos.srv"
   "srv/ArmCmd.srv"
