@@ -31,6 +31,8 @@ def generate_launch_description():
         "ros_params_override_path": zed_override_params_filepath,
         "camera_model": "zed2i",
         "publish_urdf": "true",
+        "publish_tf": "false",
+        "publish_map_tf": "false",
         "svo_path": svo_path,
     }
 
