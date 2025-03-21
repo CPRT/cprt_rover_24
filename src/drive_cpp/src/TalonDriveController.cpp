@@ -28,6 +28,8 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
   this->declare_parameter("frequency", 10.0);
   const double frequency =
       std::max(this->get_parameter("frequency").as_double(), 1.0);
+  this->declare_parameter("timeout", 2.0);
+  timeout_ = this->get_parameter("timeout").as_double();
 
   this->declare_parameter(
       "wheels", std::vector<std::string>{"frontRight", "frontLeft", "backRight",
@@ -92,7 +94,7 @@ void TalonDriveController::odom_pub_callback() {
 }
 
 void TalonDriveController::control_timer_callback() {
-  if (this->get_clock()->now().seconds() - lastTimestamp_ > 2) {
+  if (this->get_clock()->now().seconds() - lastTimestamp_ > timeout_) {
     for (auto &wheel : wheels_) {
       wheel.setVelocity(0.0);
     }

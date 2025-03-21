@@ -13,6 +13,7 @@ from launch.conditions import IfCondition
 def generate_launch_description():
     """Generate launch description with multiple components."""
     pkg_drive = get_package_share_directory("drive")
+    parameters_file = os.path.join(pkg_drive, "config", "thrustmaster.yaml")
     launch_backend = LaunchConfiguration("launch_backend", default="False")
     launch_backend_cmd = DeclareLaunchArgument(
         "launch_backend",
@@ -34,15 +35,12 @@ def generate_launch_description():
             launch_ros.actions.Node(
                 package="joy", executable="joy_node", name="joystick"
             ),
-            launch_ros.actions.Node(
-                package="drive",
-                executable="joystick_controller",
-                name="joystick_controller",
-                parameters=[
-                    {"linear_axis_index": 1},
-                    {"turn_axis_index": 0},
-                    {"max_linear_speed": 2.0},
-                ],
+            Node(
+                package="joystick_control",
+                executable="flightstick_control",
+                name="flightstick_control",
+                output="screen",
+                parameters=[parameters_file],
             ),
         ]
     )

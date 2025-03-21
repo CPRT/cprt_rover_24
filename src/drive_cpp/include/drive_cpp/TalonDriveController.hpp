@@ -84,6 +84,12 @@ class TalonDriveController : public rclcpp::Node {
   bool pubElec_;
 
   /**
+   * @brief Timeout before shutting down motors if no control messages are
+   * received.
+   */
+  double timeout_;
+
+  /**
    * @brief The timestamp of the last control message.
    */
   double lastTimestamp_;
