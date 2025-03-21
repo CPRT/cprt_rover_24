@@ -23,7 +23,7 @@ WebRTCStreamer::WebRTCStreamer()
   // Fetch camera parameters
   std::vector<std::string> camera_name;
   this->get_parameter("camera_name", camera_name);
-  pipeline_ = initialize_pipeline();
+  pipeline_ = GstUniquePtr<GstElement>(initialize_pipeline());
 
   for (const auto &name : camera_name) {
     std::string camera_path;
@@ -50,40 +50,39 @@ WebRTCStreamer::WebRTCStreamer()
     }
     create_source(source);
   }
-  const auto ret = gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+  const auto ret = gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
   if (ret != GST_STATE_CHANGE_FAILURE) {
     RCLCPP_INFO(this->get_logger(), "Pipeline started successfully");
   } else {
     RCLCPP_ERROR(this->get_logger(), "Failed to start pipeline");
   }
-  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_), GST_DEBUG_GRAPH_SHOW_ALL,
+  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
                             "start_pipeline");
 }
 
 WebRTCStreamer::~WebRTCStreamer() {
-  if (pipeline_ != nullptr) {
-    gst_element_set_state(pipeline_, GST_STATE_NULL);
-    gst_object_unref(pipeline_);
+  if (pipeline_) {
+    gst_element_set_state(pipeline_.get(), GST_STATE_NULL);
   }
 }
 
 void WebRTCStreamer::start_video_cb(
     const std::shared_ptr<interfaces::srv::VideoOut::Request> request,
     std::shared_ptr<interfaces::srv::VideoOut::Response> response) {
-  if (pipeline_ == nullptr) {
+  if (!pipeline_) {
     RCLCPP_ERROR(this->get_logger(), "Pipeline not initialized");
     response->success = false;
     return;
   }
-  gst_element_set_state(pipeline_, GST_STATE_PAUSED);
+  gst_element_set_state(pipeline_.get(), GST_STATE_PAUSED);
   if (update_pipeline(request) != true) {
     RCLCPP_ERROR(this->get_logger(), "Failed to update pipeline");
     response->success = false;
-    GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_), GST_DEBUG_GRAPH_SHOW_ALL,
-                              "error_pipeline");
+    GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()),
+                              GST_DEBUG_GRAPH_SHOW_ALL, "error_pipeline");
     return;
   }
-  const auto ret = gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+  const auto ret = gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
   if (ret != GST_STATE_CHANGE_FAILURE) {
     RCLCPP_INFO(this->get_logger(), "Pipeline started successfully");
     response->success = true;
@@ -91,7 +90,7 @@ void WebRTCStreamer::start_video_cb(
     RCLCPP_ERROR(this->get_logger(), "Failed to start pipeline");
     response->success = false;
   }
-  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_), GST_DEBUG_GRAPH_SHOW_ALL,
+  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
                             "pipeline");
 }
 
@@ -129,7 +128,8 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
     return nullptr;
   }
   g_object_set(G_OBJECT(tee), "allow-not-linked", TRUE, nullptr);
-  gst_bin_add_many(GST_BIN(pipeline_), src_element, videoconvert, tee, nullptr);
+  gst_bin_add_many(GST_BIN(pipeline_.get()), src_element, videoconvert, tee,
+                   nullptr);
   gst_element_sync_state_with_parent(src_element);
   gst_element_sync_state_with_parent(tee);
   gst_element_sync_state_with_parent(videoconvert);
@@ -171,9 +171,8 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
   g_object_set(G_OBJECT(stable_source), "pattern", 2, nullptr);
   g_object_set(G_OBJECT(stable_source), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(queue), "max-size-buffers", 1, nullptr);
-  GstCaps *caps = gst_caps_from_string("video/x-raw");
-  g_object_set(G_OBJECT(capsfilter), "caps", caps, nullptr);
-  gst_caps_unref(caps);
+  auto caps = GstUniquePtr<GstCaps>(gst_caps_from_string("video/x-raw"));
+  g_object_set(G_OBJECT(capsfilter), "caps", caps.get(), nullptr);
   g_object_set(G_OBJECT(webrtcsink), "run-signalling-server", TRUE, nullptr);
   if (web_server_) {
     g_object_set(G_OBJECT(webrtcsink), "run-web-server", TRUE, nullptr);
@@ -195,29 +194,27 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
                  __FUNCTION__);
     return nullptr;
   }
-  GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
-  if (gst_bus_add_watch(bus, &WebRTCStreamer::on_bus_message, this)) {
+  auto bus = GstUniquePtr<GstBus>(gst_pipeline_get_bus(GST_PIPELINE(pipeline)));
+  if (gst_bus_add_watch(bus.get(), &WebRTCStreamer::on_bus_message, this)) {
     RCLCPP_INFO(this->get_logger(), "Bus watch added successfully.");
   } else {
     RCLCPP_ERROR(this->get_logger(), "Failed to add bus watch.");
   }
-  gst_object_unref(bus);
   return pipeline;
 }
 bool WebRTCStreamer::unlink_pad(GstPad *pad) {
   if (!pad) {
     return false;
   }
-  GstPad *peer = gst_pad_get_peer(pad);
+  auto peer = GstUniquePtr<GstPad>(gst_pad_get_peer(pad));
   if (peer) {
-    if (GST_PAD_IS_SRC(peer)) {
-      gst_pad_unlink(peer, pad);
+    if (GST_PAD_IS_SRC(peer.get())) {
+      gst_pad_unlink(peer.get(), pad);
     } else {
-      gst_pad_unlink(pad, peer);
+      gst_pad_unlink(pad, peer.get());
     }
     gst_element_release_request_pad(
-        GST_ELEMENT(gst_pad_get_parent_element(peer)), peer);
-    gst_object_unref(peer);
+        GST_ELEMENT(gst_pad_get_parent_element(peer.get())), peer.get());
   }
   return true;
 }
@@ -226,7 +223,7 @@ void WebRTCStreamer::unlink_sources_from_compositor() {
   for (const auto &source : connected_sources_) {
     unlink_pad(gst_element_get_static_pad(source, "src"));
     unlink_pad(gst_element_get_static_pad(source, "sink"));
-    gst_bin_remove(GST_BIN(pipeline_), source);
+    gst_bin_remove(GST_BIN(pipeline_.get()), source);
   }
   connected_sources_.clear();
 }
@@ -254,34 +251,34 @@ bool WebRTCStreamer::update_pipeline(
       RCLCPP_ERROR(this->get_logger(), "Failed to create queue");
       return false;
     }
-    gst_bin_add(GST_BIN(pipeline_), queue);
+    gst_bin_add(GST_BIN(pipeline_.get()), queue);
     gst_element_sync_state_with_parent(queue);
-    GstElement *source_tee =
-        gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
+    auto source_tee = GstUniquePtr<GstElement>(
+        gst_bin_get_by_name(GST_BIN(pipeline_.get()), name.c_str()));
     if (!source_tee) {
       RCLCPP_ERROR(this->get_logger(), "Failed to get source: %s",
                    name.c_str());
       return false;
     }
-    if (gst_element_link(source_tee, queue) != TRUE) {
+    if (gst_element_link(source_tee.get(), queue) != TRUE) {
       RCLCPP_ERROR(this->get_logger(), "%s: Failed to link elements",
                    __FUNCTION__);
       return false;
     }
-    GstPad *pad = gst_element_request_pad_simple(compositor_, "sink_%u");
+    auto pad = GstUniquePtr<GstPad>(
+        gst_element_request_pad_simple(compositor_, "sink_%u"));
     if (!pad) {
       RCLCPP_ERROR(this->get_logger(), "Failed to get pad");
       return false;
     }
-    if (gst_pad_link(gst_element_get_static_pad(queue, "src"), pad) !=
+    if (gst_pad_link(gst_element_get_static_pad(queue, "src"), pad.get()) !=
         GST_PAD_LINK_OK) {
       RCLCPP_ERROR(this->get_logger(), "Failed to link pads");
       return false;
     }
     connected_sources_.push_back(queue);
-    g_object_set(G_OBJECT(pad), "xpos", origin_x, "ypos", origin_y, "height",
-                 height, "width", width, NULL);
-    gst_object_unref(pad);
+    g_object_set(G_OBJECT(pad.get()), "xpos", origin_x, "ypos", origin_y,
+                 "height", height, "width", width, NULL);
     ++i;
   }
   return true;
@@ -319,11 +316,7 @@ gboolean WebRTCStreamer::on_bus_message(GstBus *bus, GstMessage *message,
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto node = std::make_shared<WebRTCStreamer>();
-  executor.add_node(node);
-  executor.spin();
+  rclcpp::spin(std::make_shared<WebRTCStreamer>());
   rclcpp::shutdown();
-
   return 0;
 }
