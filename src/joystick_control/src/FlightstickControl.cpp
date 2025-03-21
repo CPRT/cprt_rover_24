@@ -61,12 +61,16 @@ bool FlightstickControl::changeMode(ModeType mode) {
   return false;
 }
 
-void FlightstickControl::loadParameters() {
+void FlightstickControl::declareParameters() {
   this->declare_parameter("drive_mode_button", 12);
   this->declare_parameter("arm_ik_mode_button", 11);
   this->declare_parameter("arm_manual_mode_button", 10);
   this->declare_parameter("nav_mode_button", 13);
   this->declare_parameter("science_mode_button", 14);
+  DriveMode::declareParameters(this);
+}
+
+void FlightstickControl::loadParameters() {
   this->get_parameter("drive_mode_button", kDriveModeButton);
   this->get_parameter("arm_ik_mode_button", kArmIKModeButton);
   this->get_parameter("arm_manual_mode_button", kArmManualModeButton);

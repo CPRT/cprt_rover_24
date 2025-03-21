@@ -37,9 +37,8 @@ class Mode {
   std::string getName() { return name_; }
 
  protected:
-  std::string name_;  ///< The name of the mode.
-  rclcpp::Node*
-      node_;  ///< Pointer to the ROS2 node used for logging and pubishing.
+  std::string name_;    ///< The name of the mode.
+  rclcpp::Node* node_;  ///< Pointer to the ROS2 node.
 };
 
 #endif  // MODE_HPP

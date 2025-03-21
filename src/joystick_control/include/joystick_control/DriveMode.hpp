@@ -29,6 +29,11 @@ class DriveMode : public Mode {
    */
   void processJoystickInput(
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;
+  /**
+   * @brief Declare the parameters for the mode.
+   * @param node Pointer to the ROS2 node.
+   */
+  static void declareParameters(rclcpp::Node* node);
 
  private:
   /**
@@ -55,11 +60,6 @@ class DriveMode : public Mode {
   void handleVideo(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
 
   /**
-   * @brief Declares and loads the parameters used by the DriveMode class.
-   */
-  void declare_parameters();
-
-  /**
    * @brief Gets the throttle value from the joystick input.
    *
    * @param joystickMsg A shared pointer to the sensor_msgs::msg::Joy message.
@@ -67,6 +67,8 @@ class DriveMode : public Mode {
    */
   double getThrottleValue(
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+
+  void loadParameters();
 
   // Parameters
   int8_t kForwardAxis;    ///< Axis for forward movement.
@@ -79,13 +81,12 @@ class DriveMode : public Mode {
   int8_t kCruiseControl;  ///< Button for enabling cruise control.
   int8_t kThrottleAxis;   ///< Axis for throttle control.
 
-  double kThrottleMax;      ///< Maximum throttle value from joystick.
-  double kThrottleMin;      ///< Minimum throttle value from joystick.
-  double kMaxLinear;        ///< Maximum linear velocity.
-  double kMaxAngular;       ///< Maximum angular velocity.
-  double kMaxIncrement;     ///< Maximum increment for speed changes.
-  double kMinSpeed;         ///< Minimum speed value.
-  static bool initalized_;  ///< Flag to check mode has been initialized.
+  double kThrottleMax;   ///< Maximum throttle value from joystick.
+  double kThrottleMin;   ///< Minimum throttle value from joystick.
+  double kMaxLinear;     ///< Maximum linear velocity.
+  double kMaxAngular;    ///< Maximum angular velocity.
+  double kMaxIncrement;  ///< Maximum increment for speed changes.
+  double kMinSpeed;      ///< Minimum speed value.
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
       twist_pub_;  ///< Publisher for Twist messages.

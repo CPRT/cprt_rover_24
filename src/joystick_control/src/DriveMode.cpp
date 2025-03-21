@@ -1,13 +1,10 @@
 #include "DriveMode.hpp"
 
-bool DriveMode::initalized_ = false;
-
 DriveMode::DriveMode(rclcpp::Node* node) : Mode("Drive", node) {
   RCLCPP_INFO(node_->get_logger(), "Drive Mode");
-  declare_parameters();
+  loadParameters();
   twist_pub_ =
       node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
-  initalized_ = true;
 }
 
 void DriveMode::processJoystickInput(
@@ -67,25 +64,25 @@ void DriveMode::handleVideo(
   // TODO: Implement stream control
 }
 
-void DriveMode::declare_parameters() {
-  if (!initalized_) {
-    node_->declare_parameter("drive_mode.forward_axis", 1);
-    node_->declare_parameter("drive_mode.yaw_axis", 2);
-    node_->declare_parameter("drive_mode.cam_tilt_axis", 3);
-    node_->declare_parameter("drive_mode.cam_pan_axis", 4);
-    node_->declare_parameter("drive_mode.cam_reset", 5);
-    node_->declare_parameter("drive_mode.cam_next", 6);
-    node_->declare_parameter("drive_mode.cam_prev", 7);
-    node_->declare_parameter("drive_mode.cruise_control", 8);
-    node_->declare_parameter("drive_mode.max_linear", 2.0);
-    node_->declare_parameter("drive_mode.max_angular", 2.0);
-    node_->declare_parameter("drive_mode.max_increment", 0.1);
-    node_->declare_parameter("drive_mode.min_speed", 0.1);
-    node_->declare_parameter("drive_mode.throttle.axis", 0);
-    node_->declare_parameter("drive_mode.throttle.max", 1.0);
-    node_->declare_parameter("drive_mode.throttle.min", -1.0);
-  }
+void DriveMode::declareParameters(rclcpp::Node* node) {
+  node->declare_parameter("drive_mode.forward_axis", 1);
+  node->declare_parameter("drive_mode.yaw_axis", 2);
+  node->declare_parameter("drive_mode.cam_tilt_axis", 3);
+  node->declare_parameter("drive_mode.cam_pan_axis", 4);
+  node->declare_parameter("drive_mode.cam_reset", 5);
+  node->declare_parameter("drive_mode.cam_next", 6);
+  node->declare_parameter("drive_mode.cam_prev", 7);
+  node->declare_parameter("drive_mode.cruise_control", 8);
+  node->declare_parameter("drive_mode.max_linear", 2.0);
+  node->declare_parameter("drive_mode.max_angular", 2.0);
+  node->declare_parameter("drive_mode.max_increment", 0.1);
+  node->declare_parameter("drive_mode.min_speed", 0.1);
+  node->declare_parameter("drive_mode.throttle.axis", 0);
+  node->declare_parameter("drive_mode.throttle.max", 1.0);
+  node->declare_parameter("drive_mode.throttle.min", -1.0);
+}
 
+void DriveMode::loadParameters() {
   node_->get_parameter("drive_mode.forward_axis", kForwardAxis);
   node_->get_parameter("drive_mode.yaw_axis", kYawAxis);
   node_->get_parameter("drive_mode.cam_tilt_axis", kCamTiltAxis);

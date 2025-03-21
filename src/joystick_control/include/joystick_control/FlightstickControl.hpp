@@ -35,6 +35,10 @@ class FlightstickControl : public rclcpp::Node {
   void processJoystick(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
 
  private:
+  /*
+   * @brief Declares parameters for the node and modes.
+   */
+  void declareParameters();
   /**
    * @brief Loads parameters from the parameter server.
    *
