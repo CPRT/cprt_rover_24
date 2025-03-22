@@ -16,12 +16,16 @@ class BNO08XPublisher(Node):
         self.sensor = BNO08X_I2C(i2c)
         self.load_params()
 
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_GYROSCOPE)
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_LINEAR_ACCELERATION)
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_ROTATION_VECTOR)
         # IMU Publisher
         queue_depth = (
             self.get_parameter("QueueDepth").get_parameter_value().integer_value
         )
         self.imu_pub = self.create_publisher(Imu, "imu/data", queue_depth)
         
+        self.sensor.enable_feature()
 
         # Timer to publish data
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
