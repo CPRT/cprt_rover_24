@@ -35,7 +35,7 @@ void DriveMode::handleTwist(
   } else {
     forward = joystickMsg->axes[kForwardAxis] * throttle * kMaxLinear;
   }
-  yaw = joystickMsg->axes[kYawAxis] * throttle * kMaxAngular;
+  yaw = joystickMsg->axes[kYawAxis] * kMaxAngular;
   if (std::abs(forward) < kMinSpeed) {
     forward = 0;
   }
