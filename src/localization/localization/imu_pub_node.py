@@ -12,7 +12,7 @@ class BNO08XPublisher(Node):
     def __init__(self):  #frame_id="imu_link"
         super().__init__("imu_pub_node")
         # Initialize I2C communication
-        i2c = busio.I2C(board.SCL, board.SDA)
+        i2c = busio.I2C(board.SCL, board.SDA,800000)
         self.sensor = BNO08X_I2C(i2c)
         self.load_params()
 
