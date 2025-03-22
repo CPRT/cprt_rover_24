@@ -40,12 +40,19 @@ void TalonSRXNode::configure_current_limit(TalonSRXConfiguration &config) {
 }
 
 void TalonSRXNode::configure_sensor() {
-  if (this->get_parameter("analog_input").as_bool())
+  if (this->get_parameter("input_type").as_int() == 1)
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::Analog);
-  else
+  else if (this->get_parameter("input_type").as_int() == 2) {
+    this->controller_->ConfigSelectedFeedbackSensor(
+        TalonSRXFeedbackDevice::CTRE_MagEncoder_Absolute);
+  } else if (this->get_parameter("input_type").as_int() == 3) {
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::CTRE_MagEncoder_Relative);
+  } else {
+    RCLCPP_WARN(this->get_logger(), "%ld is an invalid input_type setting.",
+                this->get_parameter("input_type").as_int());
+  }
 }
 
 double TalonSRXNode::get_output_current() {

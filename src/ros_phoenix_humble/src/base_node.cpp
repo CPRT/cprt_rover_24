@@ -2,6 +2,11 @@
 
 #include "ros_phoenix/phoenix_manager.hpp"
 
+// setting values for input_type parameter
+#define ANALOG 1
+#define ABSOLUTE 2
+#define RELATIVE 3
+
 namespace ros_phoenix {
 
 const std::string BaseNode::Parameter::ID = "id";
@@ -28,7 +33,7 @@ BaseNode::BaseNode(const std::string &name, const rclcpp::NodeOptions &options)
   this->declare_parameter<bool>("invert", false);
   this->declare_parameter<bool>("invert_sensor", false);
   this->declare_parameter<bool>("brake_mode", true);
-  this->declare_parameter<bool>("analog_input", false);
+  this->declare_parameter<int>("input_type", RELATIVE);
   this->declare_parameter<double>("max_voltage", 12);
   this->declare_parameter<double>("max_current", 30);
   this->declare_parameter<double>("sensor_multiplier", 1.0);
