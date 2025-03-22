@@ -17,7 +17,7 @@ class BNO08XPublisher(Node):
         self.load_params()
 
         self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_GYROSCOPE)
-        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_LINEAR_ACCELERATION)
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_ACCELEROMETER)
         self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_ROTATION_VECTOR)
         # IMU Publisher
         queue_depth = (
