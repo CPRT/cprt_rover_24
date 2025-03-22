@@ -13,7 +13,7 @@ class BNO08XPublisher(Node):
         super().__init__("imu_pub_node")
         # Initialize I2C communication
         i2c = busio.I2C(board.SCL, board.SDA,800000)
-        self.sensor = BNO08X_I2C(i2c)
+        self.sensor = BNO08X_I2C(i2c, None, 0x4b)
         self.load_params()
 
         self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_GYROSCOPE)
@@ -24,13 +24,10 @@ class BNO08XPublisher(Node):
             self.get_parameter("QueueDepth").get_parameter_value().integer_value
         )
         self.imu_pub = self.create_publisher(Imu, "imu/data", queue_depth)
-        
-        self.sensor.enable_feature()
 
         # Timer to publish data
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
 
-        self.get_logger().info(f"BNO08X IMU Node Started! Frame ID : {self.frame_id}")
 
     def load_params(self):
         self.declare_parameter("orientation_covariance", [0.01] * 9)
