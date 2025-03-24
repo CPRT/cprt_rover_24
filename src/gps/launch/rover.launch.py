@@ -5,7 +5,8 @@ import launch
 import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
@@ -19,7 +20,10 @@ def generate_launch_description():
     )
     os.system(Rover_heading)
 
-    ublox_remappings = [("fix", "gps/fix"), ("/navheading", "gps/heading")]
+    ublox_remappings = [
+        ("ublox_gps_node/fix", "gps/fix"),
+        ("/navheading", "gps/heading"),
+    ]
 
     ublox_gps_node = launch_ros.actions.Node(
         package="ublox_gps",
@@ -28,5 +32,12 @@ def generate_launch_description():
         remappings=ublox_remappings,
         parameters=[params_file],
     )
+    heading_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("gps"), "launch", "heading.launch.py"
+            )
+        )
+    )
 
-    return launch.LaunchDescription([ublox_gps_node])
+    return launch.LaunchDescription([ublox_gps_node, heading_cmd])
