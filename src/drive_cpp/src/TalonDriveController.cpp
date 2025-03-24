@@ -17,12 +17,8 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
   angularCov_ = this->get_parameter("angular_cov").as_double();
   this->declare_parameter("linear_cov", 0.3);
   linearCov_ = this->get_parameter("linear_cov").as_double();
-  this->declare_parameter("ticks_per_rotation", 2760);
   this->declare_parameter("wheel_rad", 0.2);
-  const double wheelCircumference =
-      this->get_parameter("wheel_rad").as_double() * 2 * M_PI;
-  ticksPerMeter_ =
-      this->get_parameter("ticks_per_rotation").as_int() / wheelCircumference;
+  wheelCircumference_ = this->get_parameter("wheel_rad").as_double() * 2 * M_PI;
   this->declare_parameter("frame_id", "base_link");
   frameId_ = this->get_parameter("frame_id").as_string();
   this->declare_parameter("frequency", 10.0);
@@ -68,19 +64,19 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
 }
 
 void TalonDriveController::odom_pub_callback() {
-  double ticksL = 0.0;
-  double ticksR = 0.0;
+  double rotationsLeft = 0.0;
+  double rotationsRight = 0.0;
 
   for (const auto &wheel : wheels_) {
     if (wheel.getWheelSide() == WheelSide::LEFT) {
-      ticksL += wheel.getVelocity();
+      rotationsLeft += wheel.getVelocity();
     } else {
-      ticksR -= wheel.getVelocity();
+      rotationsRight -= wheel.getVelocity();
     }
   }
   const int wheelsPerSide = wheels_.size() / 2;
-  const double vl = ticksL / (wheelsPerSide * ticksPerMeter_);
-  const double vr = ticksR / (wheelsPerSide * ticksPerMeter_);
+  const double vl = rotationsLeft * wheelCircumference_ / wheelsPerSide;
+  const double vr = rotationsRight * wheelCircumference_ / wheelsPerSide;
 
   Odometry odom;
   odom.header.stamp = this->get_clock()->now();
@@ -120,9 +116,9 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
 
   for (auto &wheel : wheels_) {
     if (wheel.getWheelSide() == WheelSide::LEFT) {
-      wheel.setVelocity(vl * ticksPerMeter_);
+      wheel.setVelocity(vl / wheelCircumference_);
     } else {
-      wheel.setVelocity(-vr * ticksPerMeter_);
+      wheel.setVelocity(-vr / wheelCircumference_);
     }
   }
 }

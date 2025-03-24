@@ -73,9 +73,9 @@ class TalonDriveController : public rclcpp::Node {
   double linearCov_;
 
   /**
-   * @brief Ticks per meter used for odometry output
+   * @brief Circumference of the wheels, used for computing velocity.
    */
-  double ticksPerMeter_;
+  double wheelCircumference_;
 
   /**
    * @brief Flag indicating whether to publish electrical status
