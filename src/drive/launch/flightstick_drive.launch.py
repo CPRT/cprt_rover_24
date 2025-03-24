@@ -35,7 +35,7 @@ def generate_launch_description():
             launch_ros.actions.Node(
                 package="joy", executable="joy_node", name="joystick"
             ),
-            Node(
+            launch_ros.actions.Node(
                 package="joystick_control",
                 executable="flightstick_control",
                 name="flightstick_control",

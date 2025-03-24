@@ -4,6 +4,7 @@ FlightstickControl::FlightstickControl()
     : Node("flightstick_control"),
       mode_(nullptr),
       currentMode_(ModeType::NONE) {
+  declareParameters();
   loadParameters();
   changeMode(currentMode_);
   joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
