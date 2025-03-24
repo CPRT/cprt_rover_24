@@ -48,11 +48,11 @@ class BNO08XPublisher(Node):
             .get_parameter_value()
             .double_array_value
         )
-        self.declare_parameter("Freq", 2.0)
+        self.declare_parameter("Freq", 1.0)
         self.freq = self.get_parameter("Freq").get_parameter_value().double_value
         if self.freq <= 0:
             self.get_logger().warn("Frequency must be positive. Defaulting to 2.0 Hz.")
-            self.freq = 2.0
+            self.freq = 1.0
         self.declare_parameter("QueueDepth", 10)
 
     def timer_callback(self):
