@@ -142,4 +142,4 @@ elevation_mapping:
         params:
           input_layer: traversability
           output_layer: inflated_traversability
-          inflation_radius: 0.5 # in m
+          inflation_radius: 0.6 # in m
