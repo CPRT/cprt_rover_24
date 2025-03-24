@@ -187,6 +187,9 @@ void GridmapLayer::updateCosts(nav2_costmap_2d::Costmap2D& master_grid,
     const grid_map::Index index(*it);
     const float value = gridmap_in_.at(layer_name_, index);
     const auto cost = interpretValue(value);
+    if (cost == NO_INFORMATION) {
+      continue;
+    }
 
     // Convert grid_map index to world coordinates
     grid_map::Position position;

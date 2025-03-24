@@ -71,7 +71,7 @@ bool PreserveCostInflationFilter<T>::update(const T &mapIn, T &mapOut) {
     return false;
   }
 
-  mapOut.add(this->outputLayer_, 0.0);
+  mapOut.add(this->outputLayer_);
 
   this->computeWithSimpleSerialMethod(mapIn, mapOut);
 
@@ -116,7 +116,7 @@ void PreserveCostInflationFilter<T>::radialInflateSerial(
     auto &cellValue = mapOut.at(this->outputLayer_, *iterator);
 
     if (!std::isfinite(cellValue)) {
-      continue;
+      cellValue = value;
     }
     cellValue = std::max(cellValue, value);
   }
