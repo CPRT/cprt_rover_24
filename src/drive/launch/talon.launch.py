@@ -30,6 +30,7 @@ def generate_launch_description():
                     {"D": D},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
+                    {"sensor_multiplier": 1 / 2760.0},
                 ],
             ),
             ComposableNode(
@@ -43,6 +44,7 @@ def generate_launch_description():
                     {"D": D},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
+                    {"sensor_multiplier": 1 / 2760.0},
                 ],
             ),
             ComposableNode(
@@ -56,6 +58,7 @@ def generate_launch_description():
                     {"D": D},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
+                    {"sensor_multiplier": 1 / 2760.0},
                 ],
             ),
             ComposableNode(
@@ -69,6 +72,7 @@ def generate_launch_description():
                     {"D": D},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
+                    {"sensor_multiplier": 1 / 2760.0},
                 ],
             ),
         ],
