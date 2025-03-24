@@ -24,7 +24,7 @@ def generate_launch_description():
     )
 
     navsat_remappings = [
-        ("imu", "zed/zed_node/imu/data"),
+        ("imu", "gps/heading"),
         ("gps/fix", "gps/fix"),
         ("odometry/filtered", "odometry/filtered/global"),
         ("odometry/gps", "gps/odom"),

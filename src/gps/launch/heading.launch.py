@@ -25,6 +25,7 @@ def generate_launch_description():
                     {"Baudrate": 115200},
                     {"Device": "/dev/ttyUSB0"},
                 ],
+                remappings=[("heading", "gps/heading")],
             ),
         ]
     )
