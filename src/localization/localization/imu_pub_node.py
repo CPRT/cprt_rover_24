@@ -13,7 +13,7 @@ class BNO08XPublisher(Node):
         super().__init__("imu_pub_node")
         # Initialize I2C communication
         i2c = busio.I2C(board.SCL, board.SDA,800000)
-        self.sensor = BNO08X_I2C(i2c, None, 0x4b)
+        self.sensor = BNO08X_I2C(i2c, None, 0x4b,False)
         self.load_params()
 
         self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_GYROSCOPE)
@@ -82,7 +82,7 @@ class BNO08XPublisher(Node):
         msg.linear_acceleration_covariance = self.linear_acceleration_covariance
 
         # Publish the IMU message
-        self.publisher_.publish(msg)
+        self.imu_pub.publish(msg)
         # self.get_logger().info("Published IMU Data")
 
 
