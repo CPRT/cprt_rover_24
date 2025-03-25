@@ -30,7 +30,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="diff1",
                 parameters=[{"id": 11},
-                            {"P":1.0},
+                            {"P":70.0},
                             {"I":0.0},
                             {"D":0.0}],
                 
@@ -40,7 +40,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="diff2",
                 parameters=[{"id": 12},
-                            {"P":1.0},
+                            {"P":70.0},
                             {"I":0.0},
                             {"D":0.0}],
                 

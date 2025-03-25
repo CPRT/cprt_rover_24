@@ -8,9 +8,9 @@
 use_gazebo: false
 
 ## Properties of outgoing commands
-publish_period: 0.08  # 1/Nominal publish rate [seconds]
-publish_delay: 0.005
-max_expected_latency: 0.1  # delay between sending a command and the robot executing it [seconds]
+publish_period: 0.1  # 1/Nominal publish rate [seconds]
+publish_delay: 0.100 #supposed to be 0.005
+max_expected_latency: 0.4  # delay between sending a command and the robot executing it [seconds]
 low_latency_mode: false
 
 command_in_type: "unitless"  # "unitless"> in the range [-1:1], as if from joystick. "speed_units"> cmds are in m/s and rad/s
