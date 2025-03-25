@@ -1,4 +1,5 @@
 #include "ros_phoenix/phoenix_nodes.hpp"
+#include "ros_pheonix/base_node.hpp"
 
 namespace ros_phoenix {
 
@@ -40,13 +41,13 @@ void TalonSRXNode::configure_current_limit(TalonSRXConfiguration &config) {
 }
 
 void TalonSRXNode::configure_sensor() {
-  if (this->get_parameter("input_type").as_int() == 1)
+  if (this->get_parameter("input_type").as_int() == ANALOG)
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::Analog);
-  else if (this->get_parameter("input_type").as_int() == 2) {
+  else if (this->get_parameter("input_type").as_int() == ABSOLUTE) {
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::CTRE_MagEncoder_Absolute);
-  } else if (this->get_parameter("input_type").as_int() == 3) {
+  } else if (this->get_parameter("input_type").as_int() == RELATIVE) {
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::CTRE_MagEncoder_Relative);
   } else {

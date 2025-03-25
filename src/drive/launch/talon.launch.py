@@ -8,11 +8,6 @@ P = 2.00
 I = 0.000002
 D = 0.0000000001
 
-# values for setting input_type
-ANALOG = 1
-ABSOLUTE = 2
-RELATIVE = 3
-
 
 def generate_launch_description():
     """Generate launch description with multiple components."""
@@ -29,13 +24,51 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="frontLeft",
                 parameters=[
-                    {"id": 8},
+                    {"id": 1},
                     {"P": P},
                     {"I": I},
                     {"D": D},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
-                    {"input_type": ABSOLUTE},
+                ],
+            ),
+            ComposableNode(
+                package="ros_phoenix",
+                plugin="ros_phoenix::TalonSRX",
+                name="backLeft",
+                parameters=[
+                    {"id": 2},
+                    {"P": P},
+                    {"I": I},
+                    {"D": D},
+                    {"max_voltage": 24.0},
+                    {"brake_mode": True},
+                ],
+            ),
+            ComposableNode(
+                package="ros_phoenix",
+                plugin="ros_phoenix::TalonSRX",
+                name="frontRight",
+                parameters=[
+                    {"id": 3},
+                    {"P": P},
+                    {"I": I},
+                    {"D": D},
+                    {"max_voltage": 24.0},
+                    {"brake_mode": True},
+                ],
+            ),
+            ComposableNode(
+                package="ros_phoenix",
+                plugin="ros_phoenix::TalonSRX",
+                name="backRight",
+                parameters=[
+                    {"id": 4},
+                    {"P": P},
+                    {"I": I},
+                    {"D": D},
+                    {"max_voltage": 24.0},
+                    {"brake_mode": True},
                 ],
             ),
         ],
@@ -50,7 +83,7 @@ def generate_launch_description():
                 executable="drive_cpp",
                 name="talon_control_node",
                 parameters=[
-                    {"wheels": ["frontLeft"]},
+                    {"wheels": ["frontRight", "frontLeft", "backRight", "backLeft"]},
                     {"max_speed": 2.0},
                     {"base_width": 0.9},
                     {"pub_odom": True},

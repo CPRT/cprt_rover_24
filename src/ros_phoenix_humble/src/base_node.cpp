@@ -2,11 +2,6 @@
 
 #include "ros_phoenix/phoenix_manager.hpp"
 
-// setting values for input_type parameter
-#define ANALOG 1
-#define ABSOLUTE 2
-#define RELATIVE 3
-
 namespace ros_phoenix {
 
 const std::string BaseNode::Parameter::ID = "id";
