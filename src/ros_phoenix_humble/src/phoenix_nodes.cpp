@@ -1,5 +1,7 @@
 #include "ros_phoenix/phoenix_nodes.hpp"
 
+#include "ros_pheonix/base_node.hpp"
+
 namespace ros_phoenix {
 
 TalonFXNode::TalonFXNode(const std::string &name, const NodeOptions &options)
@@ -40,12 +42,19 @@ void TalonSRXNode::configure_current_limit(TalonSRXConfiguration &config) {
 }
 
 void TalonSRXNode::configure_sensor() {
-  if (this->get_parameter("analog_input").as_bool())
+  if (this->get_parameter("input_type").as_int() == ANALOG)
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::Analog);
-  else
+  else if (this->get_parameter("input_type").as_int() == ABSOLUTE) {
+    this->controller_->ConfigSelectedFeedbackSensor(
+        TalonSRXFeedbackDevice::CTRE_MagEncoder_Absolute);
+  } else if (this->get_parameter("input_type").as_int() == RELATIVE) {
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::CTRE_MagEncoder_Relative);
+  } else {
+    RCLCPP_WARN(this->get_logger(), "%ld is an invalid input_type setting.",
+                this->get_parameter("input_type").as_int());
+  }
 }
 
 double TalonSRXNode::get_output_current() {
