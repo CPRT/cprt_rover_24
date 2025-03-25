@@ -30,19 +30,19 @@ class BNO08XPublisher(Node):
 
 
     def load_params(self):
-        self.declare_parameter("orientation_covariance", [0.01] * 9)
+        self.declare_parameter("orientation_covariance", [0.1,0,0,0,0.1,0,0,0,0.1])
         self.orientation_covariance = (
             self.get_parameter("orientation_covariance")
             .get_parameter_value()
             .double_array_value
         )
-        self.declare_parameter("angular_velocity_covariance", [0.01] * 9)
+        self.declare_parameter("angular_velocity_covariance", [0.1,0,0,0,0.1,0,0,0,0.1])
         self.angular_velocity_covariance = (
             self.get_parameter("angular_velocity_covariance")
             .get_parameter_value()
             .double_array_value
         )
-        self.declare_parameter("linear_acceleration_covariance", [0.01] * 9)
+        self.declare_parameter("linear_acceleration_covariance", [0.1,0,0,0,0.1,0,0,0,0.1])
         self.linear_acceleration_covariance = (
             self.get_parameter("linear_acceleration_covariance")
             .get_parameter_value()
