@@ -5,7 +5,7 @@
 #include "ros_phoenix/msg/motor_control.hpp"
 #include "ros_phoenix/msg/motor_status.hpp"
 
-//Constants for input_type parameter.
+// Constants for input_type parameter.
 #define ANALOG 1
 #define ABSOLUTE 2
 #define RELATIVE 3
