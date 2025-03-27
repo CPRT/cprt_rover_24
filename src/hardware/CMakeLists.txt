@@ -12,6 +12,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   rclcpp
   rclcpp_lifecycle
   interfaces
+  ros_phoenix
 )
 
 # find dependencies
