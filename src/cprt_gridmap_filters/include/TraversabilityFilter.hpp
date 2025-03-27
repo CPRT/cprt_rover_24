@@ -53,11 +53,14 @@ class TraversabilityFilter : public filters::FilterBase<T> {
    */
   bool update(const T &mapIn, T &mapOut) override;
 
-private:
-  void processRow(const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut, int rowStart, int rowEnd);
+ private:
+  void processRows(const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut,
+                  int rowStart, int rowEnd);
 
-  void processMapMultiThreaded(const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut);
-  void processMapSingleThreaded(const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut);
+  void processMapMultiThreaded(const grid_map::GridMap &mapIn,
+                               grid_map::GridMap &mapOut);
+  void processMapSingleThreaded(const grid_map::GridMap &mapIn,
+                                grid_map::GridMap &mapOut);
 
  private:
   // Input layer name to inflate.
@@ -83,6 +86,9 @@ private:
 
   // Number of threads to use
   int numThreads_;
+
+  // Add additional debug layers
+  bool isDebugLayersShown_;
 
 };  // class TraversabilityFilter
 

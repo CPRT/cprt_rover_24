@@ -1,0 +1,40 @@
+elevation_mapping:
+  ros__parameters:
+    # postprocessor_pipeline_name: traversability_postprocessing
+    output_topic: trasversability_map
+
+    postprocessor_pipeline:
+      filter1:
+        name: buffer_normalizer
+        type: gridMapFilters/BufferNormalizerFilter
+
+      # Delete unnessecary layers.
+      filter2:
+        name: delete_original_layers
+        type: gridMapFilters/DeletionFilter
+        params:
+          layers: [color, lowest_scan_point,sensor_x_at_lowest_scan, sensor_y_at_lowest_scan, sensor_z_at_lowest_scan] # List of layers.
+
+      # Compute the traversability map.
+      filter3:
+        name: traversability
+        type: cprtGridMapFilters/TraversabilityFilter
+        params:
+          input_layer: elevation
+          output_layer: traversability
+          slope_window_size: 7 # average change in elevation over a odd square grid centered on each point
+          smoothing_window_size: 7 # average elevation over a odd square grid centered on each point
+          roughness_scalar: 1.5 # traversability = roughness * roughness_scalar + slope * slope_scalar
+          slope_scalar: 1.2  # traversability = clamp(traversability, 0, 1)
+          low_pass_value: 0.0 # low pass filter value. Disabled when set to 0
+          num_threads: 1
+          is_debug_layers_shown: false
+
+      # Inflate the traversability map to account for the robot's footprint.
+      filter4:
+        name: preserve_cost_inflation_filter
+        type: cprtGridMapFilters/PreserveCostInflationFilter
+        params:
+          input_layer: traversability
+          output_layer: inflated_traversability
+          inflation_radius: 0.5 # meters

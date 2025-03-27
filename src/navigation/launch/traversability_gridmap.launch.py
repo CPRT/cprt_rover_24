@@ -15,7 +15,8 @@ def generate_launch_description():
         "zed2i_robot.yaml",
         "zed2i_elevation_mapping.yaml",
         "zed2i_sensor_processor.yaml",
-        "postprocessing_traversability.yaml",
+        # "postprocessing_traversability.yaml",
+        "faster_postprocessing_traversability.yaml",
     ]
     for file in list_files:
         if not os.path.isfile(os.path.join(config_dir, file)):
