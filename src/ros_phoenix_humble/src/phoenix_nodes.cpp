@@ -1,6 +1,6 @@
 #include "ros_phoenix/phoenix_nodes.hpp"
 
-#include "ros_pheonix/base_node.hpp"
+#include "ros_phoenix/base_node.hpp"
 
 namespace ros_phoenix {
 
