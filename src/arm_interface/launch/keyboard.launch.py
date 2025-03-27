@@ -30,7 +30,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="diff1",
                 parameters=[{"id": 11},
-                            {"P":70.0},
+                            {"P":50.0},
                             {"I":0.0},
                             {"D":0.0}],
                 
@@ -40,7 +40,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="diff2",
                 parameters=[{"id": 12},
-                            {"P":70.0},
+                            {"P":50.0},
                             {"I":0.0},
                             {"D":0.0}],
                 
@@ -83,15 +83,18 @@ def generate_launch_description():
         output="screen",
     )
 
+    '''
+    launch_ros.actions.Node(
+            package='arm_interface',
+            executable='trajectory_interpreter',
+            name='trajectory_interpreter'),
+    '''
     return launch.LaunchDescription([container,
         launch_ros.actions.Node(
             package='arm_interface',
             executable='keyboard_arm_publisher',
             name='keyboard_arm_publisher'),
-        launch_ros.actions.Node(
-            package='arm_interface',
-            executable='trajectory_interpreter',
-            name='trajectory_interpreter'),
+        
             
             ])
 

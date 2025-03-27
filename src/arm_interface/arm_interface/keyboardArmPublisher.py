@@ -121,7 +121,7 @@ class keyboardArmPublisher(Node):
         #self.joystick = self.create_subscription(
          #   Joy, "/joystick/arm", self.joy_callback, 5)
         
-        freq = 10
+        freq = 100
         self.rate = self.create_rate(freq)
         period = 1 / freq
         self.timer = self.create_timer(period, self.controlPublisher)
@@ -196,10 +196,10 @@ class keyboardArmPublisher(Node):
           self.wristTurn.value = -1.0
         elif msg.data == 'o':
           self.shouldPub = not self.shouldPub
-        elif msg.data == 'c':
-          self.base.value = 0.5
-        elif msg.data == 'v':
-          self.base.value = -0.5
+        elif msg.data == 'C':
+          self.base.value = 503.83583267777607
+        elif msg.data == 'V':
+          self.base.value = --503.83583267777607
         elif msg.data == 'b':
           self.diff1.value = act1_rad_to_pos(self, 3.14/4)
         elif msg.data == 'n':

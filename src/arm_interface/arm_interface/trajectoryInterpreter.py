@@ -261,7 +261,7 @@ class trajectoryInterpreter(Node):
             self.get_logger().info(f"""
             Active commands:
                 Base cmd: {self.base.value}, currently at {self.basePos}
-                Act1 cmd: {self.diff1.value}, currently at {self.diff1Pos}
+                Act1 cmd: {self.diff1.value}, currently at {self.diff1Pos}, with request {request.diff1}
                 Act2 cmd: {self.diff2.value}, currently at {self.diff2Pos}
                 Elbow cmd: {self.elbow.value}, currently at {self.elbowPos}
                 Wristturn cmd: {self.wristTurn.value}, currently at {self.wristTurnPos}, wants to be {request.wristturn}

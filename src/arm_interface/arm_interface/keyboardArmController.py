@@ -39,13 +39,23 @@ class keyboardArmController(Node):
         #self.joystick = self.create_subscription(
          #   Joy, "/joystick/arm", self.joy_callback, 5)
         self.keyboard_publisher = self.create_publisher(String, "/keyboard_arm", 1)
+        self.encoder_publisher = self.create_publisher(Bool, "/encoder_passthrough", 1)
+        self.encoder_passthrough = True;
         
         #90 deg = 3000000
         
         while True:
           cmd = String()
           cmd.data = input();
-          self.keyboard_publisher.publish(cmd);
+          
+          if cmd.data != '.':
+            self.keyboard_publisher.publish(cmd);
+          else:
+            self.encoder_passthrough = not self.encoder_passthrough
+            cmd = Bool()
+            cmd.data = self.encoder_passthrough
+            self.get_logger().info(f"Setting encoder passthrough to {self.encoder_passthrough}")
+            self.encoder_publisher.publish(cmd)
         
 
 
