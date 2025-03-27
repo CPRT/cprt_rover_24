@@ -5,6 +5,7 @@ from geometry_msgs.msg import Twist
 
 from bezier_curve import output_bezier
 
+
 class Curve:
     """
     Class to handle different types of curves for joystick input.
@@ -27,7 +28,7 @@ class Curve:
         """
         if curve_type == "linear":
             self.curve = lambda x: x
-        elif curve_type == "Bezier":   
+        elif curve_type == "Bezier":
             self.curve = output_bezier
         else:
             rclpy.logging.get_logger("joystick_controller").warn(
