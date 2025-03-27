@@ -7,4 +7,10 @@
       </description>
     </class>
   </library>
+  <library path="traversability_filter">
+    <class name="cprtGridMapFilters/TraversabilityFilter" type="grid_map::TraversabilityFilter&lt;grid_map::GridMap&gt;" base_class_type="filters::FilterBase&lt;grid_map::GridMap&gt;">
+      <description>
+        Compute how traversable each cell by a slope and roughness metric.
+      </description>
+  </library>
 </class_libraries>
