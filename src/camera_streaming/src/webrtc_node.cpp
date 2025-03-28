@@ -213,16 +213,21 @@ bool WebRTCStreamer::unlink_pad(GstPad *pad) {
     } else {
       gst_pad_unlink(pad, peer.get());
     }
-    gst_element_release_request_pad(
-        GST_ELEMENT(gst_pad_get_parent_element(peer.get())), peer.get());
+    auto peer_parent =
+        GstUniquePtr<GstElement>(gst_pad_get_parent_element(peer.get()));
+    gst_element_release_request_pad(peer_parent.get(), peer.get());
   }
   return true;
 }
 
 void WebRTCStreamer::unlink_sources_from_compositor() {
   for (const auto &source : connected_sources_) {
-    unlink_pad(gst_element_get_static_pad(source, "src"));
-    unlink_pad(gst_element_get_static_pad(source, "sink"));
+    auto src_pad =
+        GstUniquePtr<GstPad>(gst_element_get_static_pad(source, "src"));
+    auto sink_pad =
+        GstUniquePtr<GstPad>(gst_element_get_static_pad(source, "sink"));
+    unlink_pad(src_pad.get());
+    unlink_pad(sink_pad.get());
     gst_bin_remove(GST_BIN(pipeline_.get()), source);
   }
   connected_sources_.clear();
