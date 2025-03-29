@@ -1,0 +1,10 @@
+node_manager:
+  ros__parameters:
+    launch_keys:
+    # Add the internal names for nodes here, in one list.
+    - "nav"
+    # Add a definition for each internal name below, similar to this.
+    nav:
+      display_name: "Navigation"
+      package: "navigation"
+      launch_file: "navigation.launch.py"

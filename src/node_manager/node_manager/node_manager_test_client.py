@@ -23,7 +23,8 @@ def get_stdout(process: list[str]) -> str:
     output = subprocess.Popen(process, stdout=subprocess.PIPE).stdout
     if output is None:
         return ""
-    return output.read().decode("utf-8").replace('\n', '')
+    return output.read().decode("utf-8").replace("\n", "")
+
 
 def is_in_list(name: str, timeout: float = 0) -> bool:
     start = rclpy.clock.Clock().now()
@@ -61,7 +62,9 @@ class NodeManagerTestClient(Node):
         self.attempted_tests = 0
         self.successful_tests = 0
 
-        self.timer = self.create_timer(1.0, self.test_manager, callback_group=self.timer_callback_group)
+        self.timer = self.create_timer(
+            1.0, self.test_manager, callback_group=self.timer_callback_group
+        )
 
     def test_manager(self):
         self.get_logger().info("running tests")
@@ -71,7 +74,9 @@ class NodeManagerTestClient(Node):
         self.assert_okay(self.test_stop, "stop")
         self.assert_okay(self.test_launch, "launch")
         self.assert_okay(self.test_shutdown, "shutdown")
-        self.get_logger().info(f"tests complete: {self.successful_tests}/{self.attempted_tests}")
+        self.get_logger().info(
+            f"tests complete: {self.successful_tests}/{self.attempted_tests}"
+        )
 
     def test_launch(self):
         self.timer.destroy()
@@ -83,7 +88,7 @@ class NodeManagerTestClient(Node):
         future = self.launcher_client.call_async(launch_request)
         rclpy.spin_until_future_complete(self, future)
         assert is_in_list("node_manager_test_node", timeout=0.5)
-    
+
     def test_stop(self):
         stop_request = StopNode.Request()
         stop_request.name = "test"
@@ -91,13 +96,13 @@ class NodeManagerTestClient(Node):
         future = self.stopper_client.call_async(stop_request)
         rclpy.spin_until_future_complete(self, future)
         assert not is_in_list("node_manager_test_node", timeout=0.5)
-    
+
     def test_list(self):
         list_request = ListNodes.Request()
         future = self.node_listing_client.call_async(list_request)
         rclpy.spin_until_future_complete(self, future)
         assert future.result() is not None
-    
+
     def test_status(self):
         status_request = GetNodeStatus.Request()
         status_request.name = "test"
