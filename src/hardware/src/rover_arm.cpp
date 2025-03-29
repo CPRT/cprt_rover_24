@@ -10,17 +10,18 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
 
   hw_position_states_.resize(info_.joints.size(),
                              0);
-                             //std::numeric_limits<double>::quiet_NaN());
+                             
   hw_velocity_states_.resize(info_.joints.size(),
                              std::numeric_limits<double>::quiet_NaN());
+                             
   hw_commands_.resize(info_.joints.size(),
                       0);
-                      //std::numeric_limits<double>::quiet_NaN());
+                      //s
   
   temp_.resize(info_.joints.size(),
-                      0);//std::numeric_limits<double>::quiet_NaN());
-  temp2_.resize(info_.joints.size(),
-                      0);//std::numeric_limits<double>::quiet_NaN());
+                      0);
+  
+  output_.resize(info_.joints.size());
 
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
     // RRBotSystemPositionOnly has exactly one state and command interface on
@@ -93,21 +94,31 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
 
 	node_ptr_ = std::make_shared<rclcpp::Node>("arm_hw_subscriber");
 	
-	publisher1_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("base/set", 5);
+	/*publisher1_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("base/set", 5);
 	publisher2_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("diff1/set", 5);
 	publisher3_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("diff2/set", 5);
 	publisher4_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("elbow/set", 5);
 	publisher5_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("wristTilt/set", 5);
-	publisher6_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("wristTurn/set", 5);
+	publisher6_ = node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>("wristTurn/set", 5);*/
 	
   executor_ptr_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   
-  subscription1_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("base/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback1, this, std::placeholders::_1));
-  subscription2_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("diff1/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback2, this, std::placeholders::_1));
+  subscription1_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("base/status", 5, callback);
+  /*subscription2_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("diff1/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback2, this, std::placeholders::_1));
   subscription3_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("diff2/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback3, this, std::placeholders::_1));
   subscription4_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("elbow/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback4, this, std::placeholders::_1));
   subscription5_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("wristTilt/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback5, this, std::placeholders::_1));
   subscription6_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("wristTurn/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback6, this, std::placeholders::_1));//*/
+  
+  for (unsigned long int i = 0; i < subscription_topics_.size(); i++)
+  {
+    //encoder_subscribers_.push_back(node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>(subscription_topics_[i].name, subscription_topics_[i].callback));
+  }
+  
+  for (unsigned long int i = 0; i < publisher_topics_.size(); i++)
+  {
+    motor_publishers_.push_back(node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>(publisher_topics_[i].name, 5));
+  }
   
   encoder_subscriber_ = node_ptr_->create_subscription<std_msgs::msg::Bool>("encoder_passthrough", 5, std::bind(&RoverArmHardwareInterface::encoder_callback, this, std::placeholders::_1));//*/
   //subscription2_ = node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>("diff1/status", 5, std::bind(&RoverArmHardwareInterface::topic_callback2, this, std::placeholders::_1));
@@ -123,7 +134,7 @@ void RoverArmHardwareInterface::encoder_callback(const std_msgs::msg::Bool &enco
   encoderPassthrough_ = encoderPassthrough.data;
 }
 
-void RoverArmHardwareInterface::topic_callback1(const ros_phoenix::msg::MotorStatus &motorStatus)
+void RoverArmHardwareInterface::base_callback(const ros_phoenix::msg::MotorStatus &motorStatus)
 {
   if (encoderPassthrough_)
   {
@@ -133,7 +144,7 @@ void RoverArmHardwareInterface::topic_callback1(const ros_phoenix::msg::MotorSta
   temp_[0]=-(motorStatus.position/1100.0/(100.0/15.0));
 }
 
-void RoverArmHardwareInterface::topic_callback2(const ros_phoenix::msg::MotorStatus &motorStatus)
+void RoverArmHardwareInterface::diff1_callback(const ros_phoenix::msg::MotorStatus &motorStatus)
 {
   if (encoderPassthrough_)
   {
@@ -153,7 +164,7 @@ void RoverArmHardwareInterface::topic_callback2(const ros_phoenix::msg::MotorSta
   //temp2_[1] = 
 }
 
-void RoverArmHardwareInterface::topic_callback3(const ros_phoenix::msg::MotorStatus &motorStatus)
+void RoverArmHardwareInterface::diff2_callback(const ros_phoenix::msg::MotorStatus &motorStatus)
 {
   if (encoderPassthrough_)
   {
@@ -171,7 +182,7 @@ void RoverArmHardwareInterface::topic_callback3(const ros_phoenix::msg::MotorSta
   temp_[2] = -std::acos(d)*1.0+0.89151;
 }
 
-void RoverArmHardwareInterface::topic_callback4(const ros_phoenix::msg::MotorStatus &motorStatus)
+void RoverArmHardwareInterface::elbow_callback(const ros_phoenix::msg::MotorStatus &motorStatus)
 {
   if (encoderPassthrough_)
   {
@@ -180,7 +191,7 @@ void RoverArmHardwareInterface::topic_callback4(const ros_phoenix::msg::MotorSta
   temp_[3] = motorStatus.position/10000.0/(30.0/96.0);
 }
 
-void RoverArmHardwareInterface::topic_callback5(const ros_phoenix::msg::MotorStatus &motorStatus)
+void RoverArmHardwareInterface::wrist_tilt_callback(const ros_phoenix::msg::MotorStatus &motorStatus)
 {
   if (encoderPassthrough_)
   {
@@ -189,7 +200,7 @@ void RoverArmHardwareInterface::topic_callback5(const ros_phoenix::msg::MotorSta
   temp_[4] = -motorStatus.position/7760215.0*(3.14/2)  - (3.1415/6);
 }
 
-void RoverArmHardwareInterface::topic_callback6(const ros_phoenix::msg::MotorStatus &motorStatus)
+void RoverArmHardwareInterface::wrist_turn_callback(const ros_phoenix::msg::MotorStatus &motorStatus)
 {
   if (encoderPassthrough_)
   {
@@ -294,6 +305,45 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
   return hardware_interface::return_type::OK;
 }
 
+double RoverArmHardwareInterface::base_pos(double rad)
+{
+  return (-rad * (100.0/15.0) * 1100);
+}
+
+double RoverArmHardwareInterface::diff1_pos(double rad)
+{
+  rad = rad + 0.7832711;
+  double a = 20.1;
+  double b = 48.5;
+  double c = std::sqrt(a*a + b*b - 2*a*b*std::cos(rad));
+  c -= 30.96;
+  return c/15.24 * 5709.0;
+}
+
+double RoverArmHardwareInterface::diff2_pos(double rad)
+{
+  rad = rad - 0.89151;
+  double a = 15.0;
+  double b = 42.3;
+  double c = std::sqrt(a*a + b*b - 2*a*b*std::cos(rad));
+  c -= 30.96;
+  return c/13.64 * 5109.0;
+}
+
+double RoverArmHardwareInterface::elbow_pos(double rad)
+{
+  return (rad*30.0/96.0)*10000;
+}
+double RoverArmHardwareInterface::wrist_tilt_pos(double rad)
+{
+  return (-(rad+3.1415/6)/(3.14/2)*7760215.0);
+}
+
+double RoverArmHardwareInterface::wrist_turn_pos(double rad)
+{
+  return -(rad/(2*3.1415))*4000.0*498;
+}
+
 hardware_interface::return_type RoverArmHardwareInterface::write(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
   auto request = std::make_shared<interfaces::srv::ArmCmd::Request>();
@@ -318,25 +368,28 @@ hardware_interface::return_type RoverArmHardwareInterface::write(
   
   if (encoderPassthrough_)
   {
-		for (int i = 0; i < 6; i++)
+		for (unsigned long int i = 0; i < temp_.size(); i++)
 		{
 		  temp_[i] = hw_commands_[i];
 		}
 	}
   
-  ros_phoenix::msg::MotorControl ms1;
-  ros_phoenix::msg::MotorControl ms2;
-  ros_phoenix::msg::MotorControl ms3;
-  ros_phoenix::msg::MotorControl ms4;
-  ros_phoenix::msg::MotorControl ms5;
-  ros_phoenix::msg::MotorControl ms6;
-  ms1.mode = 1;
-  ms2.mode = 1;
-  ms3.mode = 1;
-  ms4.mode = 1;
-  ms5.mode = 1;
-  ms6.mode = 1;
-  ms1.value = (-hw_commands_[0] * (100.0/15.0) * 1100);
+  for (unsigned long int i = 0; i < output_.size(); i++)
+  {
+    output_[i].mode = 1;
+  }
+  
+  for (unsigned long int i = 0; i < hw_commands_.size(); i++)
+  {
+    output_[i].value = publisher_topics_[i].gear_ratio(hw_commands_[i]);
+  }
+  
+  for (unsigned long int i = 0; i < output_.size(); i++)
+  {
+    motor_publishers_[i]->publish(output_[i]);
+  }
+  
+  /*ms1.value = (-hw_commands_[0] * (100.0/15.0) * 1100);
   
   double rad = hw_commands_[1] + 0.7832711;
   double a = 20.1;
