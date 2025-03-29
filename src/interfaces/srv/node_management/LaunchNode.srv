@@ -1,9 +1,0 @@
-string NONE_FILENAME="{:NONE:}"
-
-string name
-string package
-string executable "{:NONE:}"
-string launch_file "{:NONE:}"
-bool respawn true
----
-bool success
