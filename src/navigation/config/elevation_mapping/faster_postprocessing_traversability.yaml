@@ -22,8 +22,9 @@ elevation_mapping:
         params:
           input_layer: elevation
           output_layer: traversability
-          slope_window_size: 7 # average change in elevation over a odd square grid centered on each point
           smoothing_window_size: 7 # average elevation over a odd square grid centered on each point
+          slope_window_size: 3 # average change in elevation over a odd square grid centered on each point
+          use_smoothed_elevation_for_slope: true # use smoothed elevation for slope calculation instead of raw elevation
           roughness_scalar: 1.5 # traversability = roughness * roughness_scalar + slope * slope_scalar
           slope_scalar: 1.2  # traversability = clamp(traversability, 0, 1)
           low_pass_value: 0.0 # low pass filter value. Disabled when set to 0

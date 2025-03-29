@@ -57,9 +57,10 @@ class TraversabilityFilter : public filters::FilterBase<T> {
   void processRows(const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut,
                   int rowStart, int rowEnd);
 
-  void processMapMultiThreaded(const grid_map::GridMap &mapIn,
-                               grid_map::GridMap &mapOut);
   void processMapSingleThreaded(const grid_map::GridMap &mapIn,
+                                grid_map::GridMap &mapOut);
+
+  void processMapSingleThreadedV2(const grid_map::GridMap &mapIn,
                                 grid_map::GridMap &mapOut);
 
  private:
@@ -68,6 +69,9 @@ class TraversabilityFilter : public filters::FilterBase<T> {
 
   // Output layer name.
   std::string outputLayer_;
+
+  // Whether to use the original elevation or smoothed elevation for slope
+  bool useSmoothedElevationForSlope_;
 
   // Slope window size.
   int slopeWindowSize_;
@@ -83,9 +87,6 @@ class TraversabilityFilter : public filters::FilterBase<T> {
 
   // Low pass value for treating small obstacles as flat ground
   double lowPassValue_;
-
-  // Number of threads to use
-  int numThreads_;
 
   // Add additional debug layers
   bool isDebugLayersShown_;

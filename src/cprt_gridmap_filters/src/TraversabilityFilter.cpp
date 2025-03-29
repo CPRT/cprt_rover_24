@@ -19,11 +19,11 @@ namespace grid_map {
 
 template <typename T>
 TraversabilityFilter<T>::TraversabilityFilter()
-    : slopeWindowSize_(7),
-      smoothingWindowSize_(11),
+    : useSmoothedElevationForSlope_(true), 
+      slopeWindowSize_(3),
+      smoothingWindowSize_(5),
       roughnessScalar_(0.0),
       slopeScalar_(0.0),
-      numThreads_(1),
       isDebugLayersShown_(false) {
   ///
 }
@@ -47,6 +47,14 @@ bool TraversabilityFilter<T>::configure() {
   if (!param_reader.get(std::string("output_layer"), this->outputLayer_)) {
     RCLCPP_ERROR(this->logging_interface_->get_logger(),
                  "TraversabilityFilter did not find parameter 'output_layer'.");
+    return false;
+  }
+
+  if (!param_reader.get(std::string("use_smoothed_elevation_for_slope"),
+                        this->useSmoothedElevationForSlope_)) {
+    RCLCPP_ERROR(this->logging_interface_->get_logger(),
+                 "TraversabilityFilter did not find parameter "
+                 "'use_smoothed_elevation_for_slope'.");
     return false;
   }
 
@@ -100,25 +108,6 @@ bool TraversabilityFilter<T>::configure() {
     return false;
   }
 
-  if (!param_reader.get(std::string("num_threads"), this->numThreads_)) {
-    RCLCPP_ERROR(this->logging_interface_->get_logger(),
-                 "TraversabilityFilter did not find parameter "
-                 "'num_threads'.");
-    return false;
-  } else if (this->numThreads_ < 1) {
-    RCLCPP_ERROR(this->logging_interface_->get_logger(),
-                 "TraversabilityFilter parameter 'num_threads' must be "
-                 "greater than 0.");
-    return false;
-  } else if (this->numThreads_ >
-             static_cast<int>(std::thread::hardware_concurrency())) {
-    RCLCPP_WARN(this->logging_interface_->get_logger(),
-                "TraversabilityFilter parameter 'num_threads' is greater "
-                "than the number of hardware threads. Setting to maximum "
-                "hardware threads.");
-    this->numThreads_ = std::thread::hardware_concurrency();
-  }
-
   if (!param_reader.get(std::string("is_debug_layers_shown"),
                         this->isDebugLayersShown_)) {
     RCLCPP_ERROR(this->logging_interface_->get_logger(),
@@ -143,16 +132,9 @@ bool TraversabilityFilter<T>::update(const T &mapIn, T &mapOut) {
     return false;
   }
 
-  mapOut.add(this->outputLayer_, 0.0);
+  mapOut.add(this->outputLayer_);
 
-  if (this->isDebugLayersShown_) {
-    mapOut.add("elevation_passthru", 0.0);
-    mapOut.add("smoothed_elevation", 0.0);
-    mapOut.add("slope", 0.0);
-    mapOut.add("roughness", 0.0);
-  }
-
-  this->processMapSingleThreaded(mapIn, mapOut);
+  this->processMapSingleThreadedV2(mapIn, mapOut);
 
   return true;
 }
@@ -252,30 +234,156 @@ void TraversabilityFilter<T>::processRows(const grid_map::GridMap &mapIn,
 }
 
 template <typename T>
-void TraversabilityFilter<T>::processMapMultiThreaded(
+void TraversabilityFilter<T>::processMapSingleThreaded(
     const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut) {
-  // int rowsPerThread = map.size() / this->numThreads_;
-  // std::vector<std::future<void>> futures;
+  if (this->isDebugLayersShown_) {
+    mapOut.add("elevation_passthru", 0.0);
+    mapOut.add("smoothed_elevation", 0.0);
+    mapOut.add("slope", 0.0);
+    mapOut.add("roughness", 0.0);
+  }
 
-  // for (int i = 0; i < this->numThreads_; ++i) {
-  //   int startRow = i * rowsPerThread;
-  //   int endRow =
-  //       (i == this->numThreads_ - 1) ? map.size() : (i + 1) *
-  //       rowsPerThread;
-  //   futures.push_back(std::async(std::launch::async, processRow,
-  //                                std::ref(mapIn), std::ref(mapOut),
-  //                                startRow, endRow));
-  // }
-
-  // for (auto &future : futures) {
-  //   future.wait();
-  // }
+  processRows(mapIn, mapOut, 0, mapIn[this->inputLayer_].rows());
 }
 
 template <typename T>
-void TraversabilityFilter<T>::processMapSingleThreaded(
+void TraversabilityFilter<T>::processMapSingleThreadedV2(
     const grid_map::GridMap &mapIn, grid_map::GridMap &mapOut) {
-  processRows(mapIn, mapOut, 0, mapIn[this->inputLayer_].rows());
+  mapOut.add("hori_smooth");
+  mapout.add("smoothed_elevation");
+
+  if (this->isDebugLayersShown_) {
+    mapOut.add("elevation_passthru", 0.0);
+    mapOut.add("slope", 0.0);
+    mapOut.add("roughness", 0.0);
+  }
+
+  const int lastCol = mapIn[this->inputLayer_].cols() - 1;
+  const int lastRow = mapIn[this->inputLayer_].rows() - 1;
+
+  int halfSlopeWindow = this->slopeWindowSize_ / 2; // rounds down intentionally
+  int halfSmoothingWindow = this->smoothingWindowSize_ / 2;
+
+  const std::string slopeInputLayer = (this->useSmoothedElevationForSlope_) ? "smoothed_elevation" : this->inputLayer_;
+
+  // Calculate intermediate horizontal slope and horizontal smoothing layers
+  for (int i = 0; i <= lastRow; ++i) {
+    for (int j = 0; j <= lastCol; ++j) {
+      // Average the elevation and dx of cells to the right and left of the center cell
+      const auto &ijElevation = mapIn.at(this->inputLayer_, grid_map::Index(i, j));
+      if (std::isnan(ijElevation)) {
+        // mapOut.at(this->outputLayer_, grid_map::Index(i, j)) = ijElevation;
+        continue;
+      } 
+      int sum = 0;
+      int count = 0;
+      int startX = std::max(0, i - this->slopeWindowSize_ / 2);
+      int endX = std::min(lastRow, i + this->slopeWindowSize_ / 2);
+
+      // Iterate over the horizontal window
+      for (int x = startX; x <= endX; ++x) {
+        const auto &xyElevation = mapIn.at(this->inputLayer_, grid_map::Index(x, j));
+        if (!std::isnan(xyElevation)) {
+          sum += xyElevation;
+          count++;
+        }   
+      }
+      if(count > 0) {
+        mapOut.at("hori_smooth", grid_map::Index(i, j)) = sum / count;
+      }
+    }
+  }
+
+  // Calculate the smoothed layer
+  for (int i = 0; i <= lastRow; ++i) {
+    for (int j = 0; j <= lastCol; ++j) {
+      const auto &ijElevation = mapIn.at(this->inputLayer_, grid_map::Index(i, j));
+      if (std::isnan(ijElevation)) {
+        // mapOut.at(this->outputLayer_, grid_map::Index(i, j)) = ijElevation;
+        continue;
+      }
+
+      // Average the elevation above and below of the center cell on the horizontal map
+      // Effectively becomes a square window
+      float sum = 0;
+      int smoothCount = 0;
+      int smoothHalfWindow = this->smoothingWindowSize_ / 2;
+      int startY = std::max(0, j - this->smoothingWindowSize_ / 2);
+      int endY = std::min(lastCol, j + this->smoothingWindowSize_ / 2);
+      for (int y = startY; y <= endY; ++y) {
+        const auto &xyElevation = mapIn.at("hori_smooth", grid_map::Index(i, y));
+        if (std::isnan(xyElevation)) {
+          continue;
+        }
+        sum += xyElevation;
+        smoothCount++;
+      }
+
+      if (smoothCount > 0) {
+        mapOut.at("smoothed_elevation", grid_map::Index(i, j)) = sum / smoothCount;
+      }
+    }
+  }
+
+  // Calculate the traversability layer
+  for (int i = 0; i <= lastRow, ++i) {
+    for (int j = 0; j <= lastCol; ++j) {
+      const auto &ijElevation = mapIn.at(this->inputLayer_, grid_map::Index(i, j));
+      if (std::isnan(ijElevation)) {
+        // mapOut.at(this->outputLayer_, grid_map::Index(i, j)) = ijElevation;
+        continue;
+      }
+
+      // Calculate slope using original elevation (nested loops)
+      const auto &ijElevationForSlope = mapIn.at(slopeInputLayer, grid_map::Index(i, j));
+      float dxSum = 0;
+      float dySum = 0;
+      int slopeCount = 0;
+      int startX = std::max(0, i - halfSlopeWindow);
+      int endX = std::min(lastRow, i + halfSlopeWindow);
+      int startY = std::max(0, j - halfSlopeWindow);
+      int endY = std::min(lastCol, j + halfSlopeWindow);
+
+      for (int x = startX; x <= endX; ++x) {
+        for (int y = startY; y <= endY; ++y) {
+          if (x != i && y != j) {  // Avoid using the center point itself
+            const auto &xyElevation =
+                mapIn.at(slopeInputLayer, grid_map::Index(x, y));
+            if (std::isnan(xyElevation)) {
+              continue;
+            }
+            dxSum += (xyElevation - ijElevationForSlope) * (y - j);
+            dySum += (xyElevation - ijElevationForSlope) * (x - i);
+            slopeCount++;
+          }
+        }
+      }
+
+      const float dx = (slopeCount > 0) ? dxSum / slopeCount : 0;
+      const float dy = (slopeCount > 0) ? dySum / slopeCount : 0;
+      const float slope = std::atan(std::sqrt(dx * dx + dy * dy));
+
+      // Calculate roughness and traversability
+      const float roughness = std::abs(ijElevation - mapIn.at("smoothed_elevation", grid_map::Index(i, j)));
+      float traversability =
+          std::clamp(static_cast<float>(slope * this->slopeScalar_ +
+                                        roughness * this->roughnessScalar_),
+                     0.0f, 1.0f);
+
+      // Low pass filter
+      if (traversability < this->lowPassValue_) {
+        traversability = 0.0;
+      }
+
+      mapOut.at(this->outputLayer_, grid_map::Index(i, j)) = traversability;
+
+      if (this->isDebugLayersShown_) {
+        mapOut.at("elevation_passthru", grid_map::Index(i, j)) = mapIn.at(this->inputLayer_, grid_map::Index(i, j));
+        mapOut.at("smoothed_elevation", grid_map::Index(i, j)) = mapIn.at("smoothed_elevation", grid_map::Index(i, j));
+        mapOut.at("slope", grid_map::Index(i, j)) = slope * this->slopeScalar_;
+        mapOut.at("roughness", grid_map::Index(i, j)) = roughness * this->roughnessScalar_;
+      }
+  }
 }
 
 }  // namespace grid_map
