@@ -4,6 +4,8 @@ import launch.actions
 import launch.substitutions
 import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes
+from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description():
@@ -22,14 +24,19 @@ def generate_launch_description():
             raise FileNotFoundError("File not found: " + os.path.join(config_dir, file))
         list_params.append(os.path.join(config_dir, file))
 
+    node = ComposableNode(
+        package="elevation_mapping",
+        plugin="elevation_mapping::ElevationMapNode",
+        name="elevation_mapping",
+        parameters=list_params,
+        extra_arguments=[{"use_intra_process_comms": True}],
+    )
+
     return launch.LaunchDescription(
         [
-            launch_ros.actions.Node(
-                package="elevation_mapping",
-                executable="elevation_mapping",
-                name="elevation_mapping",
-                output="screen",
-                parameters=list_params,
-            ),
+            LoadComposableNodes(
+                composable_node_descriptions=[node],
+                target_container="/zed/zed_container",
+            )
         ]
     )
