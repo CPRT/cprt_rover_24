@@ -8,16 +8,17 @@
 
 #pragma once
 
-#include "elevation_mapping/input_sources/Input.hpp"
-
 #include <rclcpp/rclcpp.hpp>
+
+#include "elevation_mapping/input_sources/Input.hpp"
 
 namespace elevation_mapping {
 class ElevationMapping;  // Forward declare to avoid cyclic import dependency.
 
 /**
- * @brief An input source manager reads a list of input sources from the configuration and connects them to the appropriate callback of
- * elevation mapping.
+ * @brief An input source manager reads a list of input sources from the
+ * configuration and connects them to the appropriate callback of elevation
+ * mapping.
  */
 class InputSourceManager {
  public:
@@ -42,8 +43,9 @@ class InputSourceManager {
    * @param sourceConfigurationName The name of the input source configuration.
    * @return True if configuring was successful.
    */
-  bool configure(const std::vector<std::string>& parameters, const std::string& sourceConfigurationName);
-    
+  bool configure(const std::vector<std::string>& parameters,
+                 const std::string& sourceConfigurationName);
+
   /**
    * @brief Registers the corresponding callback in the elevationMap.
    * @param map The map we want to link the input sources to.
@@ -55,7 +57,9 @@ class InputSourceManager {
    * @return True if registering was successful.
    */
   template <typename... MsgT>
-  bool registerCallbacks(ElevationMapping& map, std::pair<const char*, Input::CallbackT<MsgT>>... callbacks);
+  bool registerCallbacks(
+      ElevationMapping& map,
+      std::pair<const char*, Input::CallbackT<MsgT>>... callbacks);
 
   /**
    * @return The number of successfully configured input sources.
@@ -73,9 +77,13 @@ class InputSourceManager {
 // Template definitions
 
 template <typename... MsgT>
-bool InputSourceManager::registerCallbacks(ElevationMapping& map, std::pair<const char*, Input::CallbackT<MsgT>>... callbacks) {
+bool InputSourceManager::registerCallbacks(
+    ElevationMapping& map,
+    std::pair<const char*, Input::CallbackT<MsgT>>... callbacks) {
   if (sources_.empty()) {
-    RCLCPP_WARN(nodeHandle_->get_logger(), "Not registering any callbacks, no input sources given. Did you configure the InputSourceManager?");
+    RCLCPP_WARN(nodeHandle_->get_logger(),
+                "Not registering any callbacks, no input sources given. Did "
+                "you configure the InputSourceManager?");
     return true;
   }
   for (Input& source : sources_) {
@@ -87,7 +95,10 @@ bool InputSourceManager::registerCallbacks(ElevationMapping& map, std::pair<cons
       }
     }
     if (not callbackRegistered) {
-      RCLCPP_WARN(nodeHandle_->get_logger(), "The configuration contains input sources of an unknown type: %s", source.getType().c_str());
+      RCLCPP_WARN(
+          nodeHandle_->get_logger(),
+          "The configuration contains input sources of an unknown type: %s",
+          source.getType().c_str());
       RCLCPP_WARN(nodeHandle_->get_logger(), "Available types are:");
       for (auto& callback : {callbacks...}) {
         RCLCPP_WARN(nodeHandle_->get_logger(), "- %s", callback.first);

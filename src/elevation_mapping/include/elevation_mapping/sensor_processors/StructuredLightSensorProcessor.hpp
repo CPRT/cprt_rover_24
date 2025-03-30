@@ -9,12 +9,14 @@
 #pragma once
 
 #include <elevation_mapping/sensor_processors/SensorProcessorBase.hpp>
+
 #include "elevation_mapping/PointXYZRGBConfidenceRatio.hpp"
 
 namespace elevation_mapping {
 
 /*!
- * Sensor processor for StructuredLight-type (PrimeSense) structured light sensors.
+ * Sensor processor for StructuredLight-type (PrimeSense) structured light
+ * sensors.
  */
 class StructuredLightSensorProcessor : public SensorProcessorBase {
  public:
@@ -22,8 +24,9 @@ class StructuredLightSensorProcessor : public SensorProcessorBase {
    * Constructor.
    * @param nodeHandle the ROS node handle.
    */
-  StructuredLightSensorProcessor(std::shared_ptr<rclcpp::Node>& nodeHandle,
-    const SensorProcessorBase::GeneralParameters& generalParameters);
+  StructuredLightSensorProcessor(
+      std::shared_ptr<rclcpp::Node>& nodeHandle,
+      const SensorProcessorBase::GeneralParameters& generalParameters);
 
   /*!
    * Destructor.
@@ -38,14 +41,15 @@ class StructuredLightSensorProcessor : public SensorProcessorBase {
   bool readParameters(std::string& inputSourceName) override;
 
   /*!
-   * Computes the elevation map height variances for each point in a point cloud with the
-   * sensor model and the robot pose covariance.
+   * Computes the elevation map height variances for each point in a point cloud
+   * with the sensor model and the robot pose covariance.
    * @param[in] pointCloud the point cloud for which the variances are computed.
    * @param[in] robotPoseCovariance the robot pose covariance matrix.
    * @param[out] variances the elevation map height variances.
    * @return true if successful.
    */
-  bool computeVariances(const PointCloudType::ConstPtr pointCloud, const Eigen::Matrix<double, 6, 6>& robotPoseCovariance,
+  bool computeVariances(const PointCloudType::ConstPtr pointCloud,
+                        const Eigen::Matrix<double, 6, 6>& robotPoseCovariance,
                         Eigen::VectorXf& variances) override;
 
   /*!
@@ -53,6 +57,7 @@ class StructuredLightSensorProcessor : public SensorProcessorBase {
    * @param pointCloud the point cloud to filter.
    * @return true if successful.
    */
-  bool filterPointCloudSensorType(const PointCloudType::Ptr pointCloud) override;
+  bool filterPointCloudSensorType(
+      const PointCloudType::Ptr pointCloud) override;
 };
 } /* namespace elevation_mapping */

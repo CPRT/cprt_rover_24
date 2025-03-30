@@ -50,34 +50,43 @@ class RobotMotionMapUpdater {
   bool readParameters();
 
   /*!
-   * Computes the model update for the elevation map based on the pose covariance and
-   * adds the update to the map.
+   * Computes the model update for the elevation map based on the pose
+   * covariance and adds the update to the map.
    * @param[in] map the elevation map to be updated.
    * @param[in] robotPose the current pose.
    * @param[in] robotPoseCovariance the current pose covariance matrix.
    * @param[in] time the time of the current update.
    * @return true if successful.
    */
-  bool update(ElevationMap& map, const Pose& robotPose, const PoseCovariance& robotPoseCovariance, const rclcpp::Time& time);
+  bool update(ElevationMap& map, const Pose& robotPose,
+              const PoseCovariance& robotPoseCovariance,
+              const rclcpp::Time& time);
 
  private:
   /*!
-   * Computes the reduced covariance (4x4: x, y, z, yaw) from the full pose covariance (6x6: x, y, z, roll, pitch, yaw).
+   * Computes the reduced covariance (4x4: x, y, z, yaw) from the full pose
+   * covariance (6x6: x, y, z, roll, pitch, yaw).
    * @param[in] robotPose the robot pose.
    * @param[in] robotPoseCovariance the full pose covariance matrix (6x6).
    * @param[out] reducedCovariance the reduced covariance matrix (4x4);
    * @return true if successful.
    */
-  bool computeReducedCovariance(const Pose& robotPose, const PoseCovariance& robotPoseCovariance, ReducedCovariance& reducedCovariance);
+  bool computeReducedCovariance(const Pose& robotPose,
+                                const PoseCovariance& robotPoseCovariance,
+                                ReducedCovariance& reducedCovariance);
 
   /*!
    * Computes the covariance between the new and the previous pose.
    * @param[in] robotPose the current robot pose.
-   * @param[in] reducedCovariance the current robot pose covariance matrix (reduced).
-   * @param[out] relativeRobotPoseCovariance the relative covariance between the current and the previous robot pose (reduced form).
+   * @param[in] reducedCovariance the current robot pose covariance matrix
+   * (reduced).
+   * @param[out] relativeRobotPoseCovariance the relative covariance between the
+   * current and the previous robot pose (reduced form).
    * @return true if successful.
    */
-  bool computeRelativeCovariance(const Pose& robotPose, const ReducedCovariance& reducedCovariance, ReducedCovariance& relativeCovariance);
+  bool computeRelativeCovariance(const Pose& robotPose,
+                                 const ReducedCovariance& reducedCovariance,
+                                 ReducedCovariance& relativeCovariance);
 
   //! ROS nodehandle.
   std::shared_ptr<rclcpp::Node> nodeHandle_;

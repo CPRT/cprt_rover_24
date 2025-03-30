@@ -8,24 +8,25 @@
 
 #pragma once
 
-#include <rclcpp/rclcpp.hpp>
 #include <filters/filter_chain.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_ros/grid_map_ros.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace elevation_mapping {
- 
+
 /**
- * @brief A configurable postprocessing functor, it applies the configured filter pipeline to the input.
+ * @brief A configurable postprocessing functor, it applies the configured
+ * filter pipeline to the input.
  *
  *   Usage:
  *   ========
  *
- *   // Create the functor, it will configure the postprocessing pipeline from the ros parameters.
- *   PostprocessingPipelineFunctor postprocessor(nodeHandle);
+ *   // Create the functor, it will configure the postprocessing pipeline from
+ * the ros parameters. PostprocessingPipelineFunctor postprocessor(nodeHandle);
  *
- *   // Call the functor by feeding it some input data. It will postprocess and publish the processed data.
- *   postprocessor(gridMap);
+ *   // Call the functor by feeding it some input data. It will postprocess and
+ * publish the processed data. postprocessor(gridMap);
  *
  */
 class PostprocessingPipelineFunctor {
@@ -34,9 +35,11 @@ class PostprocessingPipelineFunctor {
 
   /**
    * @brief Explicit Constructor.
-   * @param nodeHandle The node handle to read parameters from and to publish output data.
+   * @param nodeHandle The node handle to read parameters from and to publish
+   * output data.
    */
-  explicit PostprocessingPipelineFunctor(std::shared_ptr<rclcpp::Node> nodeHandle);
+  explicit PostprocessingPipelineFunctor(
+      std::shared_ptr<rclcpp::Node> nodeHandle);
 
   /**
    * @brief Destructor.
@@ -44,8 +47,10 @@ class PostprocessingPipelineFunctor {
   ~PostprocessingPipelineFunctor();
 
   /**
-   * @brief The operator. It applies this object, e.g a postprocessing pipeline to the given GridMap.
-   * @param inputMap The gridMap on which the postprocessing is applied (not inplace).
+   * @brief The operator. It applies this object, e.g a postprocessing pipeline
+   * to the given GridMap.
+   * @param inputMap The gridMap on which the postprocessing is applied (not
+   * inplace).
    * @return The postprocessed gridMap.
    */
   GridMap operator()(GridMap& inputMap);

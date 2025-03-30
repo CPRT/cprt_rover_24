@@ -17,7 +17,8 @@ namespace elevation_mapping {
 template <typename Type>
 class WeightedEmpiricalCumulativeDistributionFunction {
  public:
-  WeightedEmpiricalCumulativeDistributionFunction() : totalWeight_(0.0), isComputed_(false) {}
+  WeightedEmpiricalCumulativeDistributionFunction()
+      : totalWeight_(0.0), isComputed_(false) {}
 
   virtual ~WeightedEmpiricalCumulativeDistributionFunction() = default;
 
@@ -47,41 +48,52 @@ class WeightedEmpiricalCumulativeDistributionFunction {
 
     if (data_.size() == 1) {
       // Special treatment for size 1.
-      inverseDistribution_.insert(std::pair<double, Type>(0.0, data_.begin()->first));
-      inverseDistribution_.insert(std::pair<double, Type>(1.0, data_.begin()->first));
+      inverseDistribution_.insert(
+          std::pair<double, Type>(0.0, data_.begin()->first));
+      inverseDistribution_.insert(
+          std::pair<double, Type>(1.0, data_.begin()->first));
       return isComputed_ = true;
     }
 
     //    double cumulativeWeight = 0.0;
-    //    inverseDistribution_.insert(std::pair<double, Type>(0.0, data_.begin()->first));
-    //    for (const auto& point : data_) {
+    //    inverseDistribution_.insert(std::pair<double, Type>(0.0,
+    //    data_.begin()->first)); for (const auto& point : data_) {
     //      cumulativeWeight += point.second;
     //      inverseDistribution_.insert(inverseDistribution_.end(),
-    //                           std::pair<double, Type>(cumulativeWeight / totalWeight_, point.first));
+    //                           std::pair<double, Type>(cumulativeWeight /
+    //                           totalWeight_, point.first));
     //    }
 
-    double cumulativeWeight = -data_.begin()->second;  // Smallest observation corresponds to a probability of 0.
+    double cumulativeWeight =
+        -data_.begin()->second;  // Smallest observation corresponds to a
+                                 // probability of 0.
     const double adaptedTotalWeight = totalWeight_ - data_.begin()->second;
     for (const auto& point : data_) {
       cumulativeWeight += point.second;
-      inverseDistribution_.insert(inverseDistribution_.end(), std::pair<double, Type>(cumulativeWeight / adaptedTotalWeight, point.first));
+      inverseDistribution_.insert(
+          inverseDistribution_.end(),
+          std::pair<double, Type>(cumulativeWeight / adaptedTotalWeight,
+                                  point.first));
     }
 
     return isComputed_ = true;
   }
 
   /*!
-   * Returns the quantile corresponding to the given probability (inverse distribution function).
-   * The smallest observation corresponds to a probability of 0 and the largest to a probability of 1.
-   * Uses linear interpolation, see https://stat.ethz.ch/R-manual/R-devel/library/stats/html/quantile.html
-   * and "Sampling Quantiles in Statistical Packages", Hyndman et. al., 1996.
+   * Returns the quantile corresponding to the given probability (inverse
+   * distribution function). The smallest observation corresponds to a
+   * probability of 0 and the largest to a probability of 1. Uses linear
+   * interpolation, see
+   * https://stat.ethz.ch/R-manual/R-devel/library/stats/html/quantile.html and
+   * "Sampling Quantiles in Statistical Packages", Hyndman et. al., 1996.
    * @param probability the order of the quantile.
    * @return the quantile for the given probability.
    */
   const Type quantile(const double probability) const {
     if (!isComputed_) {
       throw std::runtime_error(
-          "WeightedEmpiricalCumulativeDistributionFunction::quantile(...): The distribution functions needs to be computed (compute()) "
+          "WeightedEmpiricalCumulativeDistributionFunction::quantile(...): The "
+          "distribution functions needs to be computed (compute()) "
           "first.");
     }
     if (probability <= 0.0) {
@@ -90,31 +102,39 @@ class WeightedEmpiricalCumulativeDistributionFunction {
     if (probability >= 1.0) {
       return inverseDistribution_.rbegin()->second;
     }
-    const auto& up = inverseDistribution_.lower_bound(probability);  // First element that is not less than key.
-    auto low = up;                                                   // Copy.
+    const auto& up = inverseDistribution_.lower_bound(
+        probability);  // First element that is not less than key.
+    auto low = up;     // Copy.
     --low;
-    return low->second + (probability - low->first) * (up->second - low->second) / (up->first - low->first);
+    return low->second + (probability - low->first) *
+                             (up->second - low->second) /
+                             (up->first - low->first);
   }
 
-  friend std::ostream& operator<<(std::ostream& out, const WeightedEmpiricalCumulativeDistributionFunction& wecdf) {
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      const WeightedEmpiricalCumulativeDistributionFunction& wecdf) {
     unsigned int i = 0;
     out << "Data points:" << std::endl;
     for (const auto& point : wecdf.data_) {
-      out << "[" << i << "] Value: " << point.first << " Weight: " << point.second << std::endl;
+      out << "[" << i << "] Value: " << point.first
+          << " Weight: " << point.second << std::endl;
       ++i;
     }
 
     i = 0;
     out << "Cumulative distribution function:" << std::endl;
     for (const auto& point : wecdf.distribution_) {
-      out << "[" << i << "] Value: " << point.first << " Prob.: " << point.second << std::endl;
+      out << "[" << i << "] Value: " << point.first
+          << " Prob.: " << point.second << std::endl;
       ++i;
     }
 
     i = 0;
     out << "Inverse distribution function:" << std::endl;
     for (const auto& point : wecdf.inverseDistribution_) {
-      out << "[" << i << "] Prob.: " << point.first << " Value: " << point.second << std::endl;
+      out << "[" << i << "] Prob.: " << point.first
+          << " Value: " << point.second << std::endl;
       ++i;
     }
 
@@ -125,7 +145,8 @@ class WeightedEmpiricalCumulativeDistributionFunction {
   //! Data points stored as value/weight pair (histogram).
   std::map<Type, double> data_;
 
-  //! Cumulative distribution function (and its inverse) stored as value pair/cumulative probability.
+  //! Cumulative distribution function (and its inverse) stored as value
+  //! pair/cumulative probability.
   std::map<Type, double> distribution_;
   std::map<double, Type> inverseDistribution_;
 

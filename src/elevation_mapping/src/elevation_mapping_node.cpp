@@ -4,35 +4,36 @@
  *  Created on: Oct 3, 2013
  *      Author: Péter Fankhauser
  *   Institute: ETH Zurich, ANYbotics
- */ 
+ */
+
+#include "elevation_mapping/elevation_mapping_node.hpp"
 
 #include <rclcpp/rclcpp.hpp>
-#include "elevation_mapping/elevation_mapping_node.hpp"
 
 using namespace std::chrono_literals;
 
 namespace elevation_mapping {
 
-ElevationMapNode::ElevationMapNode(const rclcpp::NodeOptions& opt) : Node("elevation_mapping", opt) {
+ElevationMapNode::ElevationMapNode(const rclcpp::NodeOptions& opt)
+    : Node("elevation_mapping", opt) {
   declare_parameter("num_callback_threads", 5);
   declare_parameter("postprocessor_num_threads", 1);
-  timer_ = this->create_wall_timer(
-    2s,
-    [this]() {
-      this->timer_->cancel();
-      elevationMapping_ = std::make_unique<ElevationMapping>(shared_from_this());
-    });
-  
+  timer_ = this->create_wall_timer(2s, [this]() {
+    this->timer_->cancel();
+    elevationMapping_ = std::make_unique<ElevationMapping>(shared_from_this());
+  });
 }
-}
+}  // namespace elevation_mapping
 
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<elevation_mapping::ElevationMapNode>();
-  rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), node->get_parameter("num_callback_threads").as_int());
+  rclcpp::executors::MultiThreadedExecutor executor(
+      rclcpp::ExecutorOptions(),
+      node->get_parameter("num_callback_threads").as_int());
   executor.add_node(node);
   executor.spin();
-  rclcpp::shutdown();  
+  rclcpp::shutdown();
   return 0;
 }
 
