@@ -10,10 +10,9 @@
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+#include <grid_map_core/GridMap.hpp>
 #include <thread>
 
-#include <grid_map_core/GridMap.hpp>
- 
 #include "elevation_mapping/postprocessing/PostprocessingPipelineFunctor.hpp"
 
 namespace elevation_mapping {
@@ -21,9 +20,9 @@ namespace elevation_mapping {
 /**
  * @brief A wrapper around the postprocessing pipelines functor.
  *
- * @remark It stores together the functor, grid map data buffer, and thread tooling.
- * It is assumed that the members of this function are guarded by an external mutex,
- * handled by the owner of this class.
+ * @remark It stores together the functor, grid map data buffer, and thread
+ * tooling. It is assumed that the members of this function are guarded by an
+ * external mutex, handled by the owner of this class.
  */
 class PostprocessingWorker {
  public:
@@ -58,7 +57,8 @@ class PostprocessingWorker {
   /**
    * @brief Checks whether the worker publisher has any active subscribers.
    *
-   * @return true If there are subscribers to the worker publisher, false otherwise.
+   * @return true If there are subscribers to the worker publisher, false
+   * otherwise.
    */
   bool hasSubscribers() const;
   ///@}
@@ -69,9 +69,10 @@ class PostprocessingWorker {
 
   //! BOOST Service Worker Infrastructure.
   //! The io_service objects provide the interface to post an asynchronous task.
-  //! The work object ensures that the io_service run() method keeps spinning and accepts tasks.
-  //! A thread executes the io_service::run() method, which does io_service::work, ie accepting and executing new tasks.
-  //! IO service for asynchronous operation.
+  //! The work object ensures that the io_service run() method keeps spinning
+  //! and accepts tasks. A thread executes the io_service::run() method, which
+  //! does io_service::work, ie accepting and executing new tasks. IO service
+  //! for asynchronous operation.
   boost::asio::io_service ioService_;
   //! IO service work notifier
   boost::asio::io_service::work work_;

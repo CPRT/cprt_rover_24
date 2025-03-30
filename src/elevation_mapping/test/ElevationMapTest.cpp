@@ -6,10 +6,10 @@
  *	 Institute: ETH Zurich, ANYbotics
  */
 
+#include <rclcpp/rclcpp.hpp>
+
 #include "elevation_mapping/ElevationMap.hpp"
 #include "grid_map_core/GridMap.hpp"
-
-#include <rclcpp/rclcpp.hpp>
 
 // gtest
 #include <gtest/gtest.h>

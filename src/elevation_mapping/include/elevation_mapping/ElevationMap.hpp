@@ -31,7 +31,8 @@
 namespace elevation_mapping {
 
 /*!
- * Elevation map stored as grid map handling elevation height, variance, color etc.
+ * Elevation map stored as grid map handling elevation height, variance, color
+ * etc.
  */
 class ElevationMap {
  public:
@@ -47,35 +48,46 @@ class ElevationMap {
 
   /*!
    * Set the geometry of the elevation map. Clears all the data.
-   * @param length the side lengths in x, and y-direction of the elevation map [m].
+   * @param length the side lengths in x, and y-direction of the elevation map
+   * [m].
    * @param resolution the cell size in [m/cell].
-   * @param position the 2d position of the elevation map in the elevation map frame [m].
+   * @param position the 2d position of the elevation map in the elevation map
+   * frame [m].
    * @return true if successful.
    */
-  void setGeometry(const grid_map::Length& length, const double& resolution, const grid_map::Position& position);
+  void setGeometry(const grid_map::Length& length, const double& resolution,
+                   const grid_map::Position& position);
 
   /*!
    * Add new measurements to the elevation map.
    * @param pointCloud the point cloud data.
-   * @param pointCloudVariances the corresponding variances of the point cloud data.
+   * @param pointCloudVariances the corresponding variances of the point cloud
+   * data.
    * @param timeStamp the time of the input point cloud.
    * @param transformationSensorToMap
    * @return true if successful.
    */
-  bool add(const PointCloudType::Ptr pointCloud, Eigen::VectorXf& pointCloudVariances, const rclcpp::Time& timeStamp,
+  bool add(const PointCloudType::Ptr pointCloud,
+           Eigen::VectorXf& pointCloudVariances, const rclcpp::Time& timeStamp,
            const Eigen::Affine3d& transformationSensorToMap);
 
   /*!
    * Update the elevation map with variance update data.
    * @param varianceUpdate the variance update in vertical direction.
-   * @param horizontalVarianceUpdateX the variance update in horizontal x-direction.
-   * @param horizontalVarianceUpdateY the variance update in horizontal y-direction.
-   * @param horizontalVarianceUpdateXY the correlated variance update in horizontal xy-direction.
+   * @param horizontalVarianceUpdateX the variance update in horizontal
+   * x-direction.
+   * @param horizontalVarianceUpdateY the variance update in horizontal
+   * y-direction.
+   * @param horizontalVarianceUpdateXY the correlated variance update in
+   * horizontal xy-direction.
    * @param time the time of the update.
    * @return true if successful.
    */
-  bool update(const grid_map::Matrix& varianceUpdate, const grid_map::Matrix& horizontalVarianceUpdateX,
-              const grid_map::Matrix& horizontalVarianceUpdateY, const grid_map::Matrix& horizontalVarianceUpdateXY, const rclcpp::Time& time);
+  bool update(const grid_map::Matrix& varianceUpdate,
+              const grid_map::Matrix& horizontalVarianceUpdateX,
+              const grid_map::Matrix& horizontalVarianceUpdateY,
+              const grid_map::Matrix& horizontalVarianceUpdateXY,
+              const rclcpp::Time& time);
 
   /*!
    * Triggers the fusion of the entire elevation map.
@@ -111,15 +123,15 @@ class ElevationMap {
   void move(const Eigen::Vector2d& position);
 
   /*!
-   * Publishes the (latest) raw elevation map. Optionally, if a postprocessing pipeline was configured,
-   * the map is postprocessed before publishing.
+   * Publishes the (latest) raw elevation map. Optionally, if a postprocessing
+   * pipeline was configured, the map is postprocessed before publishing.
    * @return true if successful.
    */
   bool postprocessAndPublishRawElevationMap();
 
   /*!
-   * Publishes the fused elevation map. Takes the latest available fused elevation
-   * map, does not trigger the fusion process.
+   * Publishes the fused elevation map. Takes the latest available fused
+   * elevation map, does not trigger the fusion process.
    * @return true if successful.
    */
   bool publishFusedElevationMap();
@@ -167,19 +179,23 @@ class ElevationMap {
   rclcpp::Time getTimeOfLastFusion();
 
   /*!
-   * Get the pose of the elevation map frame w.r.t. the inertial parent frame of the robot (e.g. world, map etc.).
-   * @return pose of the elevation map frame w.r.t. the parent frame of the robot.
+   * Get the pose of the elevation map frame w.r.t. the inertial parent frame of
+   * the robot (e.g. world, map etc.).
+   * @return pose of the elevation map frame w.r.t. the parent frame of the
+   * robot.
    */
   const kindr::HomTransformQuatD& getPose();
 
   /*!
-   * Gets the position of a raw data point (x, y of cell position & height of cell value) in
-   * the parent frame of the robot.
+   * Gets the position of a raw data point (x, y of cell position & height of
+   * cell value) in the parent frame of the robot.
    * @param index the index of the requested cell.
-   * @param position the position of the data point in the parent frame of the robot.
+   * @param position the position of the data point in the parent frame of the
+   * robot.
    * @return true if successful, false if no valid data available.
    */
-  bool getPosition3dInRobotParentFrame(const Eigen::Array2i& index, kindr::Position3D& position);
+  bool getPosition3dInRobotParentFrame(const Eigen::Array2i& index,
+                                       kindr::Position3D& position);
 
   /*!
    * Gets the fused data mutex.
@@ -228,18 +244,21 @@ class ElevationMap {
    * Updates the internal underlying map.
    * @param underlyingMap the underlying map.
    */
-  void underlyingMapCallback(const grid_map_msgs::msg::GridMap::SharedPtr underlyingMap);
+  void underlyingMapCallback(
+      const grid_map_msgs::msg::GridMap::SharedPtr underlyingMap);
 
   /*!
-   * Method to set the height value around the center of the robot, can be used for initialization.
+   * Method to set the height value around the center of the robot, can be used
+   * for initialization.
    * @param initPosition Position to calculate inner rectangle.
    * @param mapHeight The height that gets set uniformly.
    * @param lengthInXSubmap Length of the submap in X direction.
    * @param lengthInYSubmap Length of the submap in Y direction.
    * @param margin Extra margin that gets added to the submap boundaries.
    */
-  void setRawSubmapHeight(const grid_map::Position& initPosition, float mapHeight, double lengthInXSubmap, double lengthInYSubmap,
-                          double margin);
+  void setRawSubmapHeight(const grid_map::Position& initPosition,
+                          float mapHeight, double lengthInXSubmap,
+                          double lengthInYSubmap, double margin);
 
   friend class ElevationMapping;
 
@@ -271,7 +290,8 @@ class ElevationMap {
    * @param standardDeviation the standardDeviation of the distribution.
    * @return the function value.
    */
-  float cumulativeDistributionFunction(float x, float mean, float standardDeviation);
+  float cumulativeDistributionFunction(float x, float mean,
+                                       float standardDeviation);
 
   //! ROS nodehandle.
   std::shared_ptr<rclcpp::Node> nodeHandle_;
@@ -294,12 +314,16 @@ class ElevationMap {
   //! True if underlying map has been set, false otherwise.
   bool hasUnderlyingMap_;
 
-  //! Pose of the elevation map frame w.r.t. the inertial parent frame of the robot (e.g. world, map etc.).
+  //! Pose of the elevation map frame w.r.t. the inertial parent frame of the
+  //! robot (e.g. world, map etc.).
   kindr::HomTransformQuatD pose_;
 
-  //! ROS publishers. Publishing of the raw elevation map is handled by the postprocessing pool.
-  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr elevationMapFusedPublisher_;
-  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr visibilityCleanupMapPublisher_;
+  //! ROS publishers. Publishing of the raw elevation map is handled by the
+  //! postprocessing pool.
+  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr
+      elevationMapFusedPublisher_;
+  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr
+      visibilityCleanupMapPublisher_;
 
   //! Mutex lock for fused map.
   boost::recursive_mutex fusedMapMutex_;
@@ -311,7 +335,8 @@ class ElevationMap {
   boost::recursive_mutex visibilityCleanupMapMutex_;
 
   //! Underlying map subscriber.
-  rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr underlyingMapSubscriber_;
+  rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr
+      underlyingMapSubscriber_;
 
   //! Initial ros time
   rclcpp::Time initialTime_;

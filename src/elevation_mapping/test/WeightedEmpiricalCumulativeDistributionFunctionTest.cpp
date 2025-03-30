@@ -11,15 +11,18 @@
 // gtest
 #include <gtest/gtest.h>
 
-TEST(WeightedEmpiricalCumulativeDistributionFunction, Initialization) {  // NOLINT
-  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<float> wecdf;
+TEST(WeightedEmpiricalCumulativeDistributionFunction,
+     Initialization) {  // NOLINT
+  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<float>
+      wecdf;
   EXPECT_FALSE(wecdf.compute());
   wecdf.clear();
   EXPECT_FALSE(wecdf.compute());
 }
 
 TEST(WeightedEmpiricalCumulativeDistributionFunction, Trivial) {  // NOLINT
-  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double> wecdf;
+  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double>
+      wecdf;
   wecdf.add(0.0);
   wecdf.add(1.0);
   EXPECT_TRUE(wecdf.compute());
@@ -33,8 +36,10 @@ TEST(WeightedEmpiricalCumulativeDistributionFunction, Trivial) {  // NOLINT
   EXPECT_DOUBLE_EQ(1.0, wecdf.quantile(1.1));
 }
 
-TEST(WeightedEmpiricalCumulativeDistributionFunction, LinearEquallySpaced) {  // NOLINT
-  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double> wecdf;
+TEST(WeightedEmpiricalCumulativeDistributionFunction,
+     LinearEquallySpaced) {  // NOLINT
+  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double>
+      wecdf;
   wecdf.add(0.0);
   wecdf.add(10.0 / 3.0);
   wecdf.add(20.0 / 3.0);
@@ -49,7 +54,8 @@ TEST(WeightedEmpiricalCumulativeDistributionFunction, LinearEquallySpaced) {  //
 }
 
 TEST(WeightedEmpiricalCumulativeDistributionFunction, SingleValue) {  // NOLINT
-  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double> wecdf;
+  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double>
+      wecdf;
   wecdf.add(3.0);
   wecdf.add(3.0);
   wecdf.add(3.0);
@@ -61,8 +67,10 @@ TEST(WeightedEmpiricalCumulativeDistributionFunction, SingleValue) {  // NOLINT
   EXPECT_DOUBLE_EQ(3.0, wecdf.quantile(2.0));
 }
 
-TEST(WeightedEmpiricalCumulativeDistributionFunction, SyntheticDataDebug) {  // NOLINT
-  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double> wecdf;
+TEST(WeightedEmpiricalCumulativeDistributionFunction,
+     SyntheticDataDebug) {  // NOLINT
+  elevation_mapping::WeightedEmpiricalCumulativeDistributionFunction<double>
+      wecdf;
   for (unsigned int i = 0; i < 10; ++i) {
     wecdf.add(1.0);
   }

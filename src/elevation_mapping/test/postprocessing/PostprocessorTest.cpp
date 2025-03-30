@@ -11,8 +11,9 @@
 #include "elevation_mapping/postprocessing/PostprocessorPool.hpp"
 
 /**
- * We read in a postprocessing (mock) configuration that takes 150ms to execute. We test whether the postprocessorPool accepts/discards the
- * tasks for various configurations of time between tasks and number of threads in the pool.
+ * We read in a postprocessing (mock) configuration that takes 150ms to execute.
+ * We test whether the postprocessorPool accepts/discards the tasks for various
+ * configurations of time between tasks and number of threads in the pool.
  */
 class RosFixture : public ::testing::Test {
   void SetUp() override {
@@ -24,7 +25,9 @@ class RosFixture : public ::testing::Test {
   void TearDown() override { ros::shutdown(); }
 
  public:
-  static void checkAcceptedTasks(uint poolSize, uint timeBetweenConsecutiveTasks, std::vector<bool> expectedAcceptanceOutcomes) {
+  static void checkAcceptedTasks(uint poolSize,
+                                 uint timeBetweenConsecutiveTasks,
+                                 std::vector<bool> expectedAcceptanceOutcomes) {
     // Set up ROS node handle.
     ros::NodeHandle nodeHandle("~");
 
@@ -33,12 +36,17 @@ class RosFixture : public ::testing::Test {
     for (auto expectedOutcome : expectedAcceptanceOutcomes) {
       bool accepted = pool.runTask(grid_map::GridMap());
       if (expectedOutcome) {
-        ASSERT_TRUE(accepted) << "Postprocessor pool accepted task number: " << taskNumber << " although it should.";
+        ASSERT_TRUE(accepted)
+            << "Postprocessor pool accepted task number: " << taskNumber
+            << " although it should.";
       } else {
-        ASSERT_FALSE(accepted) << "Postprocessor pool accepted task number: " << taskNumber << " although it should not. ";
+        ASSERT_FALSE(accepted)
+            << "Postprocessor pool accepted task number: " << taskNumber
+            << " although it should not. ";
       }
       taskNumber++;
-      std::this_thread::sleep_for(std::chrono::milliseconds(timeBetweenConsecutiveTasks));
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(timeBetweenConsecutiveTasks));
     }
   }
 };

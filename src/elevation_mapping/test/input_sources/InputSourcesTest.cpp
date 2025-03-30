@@ -6,19 +6,23 @@
  *  Institute: ETH Zurich, ANYbotics
  */
 
-#include "elevation_mapping/ElevationMapping.hpp"
+#include <gtest/gtest.h>
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <gtest/gtest.h>
+#include "elevation_mapping/ElevationMapping.hpp"
 
-static void assertSuccessAndNumberOfSources(const std::string& inputConfiguration, bool successExpected,
-                                            uint32_t numberOfExpectedInputSources) {
-  elevation_mapping::InputSourceManager inputSourceManager(rclcpp::Node::make_shared("_"));
+static void assertSuccessAndNumberOfSources(
+    const std::string& inputConfiguration, bool successExpected,
+    uint32_t numberOfExpectedInputSources) {
+  elevation_mapping::InputSourceManager inputSourceManager(
+      rclcpp::Node::make_shared("_"));
   bool success = inputSourceManager.configureFromRos(inputConfiguration);
   // ASSERT_EQ(success, successExpected) << "Configuration was:\n"
-                                      // << ros::NodeHandle("~").param<XmlRpc::XmlRpcValue>(inputConfiguration, "not set").toXml() << "\n";
-  ASSERT_EQ(inputSourceManager.getNumberOfSources(), numberOfExpectedInputSources);
+  // << ros::NodeHandle("~").param<XmlRpc::XmlRpcValue>(inputConfiguration, "not
+  // set").toXml() << "\n";
+  ASSERT_EQ(inputSourceManager.getNumberOfSources(),
+            numberOfExpectedInputSources);
 }
 
 TEST(InputSources, SingleInputValid) {  // NOLINT
@@ -74,29 +78,34 @@ TEST(InputSources, ConfigurationQueueSizeIsNegative) {  // NOLINT
 }
 
 TEST(InputSources, UnknownType) {  // NOLINT
-  auto nodeHandle =  rclcpp::Node::make_shared("_");
+  auto nodeHandle = rclcpp::Node::make_shared("_");
   elevation_mapping::InputSourceManager inputSourceManager(nodeHandle);
   inputSourceManager.configureFromRos("unknown_type");
 
   elevation_mapping::ElevationMapping map{nodeHandle};
 
-  // Trying to register this misconfigured InputSourceManager to our map should fail.
-  bool success =
-      inputSourceManager.registerCallbacks(map, make_pair("pointcloud", &elevation_mapping::ElevationMapping::pointCloudCallback));
+  // Trying to register this misconfigured InputSourceManager to our map should
+  // fail.
+  bool success = inputSourceManager.registerCallbacks(
+      map, make_pair("pointcloud",
+                     &elevation_mapping::ElevationMapping::pointCloudCallback));
   ASSERT_FALSE(success);
 }
 
 TEST(ElevationMap, Constructor) {  // NOLINT
-  auto nodeHandle =  rclcpp::Node::make_shared("_");
+  auto nodeHandle = rclcpp::Node::make_shared("_");
   elevation_mapping::ElevationMapping map(nodeHandle);
 }
 
 TEST(InputSources, ListeningToTopicsAfterRegistration) {  // NOLINT
   // subscribe to the default parameter "input_sources"
-  auto nodeHandle =  rclcpp::Node::make_shared("_");
-  class ElevationMappingWithInputSourcesAccessor : public elevation_mapping::ElevationMapping {
+  auto nodeHandle = rclcpp::Node::make_shared("_");
+  class ElevationMappingWithInputSourcesAccessor
+      : public elevation_mapping::ElevationMapping {
    public:
-    ElevationMappingWithInputSourcesAccessor(std::shared_ptr<rclcpp::Node> nodeHandle) : elevation_mapping::ElevationMapping(nodeHandle) {}
+    ElevationMappingWithInputSourcesAccessor(
+        std::shared_ptr<rclcpp::Node> nodeHandle)
+        : elevation_mapping::ElevationMapping(nodeHandle) {}
     virtual ~ElevationMappingWithInputSourcesAccessor() = default;
     int getNumberOfSources() { return inputSources_.getNumberOfSources(); }
   } map{nodeHandle};
@@ -108,8 +117,12 @@ TEST(InputSources, ListeningToTopicsAfterRegistration) {  // NOLINT
 
   // Publish to the topics we expect map to subscribe.
   auto nh = std::make_shared<rclcpp::Node>("_");
-  auto firstLidarPublisher = nh->create_publisher<sensor_msgs::msg::PointCloud2>("/lidar_1/depth/points", 1);
-  auto secondLidarPublisher = nh->create_publisher<sensor_msgs::msg::PointCloud2>("/lidar_2/depth/points", 1);
+  auto firstLidarPublisher =
+      nh->create_publisher<sensor_msgs::msg::PointCloud2>(
+          "/lidar_1/depth/points", 1);
+  auto secondLidarPublisher =
+      nh->create_publisher<sensor_msgs::msg::PointCloud2>(
+          "/lidar_2/depth/points", 1);
 
   // Check if we have exactly one subscriber per topic.
   ASSERT_EQ(firstLidarPublisher->get_subscription_count(), 1);

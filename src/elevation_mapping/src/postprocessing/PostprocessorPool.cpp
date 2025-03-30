@@ -10,9 +10,13 @@
 
 namespace elevation_mapping {
 
-PostprocessorPool::PostprocessorPool(std::size_t poolSize, std::shared_ptr<rclcpp::Node>& nodeHandle) {
-  nodeHandle->declare_parameter("output_topic", std::string("elevation_map_raw_post"));
-  nodeHandle->declare_parameter("postprocessor_pipeline_name", rclcpp::ParameterValue(std::string("postprocessor_pipeline")));
+PostprocessorPool::PostprocessorPool(
+    std::size_t poolSize, std::shared_ptr<rclcpp::Node>& nodeHandle) {
+  nodeHandle->declare_parameter("output_topic",
+                                std::string("elevation_map_raw_post"));
+  nodeHandle->declare_parameter(
+      "postprocessor_pipeline_name",
+      rclcpp::ParameterValue(std::string("postprocessor_pipeline")));
 
   for (std::size_t i = 0; i < poolSize; ++i) {
     // Add worker to the collection.
@@ -21,7 +25,7 @@ PostprocessorPool::PostprocessorPool(std::size_t poolSize, std::shared_ptr<rclcp
     availableServices_.push_back(i);
   }
 }
- 
+
 PostprocessorPool::~PostprocessorPool() {
   // Force all threads to return from io_service::run().
   for (auto& worker : workers_) {
@@ -40,7 +44,8 @@ PostprocessorPool::~PostprocessorPool() {
 }
 
 bool PostprocessorPool::runTask(const GridMap& gridMap) {
-  // Get an available service id from the shared services pool in a mutually exclusive manner.
+  // Get an available service id from the shared services pool in a mutually
+  // exclusive manner.
   size_t serviceIndex;
   {
     boost::lock_guard<boost::mutex> lock(availableServicesMutex_);
@@ -68,7 +73,10 @@ void PostprocessorPool::wrapTask(size_t serviceIndex) {
   }
   // Suppress all exceptions.
   catch (const std::exception& exception) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("my_logger"), "Postprocessor pipeline, thread " << serviceIndex << " experienced an error: " << exception.what());
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("my_logger"),
+                        "Postprocessor pipeline, thread "
+                            << serviceIndex
+                            << " experienced an error: " << exception.what());
   }
 
   // Task has finished, so increment count of available threads.
@@ -78,7 +86,9 @@ void PostprocessorPool::wrapTask(size_t serviceIndex) {
 
 bool PostprocessorPool::pipelineHasSubscribers() const {
   return std::all_of(workers_.cbegin(), workers_.cend(),
-                     [](const std::unique_ptr<PostprocessingWorker>& worker) { return worker->hasSubscribers(); });
+                     [](const std::unique_ptr<PostprocessingWorker>& worker) {
+                       return worker->hasSubscribers();
+                     });
 }
 
 }  // namespace elevation_mapping
