@@ -35,10 +35,7 @@ void KeyboardServo::spin() {
   }
 }
 
-KeyboardServo::~KeyboardServo()
-{
-  input.shutdown();
-}
+KeyboardServo::~KeyboardServo() { input.shutdown(); }
 
 int KeyboardServo::keyLoop() {
   char c;
@@ -63,7 +60,7 @@ int KeyboardServo::keyLoop() {
     try {
       input.readOne(&c);
     } catch (const std::runtime_error&) {
-      perror("read():");
+      RCLCPP_INFO(nh_->get_logger(), "Read error!");
       return -1;
     }
 

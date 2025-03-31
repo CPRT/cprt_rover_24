@@ -11,7 +11,10 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*')))
+        (
+            os.path.join("share", package_name, "launch"),
+            glob(os.path.join("launch", "*launch.[pxy][yma]*")),
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -22,7 +25,6 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "trajectory_interpreter = arm_interface.trajectoryInterpreter:main",
             "typing_controller = arm_interface.typingController:main",
             "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
             "keyboard_arm_controller = arm_interface.keyboardArmController:main",

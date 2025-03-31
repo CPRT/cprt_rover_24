@@ -131,10 +131,9 @@ def test_launch(moveit_config, launch_package_path=None):
             ),
         )
     )
-    
+
     servo_yaml = load_yaml("arm_srdf3", "config/arm_config.yaml")
     servo_params = {"moveit_servo": servo_yaml}
-
 
     # Launch as much as possible in components
     container = ComposableNodeContainer(
