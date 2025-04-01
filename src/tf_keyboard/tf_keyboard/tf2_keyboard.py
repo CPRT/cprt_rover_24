@@ -27,19 +27,54 @@ from interfaces.srv import KeycapCmd
 # import Jetson.GPIO as GPIO
 # import interfaces.msg as GPIOmsg
 
+matplotlib.use('tkagg')
+
 #keyboard: 35.3 x 12.3 cm
 #keycap: 1.2 x 1.4 cm
+#reverse fisheye technique dimensions: 1280x720 pixels
 keyboard_dim = [35.3, 12.3, 1]
 m_dim = [1280, 446, 1]
 
 colors = [(255,0,0), (229, 52, 235), (235, 85, 52),
           (14, 115, 51), (14, 115, 204)]
 
+classes = {
+  "a" : 1,
+  "b" : 2,
+  "c" : 3,
+  "d" : 4,
+  "e" : 5,
+  "f" : 6,
+  "g" : 7,
+  "h" : 8,
+  "i" : 9,
+  "j" : 10,
+  "k" : 11,
+  "l" : 12,
+  "m" : 13,
+  "n" : 14,
+  "o" : 15,
+  "p" : 16,
+  "q" : 17,
+  "r" : 18,
+  "s" : 19,
+  "t" : 20,
+  "u" : 21,
+  "v" : 22,
+  "w" : 23,
+  "x" : 24,
+  "y" : 25,
+  "z" : 26,
+  "caps_lock" : 27,
+  "enter" : 28,
+  "keyboard" : 29,
+}
+
 PATH_TO_CFG = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/pipeline.config"
 PATH_TO_CKPT = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/checkpoint"
 PATH_TO_LABELS = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/annotations/label_map.pbtxt"
 
-matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 
 print('Loading model... ', end='')
 start_time = time.time()
@@ -85,8 +120,63 @@ def load_image_into_numpy_array(path):
     return np.array(Image.open(path))
 
 
+class results():
+    def __init__(self, data):
+        self.data = data
+    
+    def get_key_index(self, k):
+        #get index from labels:
+        ind = classes[k]
+        
+        for x in range(len(self.data["detection_classes"])):
+            print(self.data["detection_classes"][x])
+            if (self.data["detection_classes"][x] == ind):
+                print("Found")
+                return x
+    
+    def get_key_pos(self, k):
+        ind = self.get_key_index(k)
+        return self.data["detection_boxes"][ind];
+    
+    def get_likely_keycap_pos(self): #returns the pixel dimensions of the keycap closest to the center
+        closest = 0
+        mse = 10000 #stands for "mean sum of square error", or "distance" I suppose
+        
+        for x in range(len(self.data["detection_boxes"])):
+            point_x = (self.data["detection_boxes"][x][0] + self.data["detection_boxes"][x][2])/2.0
+            point_y = (self.data["detection_boxes"][x][1] + self.data["detection_boxes"][x][3])/2.0
+            dist = math.sqrt((point_x-0.5)*(point_x-0.5) + (point_y-0.5)*(point_y-0.5))
+            if (dist < mse and self.data["detection_classes"][x] <= 26):
+                mse = dist
+                closest = x
+        
+        print(f"Closest = {self.data['detection_boxes'][closest]} id {self.data['detection_classes'][closest]}")
+        return self.data["detection_boxes"][closest]
+    
+    def dist_to_key(self, k):
+        p = self.get_likely_keycap_pos()
+        ratio_x = (p[2] - p[0]); #ratio of pixels to cm
+        ratio_y = (p[3] - p[1]); #ratio of pixels to cm
+        
+        key = self.get_key_pos(k)
+        
+        center_x = (key[2]+key[0])/2.0
+        center_y = (key[3]+key[1])/2.0
+        
+        p_x = (p[2]+p[0])/2.0
+        p_y = (p[3]+p[1])/2.0
+        
+        print(f"{p_x*1280} - {center_x*1280} {p_y*720} - {center_y*720} {ratio_x*1280} {ratio_y*1280}")
+        
+        dist_x = (p_x-center_x)*(1.2/ratio_x)
+        dist_y = (p_y-center_y)*(1.4/ratio_y)
+        
+        return (dist_x, dist_y)
+    
+    #def center_to_key(self, k)
+
 #IMAGE_PATHS = ["../../images/keyboard2.jpg", "../../images/test3.jpg", "../../images/test4.jpg", "../../images/test5.jpg", "../../images/test6.jpg"]
-IMAGE_PATHS = ["../../images/keyboard.jpg"]
+image_path = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo//images/keyboard.jpg"
 
 class tf2Keyboard(Node):
     def __init__(self):
@@ -117,6 +207,58 @@ class tf2Keyboard(Node):
         
         
         self.get_logger().info("Hello world!")
+        print('Running inference for {}... '.format(image_path), end='')
+
+        image_np = load_image_into_numpy_array(image_path)
+
+        # Things to try:
+        # Flip horizontally
+        # image_np = np.fliplr(image_np).copy()
+
+        # Convert image to grayscale
+        # image_np = np.tile(
+        #     np.mean(image_np, 2, keepdims=True), (1, 1, 3)).astype(np.uint8)
+
+        input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
+
+        detections = detect_fn(input_tensor)
+        #print(detections)
+
+        # All outputs are batches tensors.
+        # Convert to numpy arrays, and take index [0] to remove the batch dimension.
+        # We're only interested in the first num_detections.
+        num_detections = int(detections.pop('num_detections'))
+        detections = {key: value[0, :num_detections].numpy()
+                      for key, value in detections.items()}
+        detections['num_detections'] = num_detections
+
+        # detection_classes should be ints.
+        detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
+
+        label_id_offset = 1
+        image_np_with_detections = image_np.copy()
+
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np_with_detections,
+                detections['detection_boxes'],
+                detections['detection_classes']+label_id_offset,
+                detections['detection_scores'],
+                category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=200,
+                min_score_thresh=.30,
+                agnostic_mode=False)
+
+        print('Done')
+        result = results(detections)
+        print(result.get_key_index("q"))
+        print(result.get_key_pos("q"))
+        print(result.dist_to_key("q"))
+        #print(detections['detection_classes']['q'])
+        #print(detections['detection_scores']['q'])
+        plt.figure()
+        plt.imshow(image_np_with_detections)
+        plt.show()
         
         '''cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():

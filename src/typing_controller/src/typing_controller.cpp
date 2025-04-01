@@ -10,7 +10,7 @@ void emptyCmd(interfaces::msg::ArmCmd& poseCmd)
   poseCmd.pose.orientation.z = 0;
   poseCmd.pose.orientation.w = 0;
   poseCmd.speed = 0;
-	poseCmd.named_pose = 0;
+	//poseCmd.named_pose = 0;
 	poseCmd.estop = false;
 	poseCmd.reset = false;
 	poseCmd.query_goal_state = false;

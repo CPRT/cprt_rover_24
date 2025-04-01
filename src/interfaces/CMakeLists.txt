@@ -32,6 +32,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/NavToGPSGeopose.srv"
   "srv/VideoOut.srv"
   "srv/MoveServo.srv"
+  "srv/KeycapCmd.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 

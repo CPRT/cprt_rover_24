@@ -10,6 +10,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>moveit_ros_planning_interface</depend>
+  <depend>interfaces</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs></depend>
 
