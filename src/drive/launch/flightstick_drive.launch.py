@@ -13,6 +13,7 @@ from launch.conditions import IfCondition
 def generate_launch_description():
     """Generate launch description with multiple components."""
     pkg_drive = get_package_share_directory("drive")
+    pkg_arm = get_package_share_directory("arm_interface")
     parameters_file = os.path.join(pkg_drive, "config", "pxn.yaml")
     launch_backend = LaunchConfiguration("launch_backend", default="False")
     launch_backend_cmd = DeclareLaunchArgument(
@@ -24,6 +25,12 @@ def generate_launch_description():
     backend_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_drive, "launch", "talon.launch.py")
+        ),
+        condition=IfCondition(launch_backend),
+    )
+    backend_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_arm, "launch", "talon.launch.py")
         ),
         condition=IfCondition(launch_backend),
     )
@@ -41,11 +48,6 @@ def generate_launch_description():
                 name="flightstick_control",
                 output="screen",
                 parameters=[parameters_file],
-            ),
-            launch_ros.actions.Node(
-                package="servo_pkg",
-                executable="USB_Servo",
-                name="USB_Servo_node",
             ),
         ]
     )

@@ -33,10 +33,11 @@ flightstick_control:
       wrist_roll: 4
       wrist_yaw_positive: 4
       wrist_yaw_negative: 5
-      diff1_axis: 1
-      diff2_axis: 5
+      act1_axis: 1
+      act2_axis: 5
       elbow_yaw: 3
       claw_open: 1
       claw_close: 0
       simple_forward: 2
       simple_backward: 3
+      servo_port: 0

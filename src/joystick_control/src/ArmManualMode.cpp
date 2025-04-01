@@ -7,10 +7,10 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
       node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
   base_pub_ =
       node_->create_publisher<ros_phoenix::msg::MotorControl>("/base/set", 10);
-  diff1_pub_ =
-      node_->create_publisher<ros_phoenix::msg::MotorControl>("/diff1/set", 10);
-  diff2_pub_ =
-      node_->create_publisher<ros_phoenix::msg::MotorControl>("/diff2/set", 10);
+  act1_pub_ =
+      node_->create_publisher<ros_phoenix::msg::MotorControl>("/act1/set", 10);
+  act2_pub_ =
+      node_->create_publisher<ros_phoenix::msg::MotorControl>("/act2/set", 10);
   elbow_pub_ =
       node_->create_publisher<ros_phoenix::msg::MotorControl>("/elbow/set", 10);
   wristTilt_pub_ = node_->create_publisher<ros_phoenix::msg::MotorControl>(
@@ -20,7 +20,6 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
   servo_client_ =
       node_->create_client<interfaces::srv::MoveServo>("servo_service");
 
-  kServoPort = 0;
   kServoMin = 0;
   kServoMax = 180;
   kClawMax = 62;
@@ -52,35 +51,37 @@ void ArmManualMode::handleTwist(
   double throttle = getThrottleValue(joystickMsg);
 
   base_.mode = 0;
-  diff1_.mode = 0;
-  diff2_.mode = 0;
+  act1_.mode = 0;
+  act2_.mode = 0;
   elbow_.mode = 0;
   wristTilt_.mode = 0;
   wristTurn_.mode = 0;
+  act1Scaler = 0.75;
+  act2Scaler = 0.80;
 
   // Base (might want a deadzone. TBD)
   base_.value = -joystickMsg->axes[kBaseAxis] * throttle;
 
   // Simple straight movement (NOT inverse kin)
+  // some scaling to move in a straight line
   if (joystickMsg->buttons[kSimpleForward] == 1) {
-    diff1_.value = -joystickMsg->buttons[kSimpleForward] * 0.75 *
-                   throttle;  // some scaling to move in a straight line
-    diff2_.value = -joystickMsg->buttons[kSimpleForward] * throttle;
+    act1_.value = -joystickMsg->buttons[kSimpleForward] * act1Scaler * throttle;
+    act2_.value = -joystickMsg->buttons[kSimpleForward] * throttle;
   } else if (joystickMsg->buttons[kSimpleBackward] == 1) {
-    diff1_.value = joystickMsg->buttons[kSimpleBackward] * 0.75 * throttle;
-    diff2_.value = joystickMsg->buttons[kSimpleBackward] * 0.80 * throttle;
+    act1_.value = joystickMsg->buttons[kSimpleBackward] * act1Scaler * throttle;
+    act2_.value = joystickMsg->buttons[kSimpleBackward] * act2Scaler * throttle;
   } else {
-    // Diff1
-    diff1_.value = -joystickMsg->axes[kDiff1Axis] * throttle;
+    // act1
+    act1_.value = -joystickMsg->axes[kAct1Axis] * throttle;
 
-    // Diff2
-    diff2_.value = -joystickMsg->axes[kDiff2Axis] * throttle;
+    // act2
+    act2_.value = -joystickMsg->axes[kAct2Axis] * throttle;
   }
 
   // Elbow
+  // Deadzone, easy to turn this one by accident.
   if (joystickMsg->axes[kElbowYaw] < 0.2 &&
-      joystickMsg->axes[kElbowYaw] >
-          -0.2) {  // Deadzone, easy to turn this one by accident.
+      joystickMsg->axes[kElbowYaw] > -0.2) {
     elbow_.value = 0;
   } else {
     elbow_.value = joystickMsg->axes[kElbowYaw] * throttle;
@@ -121,8 +122,8 @@ void ArmManualMode::handleTwist(
   }
 
   base_pub_->publish(base_);
-  diff1_pub_->publish(diff1_);
-  diff2_pub_->publish(diff2_);
+  act1_pub_->publish(act1_);
+  act2_pub_->publish(act2_);
   elbow_pub_->publish(elbow_);
   wristTilt_pub_->publish(wristTilt_);
   wristTurn_pub_->publish(wristTurn_);
@@ -133,13 +134,14 @@ void ArmManualMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("arm_manual_mode.wrist_roll", 1);
   node->declare_parameter("arm_manual_mode.wrist_yaw_positive", 2);
   node->declare_parameter("arm_manual_mode.wrist_yaw_negative", 3);
-  node->declare_parameter("arm_manual_mode.diff1_axis", 4);
-  node->declare_parameter("arm_manual_mode.diff2_axis", 5);
+  node->declare_parameter("arm_manual_mode.act1_axis", 4);
+  node->declare_parameter("arm_manual_mode.act2_axis", 5);
   node->declare_parameter("arm_manual_mode.elbow_yaw", 6);
   node->declare_parameter("arm_manual_mode.claw_open", 8);
   node->declare_parameter("arm_manual_mode.claw_close", 9);
   node->declare_parameter("arm_manual_mode.simple_forward", 10);
   node->declare_parameter("arm_manual_mode.simple_backward", 11);
+  node->declare_parameter("arm_manual_mode.servo_port", 12);
   node->declare_parameter("arm_manual_mode.throttle.axis", 7);
   node->declare_parameter("arm_manual_mode.throttle.min", -1.0);
   node->declare_parameter("arm_manual_mode.throttle.max", 1.0);
@@ -150,13 +152,14 @@ void ArmManualMode::loadParameters() {
   node_->get_parameter("arm_manual_mode.wrist_roll", kWristRoll);
   node_->get_parameter("arm_manual_mode.wrist_yaw_positive", kWristYawPositive);
   node_->get_parameter("arm_manual_mode.wrist_yaw_negative", kWristYawNegative);
-  node_->get_parameter("arm_manual_mode.diff1_axis", kDiff1Axis);
-  node_->get_parameter("arm_manual_mode.diff2_axis", kDiff2Axis);
+  node_->get_parameter("arm_manual_mode.act1_axis", kAct1Axis);
+  node_->get_parameter("arm_manual_mode.act2_axis", kAct2Axis);
   node_->get_parameter("arm_manual_mode.elbow_yaw", kElbowYaw);
   node_->get_parameter("arm_manual_mode.claw_open", kClawOpen);
   node_->get_parameter("arm_manual_mode.claw_close", kClawClose);
   node_->get_parameter("arm_manual_mode.simple_forward", kSimpleForward);
   node_->get_parameter("arm_manual_mode.simple_backward", kSimpleBackward);
+  node_->get_parameter("arm_manual_mode.servo_port", kServoPort);
   node_->get_parameter("arm_manual_mode.throttle.axis", kThrottleAxis);
   node_->get_parameter("arm_manual_mode.throttle.max", kThrottleMax);
   node_->get_parameter("arm_manual_mode.throttle.min", kThrottleMin);

@@ -80,8 +80,8 @@ class ArmManualMode : public Mode {
                              ///< positive direction
   int8_t kWristYawNegative;  ///< Button for the wrist join to rotate in the
                              ///< negative direction
-  int8_t kDiff1Axis;         ///< Axis for the upper linear actuator control
-  int8_t kDiff2Axis;         ///< Axis for the lower linear actuator control
+  int8_t kAct1Axis;          ///< Axis for the upper linear actuator control
+  int8_t kAct2Axis;          ///< Axis for the lower linear actuator control
   int8_t kElbowYaw;          ///< Axis for the yaw of the elbow joint
 
   int8_t kThrottleAxis;  ///< Axis for the throttle value
@@ -96,8 +96,8 @@ class ArmManualMode : public Mode {
 
   // Publishers
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr base_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr diff1_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr diff2_pub_;
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr act1_pub_;
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr act2_pub_;
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr elbow_pub_;
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr wristTilt_pub_;
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr wristTurn_pub_;
@@ -107,8 +107,8 @@ class ArmManualMode : public Mode {
 
   // MotorControl Messages
   mutable ros_phoenix::msg::MotorControl base_;
-  mutable ros_phoenix::msg::MotorControl diff1_;
-  mutable ros_phoenix::msg::MotorControl diff2_;
+  mutable ros_phoenix::msg::MotorControl act1_;
+  mutable ros_phoenix::msg::MotorControl act2_;
   mutable ros_phoenix::msg::MotorControl elbow_;
   mutable ros_phoenix::msg::MotorControl wristTilt_;
   mutable ros_phoenix::msg::MotorControl wristTurn_;
@@ -122,6 +122,8 @@ class ArmManualMode : public Mode {
   int8_t kServoMax;
   int8_t kClawMax;
   int8_t kClawMin;
+  mutable double act1Scaler;
+  mutable double act2Scaler;
   mutable int8_t servoPos;
   mutable bool buttonPressed;
 };
