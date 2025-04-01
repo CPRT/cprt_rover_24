@@ -1,7 +1,7 @@
 from setuptools import setup
 from glob import glob
 
-package_name = "arm_urdf3"
+package_name = "arm_urdf"
 
 setup(
     name=package_name,

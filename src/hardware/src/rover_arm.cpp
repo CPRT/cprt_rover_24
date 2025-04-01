@@ -63,7 +63,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     }
   }
 
-  node_ptr_ = std::make_shared<rclcpp::Node>("arm_hw_subscriber");
+  node_ptr_ = rclcpp::Node::make_shared("arm_hw_subscriber");
 
   executor_ptr_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
 

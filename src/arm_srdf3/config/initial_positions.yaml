@@ -1,4 +1,4 @@
-# Default initial positions for arm_urdf3's ros2_control fake system
+# Default initial positions for arm_urdf's ros2_control fake system
 
 initial_positions:
   Joint_1: 0

@@ -132,6 +132,6 @@ def test_launch(moveit_config, launch_package_path=None):
 
 def generate_launch_description():
     moveit_config = MoveItConfigsBuilder(
-        "arm_urdf3", package_name="arm_srdf3"
+        "arm_urdf", package_name="arm_srdf"
     ).to_moveit_configs()
     return test_launch(moveit_config)

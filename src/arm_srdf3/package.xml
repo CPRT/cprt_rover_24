@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>arm_srdf3</name>
+  <name>arm_srdf</name>
   <version>0.3.0</version>
   <description>
      An automatically generated package with all the configuration and launch files for using the arm_urdf3 with the MoveIt Motion Planning Framework
@@ -30,7 +30,7 @@
        We don't include them by default to prevent installing gazebo and all its dependencies. -->
   <!-- <exec_depend>joint_trajectory_controller</exec_depend> -->
   <!-- <exec_depend>gazebo_ros_control</exec_depend> -->
-  <exec_depend>arm_urdf3</exec_depend>
+  <exec_depend>arm_urdf</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>moveit_configs_utils</exec_depend>
   <exec_depend>moveit_ros_move_group</exec_depend>
