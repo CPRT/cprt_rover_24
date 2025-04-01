@@ -75,11 +75,6 @@ def generate_launch_description():
 
     return launch.LaunchDescription(
         [
-            container,
-            launch_ros.actions.Node(
-                package="arm_interface",
-                executable="keyboard_arm_publisher",
-                name="keyboard_arm_publisher",
-            ),
+            container
         ]
     )

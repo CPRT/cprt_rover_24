@@ -25,7 +25,6 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "typing_controller = arm_interface.typingController:main",
             "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
             "keyboard_arm_controller = arm_interface.keyboardArmController:main",
         ],
