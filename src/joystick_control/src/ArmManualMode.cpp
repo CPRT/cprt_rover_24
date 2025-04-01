@@ -63,10 +63,11 @@ void ArmManualMode::handleTwist(
 
   // Simple straight movement (NOT inverse kin)
   if (joystickMsg->buttons[kSimpleForward] == 1) {
-    diff1_.value = -joystickMsg->buttons[kSimpleForward] * 0.75 * throttle; // some scaling to move in a straight line 
+    diff1_.value = -joystickMsg->buttons[kSimpleForward] * 0.75 *
+                   throttle;  // some scaling to move in a straight line
     diff2_.value = -joystickMsg->buttons[kSimpleForward] * throttle;
   } else if (joystickMsg->buttons[kSimpleBackward] == 1) {
-    diff1_.value = joystickMsg->buttons[kSimpleBackward] * 0.75 * throttle; 
+    diff1_.value = joystickMsg->buttons[kSimpleBackward] * 0.75 * throttle;
     diff2_.value = joystickMsg->buttons[kSimpleBackward] * 0.80 * throttle;
   } else {
     // Diff1
