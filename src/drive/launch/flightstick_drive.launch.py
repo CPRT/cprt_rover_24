@@ -28,7 +28,7 @@ def generate_launch_description():
         ),
         condition=IfCondition(launch_backend),
     )
-    backend_cmd = IncludeLaunchDescription(
+    arm_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_arm, "launch", "talon.launch.py")
         ),
@@ -39,6 +39,7 @@ def generate_launch_description():
         [
             launch_backend_cmd,
             backend_cmd,
+            arm_cmd,
             launch_ros.actions.Node(
                 package="joy", executable="joy_node", name="joystick"
             ),

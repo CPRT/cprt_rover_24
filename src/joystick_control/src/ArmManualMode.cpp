@@ -50,12 +50,12 @@ void ArmManualMode::handleTwist(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   double throttle = getThrottleValue(joystickMsg);
 
-  base_.mode = 0;
-  act1_.mode = 0;
-  act2_.mode = 0;
-  elbow_.mode = 0;
-  wristTilt_.mode = 0;
-  wristTurn_.mode = 0;
+  base_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
+  act1_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
+  act2_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
+  elbow_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
+  wristTilt_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
+  wristTurn_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
   act1Scaler = 0.75;
   act2Scaler = 0.80;
 
