@@ -42,5 +42,10 @@ def generate_launch_description():
                 output="screen",
                 parameters=[parameters_file],
             ),
+            launch_ros.actions.Node(
+                package="servo_pkg",
+                executable="USB_Servo",
+                name="USB_Servo_node",
+            ),
         ]
     )

@@ -1,6 +1,7 @@
 #ifndef FLIGHTSTICK_CONTROL_HPP
 #define FLIGHTSTICK_CONTROL_HPP
 
+#include "ArmManualMode.hpp"
 #include "DriveMode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"

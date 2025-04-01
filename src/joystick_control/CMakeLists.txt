@@ -8,6 +8,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(joy REQUIRED)
 find_package(ros_phoenix REQUIRED)
+find_package(interfaces REQUIRED)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
@@ -25,6 +26,7 @@ ament_target_dependencies(flightstick_control
   nav_msgs
   joy
   ros_phoenix
+  interfaces
 )
 
 # Install the executable
