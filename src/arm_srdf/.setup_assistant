@@ -1,9 +1,9 @@
 moveit_setup_assistant_config:
   urdf:
-    package: arm_urdf3
-    relative_path: urdf/arm_urdf3.urdf
+    package: arm_urdf
+    relative_path: urdf/arm_urdf.urdf
   srdf:
-    relative_path: config/arm_urdf3.srdf
+    relative_path: config/arm_urdf.srdf
   package_settings:
     author_name: William Fan
     author_email: wyf132@gmail.com

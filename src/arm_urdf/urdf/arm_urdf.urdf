@@ -3,7 +3,7 @@
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="arm_urdf3">
+  name="arm_urdf">
   <link
     name="Link_1">
     <inertial>
@@ -26,7 +26,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_1.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_1.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +40,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_1.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -66,7 +66,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_2.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_2.STL" />
       </geometry>
       <material
         name="">
@@ -80,7 +80,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_2.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -120,7 +120,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_3.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_3.STL" />
       </geometry>
       <material
         name="">
@@ -134,7 +134,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_3.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -174,7 +174,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_4.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_4.STL" />
       </geometry>
       <material
         name="">
@@ -188,7 +188,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_4.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -228,7 +228,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_5.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_5.STL" />
       </geometry>
       <material
         name="">
@@ -242,7 +242,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_5.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_5.STL" />
       </geometry>
     </collision>
   </link>
@@ -282,7 +282,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_6.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_6.STL" />
       </geometry>
       <material
         name="">
@@ -296,7 +296,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_6.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_6.STL" />
       </geometry>
     </collision>
   </link>
@@ -336,7 +336,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_7.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_7.STL" />
       </geometry>
       <material
         name="">
@@ -350,7 +350,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm_urdf3/meshes/visual/Link_7.STL" />
+          filename="package://arm_urdf/meshes/visual/Link_7.STL" />
       </geometry>
     </collision>
   </link>

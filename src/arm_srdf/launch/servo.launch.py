@@ -132,7 +132,7 @@ def test_launch(moveit_config, launch_package_path=None):
         )
     )
 
-    servo_yaml = load_yaml("arm_srdf3", "config/arm_config.yaml")
+    servo_yaml = load_yaml("arm_srdf", "config/arm_config.yaml")
     servo_params = {"moveit_servo": servo_yaml}
 
     # Launch as much as possible in components
@@ -196,8 +196,8 @@ def test_launch(moveit_config, launch_package_path=None):
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder("arm_urdf3", package_name="arm_srdf3")
-        .robot_description(file_path="config/arm_urdf3.urdf.xacro")
+        MoveItConfigsBuilder("arm_urdf", package_name="arm_srdf")
+        .robot_description(file_path="config/arm_urdf.urdf.xacro")
         .to_moveit_configs()
     )
     return test_launch(moveit_config)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(arm_srdf3)
+project(arm_srdf)
 
 find_package(ament_cmake REQUIRED)
 

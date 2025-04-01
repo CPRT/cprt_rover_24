@@ -38,6 +38,6 @@ joint_limits:
     max_acceleration: 0
   Joint_6:
     has_velocity_limits: true
-    max_velocity: 0.0150 #0.0202
+    max_velocity: 0.0202 #0.0202
     has_acceleration_limits: false #angle: 150 deg, takes 38.87 seconds to go 90 degrees
     max_acceleration: 0

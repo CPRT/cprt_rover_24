@@ -4,7 +4,7 @@
   <name>arm_srdf</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the arm_urdf3 with the MoveIt Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the arm_urdf with the MoveIt Motion Planning Framework
   </description>
   <maintainer email="wyf132@gmail.com">William Fan</maintainer>
 
