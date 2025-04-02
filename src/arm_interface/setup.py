@@ -25,8 +25,6 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
-            "keyboard_arm_reader = arm_interface.keyboardArmReader:main",
         ],
     },
 )
