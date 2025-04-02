@@ -128,6 +128,12 @@ class keyboardArmPublisher(Node):
         elif msg.data == "s":  # elbow down
             self.act1.value = -1.0
         elif msg.data == "q":  # act2 = 45.2, act1 = 46.2
+            self.elbow.mode = 0
+            self.act1.mode = 0
+            self.act2.mode = 0
+            self.base.mode = 0
+            self.wristTurn.mode = 0
+            self.wristTilt.mode = 0
             self.elbow.value = 0.0  # act1 - 42, act2 - 130 degrees
             self.act1.value = 0.0
             self.act2.value = 0.0

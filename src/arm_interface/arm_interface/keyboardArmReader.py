@@ -16,8 +16,6 @@ class keyboardArmReader(Node):
     def __init__(self):
         super().__init__("keyboardControl")
         self.keyboard_publisher = self.create_publisher(String, "/keyboard_arm", 1)
-        self.encoder_publisher = self.create_publisher(Bool, "/encoder_passthrough", 1)
-        self.encoder_passthrough = True
 
         while True:
             cmd = String()
@@ -30,7 +28,6 @@ def main(args=None):
     rclpy.init(args=args)
     node = keyboardArmReader()
     rclpy.spin(node)
-    # GPIO.cleanup()
     node.destroy_node()
     rclpy.shutdown()
 
