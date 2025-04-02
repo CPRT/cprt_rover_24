@@ -26,7 +26,7 @@ setup(
     entry_points={
         "console_scripts": [
             "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
-            "keyboard_arm_controller = arm_interface.keyboardArmController:main",
+            "keyboard_arm_reader = arm_interface.keyboardArmReader:main",
         ],
     },
 )

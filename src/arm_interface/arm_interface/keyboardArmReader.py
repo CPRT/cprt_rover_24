@@ -12,34 +12,23 @@ from ros_phoenix.msg import MotorControl, MotorStatus
 from math import pi
 
 
-class keyboardArmController(Node):
+class keyboardArmReader(Node):
     def __init__(self):
         super().__init__("keyboardControl")
         self.keyboard_publisher = self.create_publisher(String, "/keyboard_arm", 1)
         self.encoder_publisher = self.create_publisher(Bool, "/encoder_passthrough", 1)
         self.encoder_passthrough = True
 
-        # 90 deg = 3000000
-
         while True:
             cmd = String()
             cmd.data = input()
 
-            if cmd.data != ".":
-                self.keyboard_publisher.publish(cmd)
-            else:
-                self.encoder_passthrough = not self.encoder_passthrough
-                cmd = Bool()
-                cmd.data = self.encoder_passthrough
-                self.get_logger().info(
-                    f"Setting encoder passthrough to {self.encoder_passthrough}"
-                )
-                self.encoder_publisher.publish(cmd)
+            self.keyboard_publisher.publish(cmd)
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = keyboardArmController()
+    node = keyboardArmReader()
     rclpy.spin(node)
     # GPIO.cleanup()
     node.destroy_node()

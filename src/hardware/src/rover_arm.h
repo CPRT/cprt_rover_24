@@ -123,9 +123,9 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   std::vector<EncoderTopic> subscription_topics_ = {
       {"base/status", std::bind(&RoverArmHardwareInterface::base_callback, this,
                                 std::placeholders::_1)},
-      {"diff1/status", std::bind(&RoverArmHardwareInterface::act1_callback,
+      {"act1/status", std::bind(&RoverArmHardwareInterface::act1_callback,
                                  this, std::placeholders::_1)},
-      {"diff2/status", std::bind(&RoverArmHardwareInterface::act2_callback,
+      {"act2/status", std::bind(&RoverArmHardwareInterface::act2_callback,
                                  this, std::placeholders::_1)},
       {"elbow/status", std::bind(&RoverArmHardwareInterface::elbow_callback,
                                  this, std::placeholders::_1)},
@@ -152,9 +152,9 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   std::vector<PublisherTopic> publisher_topics_ = {
       {"base/set", std::bind(&RoverArmHardwareInterface::base_pos, this,
                              std::placeholders::_1)},
-      {"diff1/set", std::bind(&RoverArmHardwareInterface::act1_pos, this,
+      {"act1/set", std::bind(&RoverArmHardwareInterface::act1_pos, this,
                               std::placeholders::_1)},
-      {"diff2/set", std::bind(&RoverArmHardwareInterface::act2_pos, this,
+      {"act2/set", std::bind(&RoverArmHardwareInterface::act2_pos, this,
                               std::placeholders::_1)},
       {"elbow/set", std::bind(&RoverArmHardwareInterface::elbow_pos, this,
                               std::placeholders::_1)},
