@@ -27,7 +27,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/VideoSource.msg"
   "msg/LaunchInfo.msg"
   "msg/SystemTelemetry.msg"
-  "msg/LaunchInfo.msg"
   "srv/ArmPos.srv"
   "srv/ArmCmd.srv"
   "msg/GPIOmsg.msg" #ik its goofy the actual gpio package is GPIO
