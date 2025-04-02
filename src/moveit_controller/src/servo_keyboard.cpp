@@ -11,13 +11,17 @@ KeyboardReader::KeyboardReader() : kfd(0) {
   raw.c_cc[VEOF] = 2;
   tcsetattr(kfd, TCSANOW, &raw);
 }
+
+KeyboardReader::~KeyboardReader() {
+  tcsetattr(kfd, TCSANOW, &cooked);
+}
+
 void KeyboardReader::readOne(char* c) {
   int rc = read(kfd, c, 1);
   if (rc < 0) {
     throw std::runtime_error("read failed");
   }
 }
-void KeyboardReader::shutdown() { tcsetattr(kfd, TCSANOW, &cooked); }
 
 KeyboardServo::KeyboardServo()
     : frame_to_publish_(BASE_FRAME_ID), joint_vel_cmd_(1.0) {
@@ -34,8 +38,6 @@ void KeyboardServo::spin() {
     rclcpp::spin_some(nh_);
   }
 }
-
-KeyboardServo::~KeyboardServo() { input.shutdown(); }
 
 int KeyboardServo::keyLoop() {
   char c;

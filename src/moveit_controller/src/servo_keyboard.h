@@ -40,8 +40,8 @@ const std::string BASE_FRAME_ID = "Link_1";
 class KeyboardReader {
  public:
   KeyboardReader();
+  ~KeyboardReader();
   void readOne(char* c);
-  void shutdown();
 
  private:
   int kfd;
@@ -53,7 +53,6 @@ class KeyboardReader {
 class KeyboardServo {
  public:
   KeyboardServo();
-  ~KeyboardServo();
   int keyLoop();
 
  private:
