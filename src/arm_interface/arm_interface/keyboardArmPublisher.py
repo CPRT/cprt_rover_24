@@ -13,37 +13,64 @@ from math import pi
 
 import math
 
+# constants
+BASE_BIG_GEAR = 100.0
+BASE_SMALL_GEAR = 15.0
+BASE_GEARBOX = 1100
+ACT1_URDF_OFFSET = 0.7832711
+ACT1_SIDE_A = 20.1
+ACT1_SIDE_B = 48.5
+ACT1_SHAFT_LENGTH = 15.24
+ACT1_SHAFT_TICKS = 5709.0
+ACT_LENGTH = 30.96
+ACT2_URDF_OFFSET = -0.89151
+ACT2_SIDE_A = 15.0
+ACT2_SIDE_B = 42.3
+ACT2_SHAFT_LENGTH = 13.64
+ACT2_SHAFT_TICKS = 5109.0
+ELBOW_SMALL_GEAR = 30.0
+ELBOW_BIG_GEAR = 96.0
+ELBOW_GEARBOX = 10000.0
+WRISTTILT_GEARBOX = 7760215.0
+WRISTTURN_GEAR = 498.0
+WRISTTURN_GEARBOX = 4000.0
+
+
 def elbow_rad_to_pos(rad):
-    return (rad * 30.0 / 96.0) * 10000
+    return (rad * ELBOW_SMALL_GEAR / ELBOW_BIG_GEAR) * ELBOW_GEARBOX
+
+
+def act_pos(rad, a, b, shaft_length, shaft_ticks, act_length):
+    # Calculate c using the law of cosines
+    c = math.sqrt(a * a + b * b - 2 * a * b * math.cos(rad))
+
+    # Subtract act_length and calculate the result
+    c -= act_length
+    return (c / shaft_length) * shaft_ticks
 
 
 def act1_rad_to_pos(node, rad):
-    a = 20.1
-    b = 48.5
-    c = math.sqrt(a * a + b * b - 2 * a * b * math.cos(rad))
-    c -= 30.96
-    return c / 15.24 * 5709.0
+    return act_pos(
+        rad, ACT1_SIDE_A, ACT1_SIDE_B, ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH
+    )
 
 
 def act2_rad_to_pos(node, rad):
-    # rad = 180.0 - rad
-    a = 15.0
-    b = 42.3
-    c = math.sqrt(a * a + b * b - 2 * a * b * math.cos(rad))
-    c -= 30.96 + 1.6
-    return c / 13.64 * 5109.0
+    return act_pos(
+        rad, ACT2_SIDE_A, ACT2_SIDE_B, ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH
+    )
 
 
 def base_rad_to_pos(node, rad):
-    return rad * (100.0 / 15.0) * 1100
+    return rad * (BASE_BIG_GEAR / BASE_SMALL_GEAR) * BASE_GEARBOX
 
 
 def wristturn_rad_to_pos(node, rad):
-    return rad / (3.14 * 2) * (97.0 / 16.0) * 4.0 * 10000.0
+    return -(rad / (2 * math.pi)) * WRISTTURN_GEARBOX * WRISTTURN_GEAR
 
 
 def wristtilt_rad_to_pos(node, rad):
-    return (-rad) / (3.14 / 2) * 7760215.0
+    return (-rad) / (math.pi / 2) * WRISTTILT_GEARBOX
 
 
 class keyboardArmPublisher(Node):
@@ -82,16 +109,14 @@ class keyboardArmPublisher(Node):
         self.keyboard = self.create_subscription(
             String, "/keyboard_arm", self.keyboard_callback, 5
         )
-        
+
         self.encoder_publisher = self.create_publisher(Bool, "/encoder_passthrough", 1)
         self.encoder_passthrough = True
 
     def controlPublisher(self):
         if self.shouldPub:
             self.baseCommand.publish(self.base)
-            self.act1Command.publish(
-                self.act1
-            )
+            self.act1Command.publish(self.act1)
             self.act2Command.publish(self.act2)
             self.elbowCommand.publish(self.elbow)
             self.wristTiltCommand.publish(self.wristTilt)
