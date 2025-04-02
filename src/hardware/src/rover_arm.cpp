@@ -102,37 +102,39 @@ void RoverArmHardwareInterface::base_callback(
   temp_[0] = -(motorStatus.position / 1100.0 / (100.0 / 15.0));
 }
 
-void RoverArmHardwareInterface::diff1_callback(
-    const ros_phoenix::msg::MotorStatus &motorStatus) {
-  if (encoderPassthrough_) {
-    return;
-  }
-
-  double c = motorStatus.position / 5709.0 * 15.24 + 30.96;
-  double a = 20.1;
-  double b = 48.5;
+double RoverArmHardwareInterface::act_rad(double pos, double a, double b,
+                                          double urdf_offset,
+                                          double shaft_length,
+                                          double shaft_ticks,
+                                          double act_length) {
+  double c = pos / shaft_ticks * shaft_length + act_length;
   double d = (a * a + b * b - c * c) / (2 * a * b);
   if (d > 1 or d < -1) {
-    temp_[1] = 0.0;
-    return;
+    return 0.0;  // just for safety
   }
-  temp_[1] = std::acos(d) - 0.7832711;  // other one is 0.89151
+  return std::acos(d) - urdf_offset;
 }
 
-void RoverArmHardwareInterface::diff2_callback(
+void RoverArmHardwareInterface::act1_callback(
     const ros_phoenix::msg::MotorStatus &motorStatus) {
   if (encoderPassthrough_) {
     return;
   }
-  double c = motorStatus.position / 5109.0 * 13.64 + 30.96;  // + 1.6 #44.5?
-  double a = 15.0;
-  double b = 42.3;
-  double d = (a * a + b * b - c * c) / (2 * a * b);
-  if (d > 1 or d < -1) {
-    temp_[2] = 0.0;
+
+  temp_[1] =
+      act_rad(motorStatus.position, ACT1_SIDE_A, ACT1_SIDE_B, ACT1_URDF_OFFSET,
+              ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH);
+}
+
+void RoverArmHardwareInterface::act2_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
     return;
   }
-  temp_[2] = -std::acos(d) * 1.0 + 0.89151;
+
+  temp_[2] =
+      act_rad(motorStatus.position, ACT2_SIDE_A, ACT2_SIDE_B, ACT2_URDF_OFFSET,
+              ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH);
 }
 
 void RoverArmHardwareInterface::elbow_callback(
@@ -140,7 +142,8 @@ void RoverArmHardwareInterface::elbow_callback(
   if (encoderPassthrough_) {
     return;
   }
-  temp_[3] = motorStatus.position / 10000.0 / (30.0 / 96.0);
+  temp_[3] = motorStatus.position / ELBOW_GEARBOX /
+             (ELBOW_SMALL_GEAR / ELBOW_BIG_GEAR);
 }
 
 void RoverArmHardwareInterface::wrist_tilt_callback(
@@ -148,7 +151,8 @@ void RoverArmHardwareInterface::wrist_tilt_callback(
   if (encoderPassthrough_) {
     return;
   }
-  temp_[4] = -motorStatus.position / 7760215.0 * (3.14 / 2) - (3.1415 / 6);
+  temp_[4] =
+      -motorStatus.position / WRISTTILT_GEARBOX * (M_PI / 2) - (M_PI / 6);
 }
 
 void RoverArmHardwareInterface::wrist_turn_callback(
@@ -156,7 +160,8 @@ void RoverArmHardwareInterface::wrist_turn_callback(
   if (encoderPassthrough_) {
     return;
   }
-  temp_[5] = -(motorStatus.position / (4000.0 * 498.0)) * 2 * 3.1415;
+  temp_[5] =
+      -(motorStatus.position / (WRISTTURN_GEARBOX * WRISTTURN_GEAR)) * 2 * M_PI;
 }
 
 hardware_interface::CallbackReturn RoverArmHardwareInterface::on_configure(
@@ -231,37 +236,43 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
   return hardware_interface::return_type::OK;
 }
 
+double RoverArmHardwareInterface::act_pos(double rad, double a, double b,
+                                          double urdf_offset,
+                                          double shaft_length,
+                                          double shaft_ticks,
+                                          double act_length) {
+  rad = rad + urdf_offset;
+  double c = std::sqrt(a * a + b * b - 2 * a * b * std::cos(rad));
+  c -= act_length;
+  return c / shaft_length * shaft_ticks;
+}
+
 double RoverArmHardwareInterface::base_pos(double rad) {
-  return (-rad * (100.0 / 15.0) * 1100);
+  return (-rad * (BASE_BIG_GEAR / BASE_SMALL_GEAR) * BASE_GEARBOX);
 }
 
-double RoverArmHardwareInterface::diff1_pos(double rad) {
-  rad = rad + 0.7832711;
-  double a = 20.1;
-  double b = 48.5;
-  double c = std::sqrt(a * a + b * b - 2 * a * b * std::cos(rad));
-  c -= 30.96;
-  return c / 15.24 * 5709.0;
+double RoverArmHardwareInterface::act1_pos(double rad) {
+  return act_pos(rad, ACT1_SIDE_A, ACT1_SIDE_B, ACT1_URDF_OFFSET,
+                 ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH);
 }
 
-double RoverArmHardwareInterface::diff2_pos(double rad) {
-  rad = rad - 0.89151;
-  double a = 15.0;
-  double b = 42.3;
-  double c = std::sqrt(a * a + b * b - 2 * a * b * std::cos(rad));
-  c -= 30.96;
-  return c / 13.64 * 5109.0;
+double RoverArmHardwareInterface::act2_pos(double rad) {
+  return act_pos(rad, ACT2_SIDE_A, ACT2_SIDE_B, ACT2_URDF_OFFSET,
+                 ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH);
 }
 
 double RoverArmHardwareInterface::elbow_pos(double rad) {
-  return (rad * 30.0 / 96.0) * 10000;
+  return (rad * ELBOW_SMALL_GEAR / ELBOW_BIG_GEAR) * ELBOW_GEARBOX;
 }
 double RoverArmHardwareInterface::wrist_tilt_pos(double rad) {
-  return (-(rad + 3.1415 / 6) / (3.14 / 2) * 7760215.0);
+  return (-(rad + M_PI / 6) / (M_PI / 2) * WRISTTILT_GEARBOX);
 }
 
 double RoverArmHardwareInterface::wrist_turn_pos(double rad) {
-  return -(rad / (2 * 3.1415)) * 4000.0 * 498;
+  // Note: which way is positive and negative depends on the invert_sensor
+  // parameter in the talon launch file, which in turn depends on which way
+  // electrical decided to wire the encoders
+  return -(rad / (2 * M_PI)) * WRISTTURN_GEARBOX * WRISTTURN_GEAR;
 }
 
 hardware_interface::return_type RoverArmHardwareInterface::write(

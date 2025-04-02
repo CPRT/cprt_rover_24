@@ -24,6 +24,29 @@
 #include "ros_phoenix/msg/motor_status.hpp"
 #include "std_msgs/msg/bool.hpp"
 
+#define BASE_BIG_GEAR 100.0
+#define BASE_SMALL_GEAR 15.0
+#define BASE_GEARBOX 1100
+#define ACT1_URDF_OFFSET 0.7832711  // thanks alot ivan >:((
+#define ACT1_SIDE_A 20.1
+#define ACT1_SIDE_B 48.5
+#define ACT1_SHAFT_LENGTH 15.24
+#define ACT1_SHAFT_TICKS 5709.0
+#define ACT_LENGTH 30.96
+#define ACT2_URDF_OFFSET -0.89151
+#define ACT2_SIDE_A 15.0
+#define ACT2_SIDE_B 42.3
+#define ACT2_SHAFT_LENGTH 13.64
+#define ACT2_SHAFT_TICKS 5109.0
+#define ELBOW_SMALL_GEAR 30.0
+#define ELBOW_BIG_GEAR 96.0
+#define ELBOW_GEARBOX 10000.0
+#define WRISTTILT_GEARBOX \
+  7760215.0  // I'm confident that nobody knows what the ratios are for this
+             // gearbox
+#define WRISTTURN_GEAR 498.0
+#define WRISTTURN_GEARBOX 4000.0
+
 using namespace std::chrono_literals;
 
 struct EncoderTopic {
@@ -88,8 +111,8 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   std::thread executor_thread_;
 
   void base_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
-  void diff1_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
-  void diff2_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
+  void act1_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
+  void act2_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
   void elbow_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
   void wrist_tilt_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
   void wrist_turn_callback(const ros_phoenix::msg::MotorStatus &motorStatus);
@@ -100,9 +123,9 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   std::vector<EncoderTopic> subscription_topics_ = {
       {"base/status", std::bind(&RoverArmHardwareInterface::base_callback, this,
                                 std::placeholders::_1)},
-      {"diff1/status", std::bind(&RoverArmHardwareInterface::diff1_callback,
+      {"diff1/status", std::bind(&RoverArmHardwareInterface::act1_callback,
                                  this, std::placeholders::_1)},
-      {"diff2/status", std::bind(&RoverArmHardwareInterface::diff2_callback,
+      {"diff2/status", std::bind(&RoverArmHardwareInterface::act2_callback,
                                  this, std::placeholders::_1)},
       {"elbow/status", std::bind(&RoverArmHardwareInterface::elbow_callback,
                                  this, std::placeholders::_1)},
@@ -115,18 +138,23 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   };
 
   double base_pos(double rad);
-  double diff1_pos(double rad);
-  double diff2_pos(double rad);
+  double act1_pos(double rad);
+  double act2_pos(double rad);
   double elbow_pos(double rad);
   double wrist_tilt_pos(double rad);
   double wrist_turn_pos(double rad);
 
+  double act_pos(double rad, double a, double b, double urdf_offset,
+                 double shaft_length, double shaft_ticks, double act_length);
+  double act_rad(double pos, double a, double b, double urdf_offset,
+                 double shaft_length, double shaft_ticks, double act_length);
+
   std::vector<PublisherTopic> publisher_topics_ = {
       {"base/set", std::bind(&RoverArmHardwareInterface::base_pos, this,
                              std::placeholders::_1)},
-      {"diff1/set", std::bind(&RoverArmHardwareInterface::diff1_pos, this,
+      {"diff1/set", std::bind(&RoverArmHardwareInterface::act1_pos, this,
                               std::placeholders::_1)},
-      {"diff2/set", std::bind(&RoverArmHardwareInterface::diff2_pos, this,
+      {"diff2/set", std::bind(&RoverArmHardwareInterface::act2_pos, this,
                               std::placeholders::_1)},
       {"elbow/set", std::bind(&RoverArmHardwareInterface::elbow_pos, this,
                               std::placeholders::_1)},
