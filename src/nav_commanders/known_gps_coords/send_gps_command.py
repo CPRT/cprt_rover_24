@@ -22,7 +22,7 @@ def read_coordinates_from_file(file_path):
         return data['lat'], data['lon']
 
 def construct_bash_command(lat, lon):
-    return f"ros2 service call /gps_commander NavToGPSGeopose.srv '{{goal: {{position: {{latitude: {lat}, longitude: {lon}}}}}}}'"
+    return f"ros2 service call /commander/nav_to_gps_geopose interfaces/srv/NavToGPSGeopose '{{goal: {{position: {{latitude: {lat}, longitude: {lon}}}}}}}'"
 
 def main():
     args = parse_arguments()
