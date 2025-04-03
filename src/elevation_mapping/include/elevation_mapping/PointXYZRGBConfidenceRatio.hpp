@@ -26,8 +26,8 @@ struct
                     // readability-const-return-type, modernize-avoid-c-arrays)
                     // This adds the members x,y,z which can also be accessed
                     // using the point (which is float[4])
-  PCL_ADD_RGB;  // NOLINT(cppcoreguidelines-pro-type-union-access,
-                // readability-const-return-type)
+  PCL_ADD_RGB;      // NOLINT(cppcoreguidelines-pro-type-union-access,
+                    // readability-const-return-type)
   union {
     struct {
       float confidence_ratio;  // NOLINT(readability-identifier-naming)
@@ -104,10 +104,10 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
                                        // readability-const-return-type) here we
                                        // assume a XYZ + "confidence_ratio" (as
                                        // fields)
-    (float, x, x)                                 // NOLINT
-    (float, y, y)                                 // NOLINT
-    (float, z, z)                                 // NOLINT
-    (std::uint32_t, rgba, rgba)                   // NOLINT
+    (float, x, x)                      // NOLINT
+    (float, y, y)                      // NOLINT
+    (float, z, z)                      // NOLINT
+    (std::uint32_t, rgba, rgba)        // NOLINT
     (float, confidence_ratio, confidence_ratio))  // NOLINT
 
 POINT_CLOUD_REGISTER_POINT_WRAPPER(pcl::PointXYZRGBConfidenceRatio,

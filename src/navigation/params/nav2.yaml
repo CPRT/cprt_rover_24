@@ -130,7 +130,7 @@ local_costmap:
       robot_base_frame: base_link
       use_sim_time: True
       rolling_window: True
-      use_maximum: True
+      use_maximum: False
       lethal_cost_threshold: 200
       trinary_costmap: False
       width: 5
@@ -148,7 +148,7 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 1.0
+      update_frequency: 2.0
       publish_frequency: 0.5
       global_frame: map
       robot_base_frame: base_link
@@ -162,17 +162,23 @@ global_costmap:
       track_unknown_space: true
       trinary_costmap: false
       lethal_cost_threshold: 200
-      plugins: [obstacle_layer]
+      plugins: [static_layer, denoise_layer, inflation_layer, obstacle_layer]
       static_layer:
         enabled: true
         plugin: nav2_costmap_2d::StaticLayer
         map_subscribe_transient_local: True
         subscribe_to_updates: True
+        footprint_clearing_enabled: True
         map_topic: /map
+      denoise_layer:
+        plugin: "nav2_costmap_2d::DenoiseLayer"
+        enabled: true
+        minimal_group_size: 2
+        group_connectivity_type: 8
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
-        inflation_radius: 15.0
+        inflation_radius: 1.0
       obstacle_layer:
         plugin: "cprt_costmap_plugins::GridmapLayer"
         enabled: true
@@ -213,7 +219,7 @@ planner_server:
       analytic_expansion_max_length: 3.0  # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting
       analytic_expansion_max_cost: 200.0  # The maximum single cost for any part of an analytic expansion to contain and be valid, except when necessary on approach to goal
       analytic_expansion_max_cost_override: false  #  Whether or not to override the maximum cost setting if within critical distance to goal (ie probably required)
-      minimum_turning_radius: 0.30        # minimum turning radius in m of path / vehicle
+      minimum_turning_radius: 0.90        # minimum turning radius in m of path / vehicle
       reverse_penalty: 2.0                # Penalty to apply if motion is reversing, must be => 1
       change_penalty: 1.0                 # Penalty to apply if motion is changing directions (L to R), must be >= 0
       non_straight_penalty: 1.2           # Penalty to apply if motion is non-straight, must be => 1
