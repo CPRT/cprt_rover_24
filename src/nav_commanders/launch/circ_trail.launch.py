@@ -1,17 +1,18 @@
-from launch import LaunchDescription  
+from launch import LaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
 from launch_ros.actions import Node
+
 
 def generate_launch_description():
     ld = LaunchDescription()
 
     # LaunchConfigurations
-    trail = LaunchConfiguration('trail')
+    trail = LaunchConfiguration("trail")
     trail_args = DeclareLaunchArgument(
-        'trail',
-        default_value='error2',
-        description='The type of trail to follow. Options: blue, red, ir'
+        "trail",
+        default_value="error2",
+        description="The type of trail to follow. Options: blue, red, ir",
     )
 
     # Nodes
@@ -20,8 +21,8 @@ def generate_launch_description():
         executable="circ_led_trails",
         name="circ_led_trails",
         parameters=[
-            {'trail': trail},
-        ]
+            {"trail": trail},
+        ],
     )
 
     ld.add_action(trail_args)
