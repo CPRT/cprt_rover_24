@@ -44,11 +44,11 @@ class microscope_servo(Node):
     
     def load_parameter(self):
         # Parameters
-        self.declare_parameter('OUT_PIN', 0)
+        self.declare_parameter('OUT_PIN', 12)
         self.OUT_PIN = (
             self.get_parameter('OUT_PIN').get_parameter_value().integer_value
             )
-        self.declare_parameter('FREQ', 500)
+        self.declare_parameter('FREQ', 20)
         self.FREQ = (
             self.get_parameter('FREQ').get_parameter_value().integer_value
             )
