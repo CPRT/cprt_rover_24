@@ -18,10 +18,12 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='nav_commanders',
-            name='gps_commander',
-            executable='gps_commander',
-        )
-    ])
+    return LaunchDescription(
+        [
+            Node(
+                package="nav_commanders",
+                name="gps_commander",
+                executable="gps_commander_node",
+            ),
+        ]
+    )
