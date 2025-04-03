@@ -219,9 +219,9 @@ class NodeManager(Node):
         """
         with self._mutex:
             for launch_file in self.launch_files:
-                self.launch_files[
-                    launch_file
-                ].status = self._get_node_status_nonblocking(launch_file)
+                self.launch_files[launch_file].status = (
+                    self._get_node_status_nonblocking(launch_file)
+                )
             return list(self.launch_files.values())
 
     def _list_nodes_callback(
