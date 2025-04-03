@@ -11,7 +11,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        (os.path.join("share", package_name), glob("launch/*")),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*')),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -22,10 +22,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "example_nav_to_pose = nav_commanders.nav_to_pose:main",
             "gps_commander = nav_commanders.nav_to_gps_coords:main",
-            "follow_aruco_marker = nav_commanders.follow_vision_target:main",
-            "circ_led_trails = nav_commanders.follow_circ_trails:main",
         ],
     },
 )
