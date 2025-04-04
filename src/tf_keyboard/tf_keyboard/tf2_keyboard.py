@@ -39,35 +39,35 @@ colors = [(255,0,0), (229, 52, 235), (235, 85, 52),
           (14, 115, 51), (14, 115, 204)]
 
 classes = {
-  "a" : 1,
-  "b" : 2,
-  "c" : 3,
-  "d" : 4,
-  "e" : 5,
-  "f" : 6,
-  "g" : 7,
-  "h" : 8,
-  "i" : 9,
-  "j" : 10,
-  "k" : 11,
-  "l" : 12,
-  "m" : 13,
-  "n" : 14,
-  "o" : 15,
-  "p" : 16,
-  "q" : 17,
-  "r" : 18,
-  "s" : 19,
-  "t" : 20,
-  "u" : 21,
-  "v" : 22,
-  "w" : 23,
-  "x" : 24,
-  "y" : 25,
-  "z" : 26,
-  "caps_lock" : 27,
-  "enter" : 28,
-  "keyboard" : 29,
+  "a" : 0,
+  "b" : 1,
+  "c" : 2,
+  "d" : 3,
+  "e" : 4,
+  "f" : 5,
+  "g" : 6,
+  "h" : 7,
+  "i" : 8,
+  "j" : 9,
+  "k" : 10,
+  "l" : 11,
+  "m" : 12,
+  "n" : 13,
+  "o" : 14,
+  "p" : 15,
+  "q" : 16,
+  "r" : 17,
+  "s" : 18,
+  "t" : 19,
+  "u" : 20,
+  "v" : 21,
+  "w" : 22,
+  "x" : 23,
+  "y" : 24,
+  "z" : 25,
+  "caps_lock" : 26,
+  "enter" : 27,
+  "keyboard" : 28,
 }
 
 PATH_TO_CFG = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/pipeline.config"
@@ -143,10 +143,10 @@ class results():
         mse = 10000 #stands for "mean sum of square error", or "distance" I suppose
         
         for x in range(len(self.data["detection_boxes"])):
-            point_x = (self.data["detection_boxes"][x][0] + self.data["detection_boxes"][x][2])/2.0
-            point_y = (self.data["detection_boxes"][x][1] + self.data["detection_boxes"][x][3])/2.0
-            dist = math.sqrt((point_x-0.5)*(point_x-0.5) + (point_y-0.5)*(point_y-0.5))
-            if (dist < mse and self.data["detection_classes"][x] <= 26):
+            point_x = (self.data["detection_boxes"][x][1] + self.data["detection_boxes"][x][3])/2.0
+            point_y = (self.data["detection_boxes"][x][0] + self.data["detection_boxes"][x][2])/2.0
+            dist = math.sqrt((point_x-0.5)*(point_x-0.5) + (point_y-0.5)*(point_y-0.5)) + 0.5*(1-self.data["detection_scores"][x])
+            if (dist < mse and self.data["detection_classes"][x] <= 25):
                 mse = dist
                 closest = x
         
@@ -155,21 +155,24 @@ class results():
     
     def dist_to_key(self, k):
         p = self.get_likely_keycap_pos()
-        ratio_x = (p[2] - p[0]); #ratio of pixels to cm
-        ratio_y = (p[3] - p[1]); #ratio of pixels to cm
+        ratio_x = (p[3] - p[1]); #ratio of pixels to cm
+        ratio_y = (p[2] - p[0]); #ratio of pixels to cm
         
         key = self.get_key_pos(k)
         
-        center_x = (key[2]+key[0])/2.0
-        center_y = (key[3]+key[1])/2.0
+        center_x = (key[3]+key[1])/2.0
+        center_y = (key[2]+key[0])/2.0
         
-        p_x = (p[2]+p[0])/2.0
-        p_y = (p[3]+p[1])/2.0
+        p_x = (p[3]+p[1])/2.0
+        p_y = (p[2]+p[0])/2.0
         
-        print(f"{p_x*1280} - {center_x*1280} {p_y*720} - {center_y*720} {ratio_x*1280} {ratio_y*1280}")
+        print(f"{p_x*1280} - {center_x*1280} {p_y*720} - {center_y*720} {ratio_x*1280} {ratio_y*720}")
+        print(f"Thinks key {key} at {key[0]*720} {key[1]*1280} {key[2]*720} {key[3]*1280} with center {center_x} {center_y}")
+        print(f"Thinks center {p} at {p[0]*720} {p[1]*1280} {p[2]*720} {p[3]*1280} with center {p_x} {p_y}")
+        print(f"Has {ratio_x*1280} pixels per 1.2 cm and {ratio_y*720} pixels per 1.4 cm")
         
-        dist_x = (p_x-center_x)*(1.2/ratio_x)
-        dist_y = (p_y-center_y)*(1.4/ratio_y)
+        dist_x = (center_x-p_x)*(1.2/ratio_x)
+        dist_y = (center_y-p_y)*(1.4/ratio_y)
         
         return (dist_x, dist_y)
     
@@ -209,7 +212,7 @@ class tf2Keyboard(Node):
         self.get_logger().info("Hello world!")
         print('Running inference for {}... '.format(image_path), end='')
 
-        image_np = load_image_into_numpy_array(image_path)
+        '''image_np = load_image_into_numpy_array(image_path)
 
         # Things to try:
         # Flip horizontally
@@ -222,7 +225,7 @@ class tf2Keyboard(Node):
         input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
 
         detections = detect_fn(input_tensor)
-        #print(detections)
+        print(detections)
 
         # All outputs are batches tensors.
         # Convert to numpy arrays, and take index [0] to remove the batch dimension.
@@ -252,13 +255,13 @@ class tf2Keyboard(Node):
         print('Done')
         result = results(detections)
         print(result.get_key_index("q"))
-        print(result.get_key_pos("q"))
+        print(f"{result.get_key_pos('q')} key pos")
         print(result.dist_to_key("q"))
         #print(detections['detection_classes']['q'])
         #print(detections['detection_scores']['q'])
         plt.figure()
         plt.imshow(image_np_with_detections)
-        plt.show()
+        plt.show()#'''
         
         '''cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
@@ -378,6 +381,72 @@ class tf2Keyboard(Node):
         response.x = 5.0
         response.y = 6.0
         response.z = 15.0
+        
+        #cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
+        cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
+        if not cap.isOpened():
+          print("Error: Could not access the camera.")
+          exit()
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1080)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1920)
+        ret, frame = cap.read()
+        cap.release()
+        
+        #cursed fisheye reversal
+        dim = (1280, 720)
+        k = np.array([[817.1125488944084, 0.0, 712.3596465245281], [0.0, 758.2820572597227, 400.5753281200634], [0.0, 0.0, 1.0]])
+        d = np.array([[-0.17895858184738406], [0.38653318939991055], [-0.7363420182211281], [0.4482813189308249]])
+        
+        h,w = frame.shape[:2]
+        map1, map2 = cv2.fisheye.initUndistortRectifyMap(k, d, np.eye(3), k, dim, cv2.CV_16SC2)
+        frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+
+        
+        image_np = np.array(frame)
+        
+        plt.imshow(image_np)
+        plt.show()
+        
+        self.get_logger().info("Detecting keys, please wait")
+        
+        input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
+
+        detections = detect_fn(input_tensor)
+
+        # All outputs are batches tensors.
+        # Convert to numpy arrays, and take index [0] to remove the batch dimension.
+        # We're only interested in the first num_detections.
+        num_detections = int(detections.pop('num_detections'))
+        detections = {key: value[0, :num_detections].numpy()
+                      for key, value in detections.items()}
+        detections['num_detections'] = num_detections
+
+        # detection_classes should be ints.
+        detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
+
+        label_id_offset = 1
+        image_np_with_detections = image_np.copy()
+        
+        print(detections['detection_classes'])
+        print(detections['detection_scores'])
+        print(detections['detection_boxes'])
+
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np_with_detections,
+                detections['detection_boxes'],
+                detections['detection_classes']+label_id_offset,
+                detections['detection_scores'],
+                category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=200,
+                min_score_thresh=.30,
+                agnostic_mode=False)
+
+        plt.figure()
+        plt.imshow(image_np_with_detections)
+        print('Done')
+        plt.show()
+        
         return response
         
         '''cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
