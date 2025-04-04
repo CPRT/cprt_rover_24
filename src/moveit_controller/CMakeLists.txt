@@ -10,7 +10,9 @@ find_package(ament_cmake REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(moveit_core REQUIRED)
+find_package(moveit_servo REQUIRED)
 find_package(interfaces REQUIRED)
+find_package(control_toolbox REQUIRED)
 
 add_executable(moveit_controller src/moveit_controller.cpp)
 target_include_directories(moveit_controller PUBLIC
@@ -25,8 +27,25 @@ ament_target_dependencies(
   "rclcpp"
 )
 
-install(TARGETS moveit_controller
+add_executable(servo_keyboard src/servo_keyboard.cpp)
+target_include_directories(servo_keyboard PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(servo_keyboard PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+ament_target_dependencies(
+  servo_keyboard
+  interfaces
+  control_toolbox
+  moveit_core
+  "moveit_ros_planning_interface"
+  "moveit_servo"
+  "rclcpp"
+)
+
+install(TARGETS moveit_controller servo_keyboard
   DESTINATION lib/${PROJECT_NAME})
+#install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
+#  PATTERN "setup_assistant.launch" EXCLUDE)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

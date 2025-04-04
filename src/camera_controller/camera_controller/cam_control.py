@@ -8,7 +8,6 @@ from interfaces.srv import Cam_Reset
 
 
 class Cam_Servo_Client(Node):
-
     def __init__(self):
         super().__init__("cam_servo_client")
         self.cli = self.create_client(MoveServo, "cam_servo_service")

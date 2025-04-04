@@ -8,12 +8,17 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  hw_position_states_.resize(info_.joints.size(),
-                             std::numeric_limits<double>::quiet_NaN());
+  hw_position_states_.resize(info_.joints.size(), 0);
+
   hw_velocity_states_.resize(info_.joints.size(),
                              std::numeric_limits<double>::quiet_NaN());
-  hw_commands_.resize(info_.joints.size(),
-                      std::numeric_limits<double>::quiet_NaN());
+
+  hw_commands_.resize(info_.joints.size(), 0);
+  // s
+
+  temp_.resize(info_.joints.size(), 0);
+
+  output_.resize(info_.joints.size());
 
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
     // RRBotSystemPositionOnly has exactly one state and command interface on
@@ -58,34 +63,106 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     }
   }
 
-  node_ = rclcpp::Node::make_shared("get_angle_client");
-  client_ = node_->create_client<interfaces::srv::ArmPos>("arm_pos");
+  node_ptr_ = rclcpp::Node::make_shared("arm_hw_subscriber");
 
-  while (!client_->wait_for_service(1s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Interrupted while waiting for the service. Exiting.");
-      return hardware_interface::CallbackReturn::SUCCESS;
-    }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-                "service not available, waiting again...");
+  executor_ptr_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+
+  for (unsigned long int i = 0; i < subscription_topics_.size(); i++) {
+    encoder_subscribers_.push_back(
+        node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>(
+            subscription_topics_[i].name, 5, subscription_topics_[i].callback));
   }
 
-  write_node_ = rclcpp::Node::make_shared("set_angle_client");
-  write_client_ =
-      write_node_->create_client<interfaces::srv::ArmCmd>("arm_cmd");
-
-  while (!write_client_->wait_for_service(1s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Interrupted while waiting for the service. Exiting.");
-      return hardware_interface::CallbackReturn::SUCCESS;
-    }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-                "service not available, waiting again...");
+  for (unsigned long int i = 0; i < publisher_topics_.size(); i++) {
+    motor_publishers_.push_back(
+        node_ptr_->create_publisher<ros_phoenix::msg::MotorControl>(
+            publisher_topics_[i].name, 5));
   }
+
+  encoder_subscriber_ = node_ptr_->create_subscription<std_msgs::msg::Bool>(
+      "encoder_passthrough", 5,
+      std::bind(&RoverArmHardwareInterface::encoder_callback, this,
+                std::placeholders::_1));
+  executor_ptr_->add_node(node_ptr_);
+  executor_thread_ = std::thread([this]() { this->executor_ptr_->spin(); });
 
   return hardware_interface::CallbackReturn::SUCCESS;
+}
+
+void RoverArmHardwareInterface::encoder_callback(
+    const std_msgs::msg::Bool &encoderPassthrough) {
+  encoderPassthrough_ = encoderPassthrough.data;
+}
+
+void RoverArmHardwareInterface::base_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
+    return;
+  }
+  temp_[0] = -(motorStatus.position / BASE_GEARBOX /
+               (BASE_BIG_GEAR / BASE_SMALL_GEAR));
+}
+
+double RoverArmHardwareInterface::act_rad(double pos, double a, double b,
+                                          double urdf_offset,
+                                          double shaft_length,
+                                          double shaft_ticks,
+                                          double act_length) {
+  double c = pos / shaft_ticks * shaft_length + act_length;
+  double d = (a * a + b * b - c * c) / (2 * a * b);
+  if (d > 1 or d < -1) {
+    return 0.0;  // just for safety
+  }
+  return std::acos(d) - urdf_offset;
+}
+
+void RoverArmHardwareInterface::act1_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
+    return;
+  }
+
+  temp_[1] =
+      act_rad(motorStatus.position, ACT1_SIDE_A, ACT1_SIDE_B, ACT1_URDF_OFFSET,
+              ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH);
+}
+
+void RoverArmHardwareInterface::act2_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
+    return;
+  }
+
+  temp_[2] =
+      act_rad(motorStatus.position, ACT2_SIDE_A, ACT2_SIDE_B, ACT2_URDF_OFFSET,
+              ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH);
+}
+
+void RoverArmHardwareInterface::elbow_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
+    return;
+  }
+  temp_[3] = motorStatus.position / ELBOW_GEARBOX /
+             (ELBOW_SMALL_GEAR / ELBOW_BIG_GEAR);
+}
+
+void RoverArmHardwareInterface::wrist_tilt_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
+    return;
+  }
+  temp_[4] =
+      -motorStatus.position / WRISTTILT_GEARBOX * (M_PI / 2) - (M_PI / 6);
+}
+
+void RoverArmHardwareInterface::wrist_turn_callback(
+    const ros_phoenix::msg::MotorStatus &motorStatus) {
+  if (encoderPassthrough_) {
+    return;
+  }
+  temp_[5] =
+      -(motorStatus.position / (WRISTTURN_GEARBOX * WRISTTURN_GEAR)) * 2 * M_PI;
 }
 
 hardware_interface::CallbackReturn RoverArmHardwareInterface::on_configure(
@@ -153,49 +230,72 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_deactivate(
 
 hardware_interface::return_type RoverArmHardwareInterface::read(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-  auto request = std::make_shared<interfaces::srv::ArmPos::Request>();
-  request->stop = false;
-  auto result = client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, result) ==
-      rclcpp::FutureReturnCode::SUCCESS) {
-    auto resultCopy = result.get();
-    hw_position_states_[0] = resultCopy->base;
-    hw_position_states_[1] = resultCopy->diff1;
-    hw_position_states_[2] = resultCopy->diff2;
-    hw_position_states_[3] = resultCopy->elbow;
-    hw_position_states_[4] = resultCopy->wristtilt;
-    hw_position_states_[5] = resultCopy->wristturn;
-  } else {
-    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                 "Failed to call service add_two_ints");
-  }
-
-  for (uint i = 1; i < hw_velocity_states_.size(); i++) {
-    // Simulate RRBot's movement
-    hw_velocity_states_[i] = 0;
+  for (int i = 0; i < 6; i++) {
+    hw_position_states_[i] = temp_[i];
   }
 
   return hardware_interface::return_type::OK;
 }
 
+double RoverArmHardwareInterface::act_pos(double rad, double a, double b,
+                                          double urdf_offset,
+                                          double shaft_length,
+                                          double shaft_ticks,
+                                          double act_length) {
+  rad = rad + urdf_offset;
+  double c = std::sqrt(a * a + b * b - 2 * a * b * std::cos(rad));
+  c -= act_length;
+  return c / shaft_length * shaft_ticks;
+}
+
+double RoverArmHardwareInterface::base_pos(double rad) {
+  return (-rad * (BASE_BIG_GEAR / BASE_SMALL_GEAR) * BASE_GEARBOX);
+}
+
+double RoverArmHardwareInterface::act1_pos(double rad) {
+  return act_pos(rad, ACT1_SIDE_A, ACT1_SIDE_B, ACT1_URDF_OFFSET,
+                 ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH);
+}
+
+double RoverArmHardwareInterface::act2_pos(double rad) {
+  return act_pos(rad, ACT2_SIDE_A, ACT2_SIDE_B, ACT2_URDF_OFFSET,
+                 ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH);
+}
+
+double RoverArmHardwareInterface::elbow_pos(double rad) {
+  return (rad * ELBOW_SMALL_GEAR / ELBOW_BIG_GEAR) * ELBOW_GEARBOX;
+}
+double RoverArmHardwareInterface::wrist_tilt_pos(double rad) {
+  return (-(rad + M_PI / 6) / (M_PI / 2) * WRISTTILT_GEARBOX);
+}
+
+double RoverArmHardwareInterface::wrist_turn_pos(double rad) {
+  // Note: which way is positive and negative depends on the invert_sensor
+  // parameter in the talon launch file, which in turn depends on which way
+  // electrical decided to wire the encoders
+  return -(rad / (2 * M_PI)) * WRISTTURN_GEARBOX * WRISTTURN_GEAR;
+}
+
 hardware_interface::return_type RoverArmHardwareInterface::write(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
   auto request = std::make_shared<interfaces::srv::ArmCmd::Request>();
-  request->base = hw_commands_[0];
-  request->diff1 = hw_commands_[1];
-  request->diff2 = hw_commands_[2];
-  request->elbow = hw_commands_[3];
-  request->wristtilt = hw_commands_[4];
-  request->wristturn = hw_commands_[5];
-  auto result = write_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(write_node_, result) ==
-      rclcpp::FutureReturnCode::SUCCESS) {
-    auto resultCopy = result.get();
-  } else {
-    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                 "Failed to call service add_two_ints");
+  if (encoderPassthrough_) {
+    for (unsigned long int i = 0; i < temp_.size(); i++) {
+      temp_[i] = hw_commands_[i];
+    }
+  }
+
+  for (unsigned long int i = 0; i < output_.size(); i++) {
+    output_[i].mode = 1;
+  }
+
+  for (unsigned long int i = 0; i < hw_commands_.size(); i++) {
+    output_[i].value = publisher_topics_[i].gear_ratio(hw_commands_[i]);
+  }
+
+  for (unsigned long int i = 0; i < output_.size(); i++) {
+    motor_publishers_[i]->publish(output_[i]);
   }
 
   return hardware_interface::return_type::OK;
