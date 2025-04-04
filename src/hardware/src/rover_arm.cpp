@@ -99,7 +99,8 @@ void RoverArmHardwareInterface::base_callback(
   if (encoderPassthrough_) {
     return;
   }
-  temp_[0] = -(motorStatus.position / BASE_GEARBOX / (BASE_BIG_GEAR / BASE_SMALL_GEAR));
+  temp_[0] = -(motorStatus.position / BASE_GEARBOX /
+               (BASE_BIG_GEAR / BASE_SMALL_GEAR));
 }
 
 double RoverArmHardwareInterface::act_rad(double pos, double a, double b,
