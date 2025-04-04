@@ -1,0 +1,43 @@
+flightstick_control:
+  ros__parameters:
+    drive_mode_button: 11
+    arm_ik_mode_button: 9
+    arm_manual_mode_button: 10
+    nav_mode_button: 8
+    science_mode_button: 7
+
+    drive_mode:
+      throttle:
+        axis: 2
+        min: -1.0
+        max: 1.0
+      forward_axis: 1
+      yaw_axis: 0
+      cam_tilt_axis: 5
+      cam_pan_axis: 4
+      cam_reset: 1
+      cam_next: 3
+      cam_prev: 2
+      cruise_control: 0
+      max_linear: 2.0
+      max_angular: 1.0
+      max_increment: 0.1
+      min_speed: 0.001
+      
+    arm_manual_mode:
+      throttle:
+        axis: 2
+        min: -1.0
+        max: 1.0
+      base_axis: 0
+      wrist_roll: 4
+      wrist_yaw_positive: 4
+      wrist_yaw_negative: 5
+      act1_axis: 1
+      act2_axis: 5
+      elbow_yaw: 3
+      claw_open: 1
+      claw_close: 0
+      simple_forward: 2
+      simple_backward: 3
+      servo_port: 0

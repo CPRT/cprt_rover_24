@@ -52,6 +52,10 @@ bool FlightstickControl::changeMode(ModeType mode) {
       RCLCPP_INFO(this->get_logger(), "Entering Drive Mode");
       mode_ = std::make_unique<DriveMode>(this);
       return true;
+    case ModeType::ARM_MANUAL:
+      RCLCPP_INFO(this->get_logger(), "Entering Manual Mode");
+      mode_ = std::make_unique<ArmManualMode>(this);
+      return true;
     default:
       RCLCPP_WARN(this->get_logger(),
                   "Mode not implemented, returning to NONE");
@@ -69,6 +73,7 @@ void FlightstickControl::declareParameters() {
   this->declare_parameter("nav_mode_button", 13);
   this->declare_parameter("science_mode_button", 14);
   DriveMode::declareParameters(this);
+  ArmManualMode::declareParameters(this);
 }
 
 void FlightstickControl::loadParameters() {
