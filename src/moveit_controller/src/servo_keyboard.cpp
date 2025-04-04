@@ -12,9 +12,7 @@ KeyboardReader::KeyboardReader() : kfd(0) {
   tcsetattr(kfd, TCSANOW, &raw);
 }
 
-KeyboardReader::~KeyboardReader() {
-  tcsetattr(kfd, TCSANOW, &cooked);
-}
+KeyboardReader::~KeyboardReader() { tcsetattr(kfd, TCSANOW, &cooked); }
 
 void KeyboardReader::readOne(char* c) {
   int rc = read(kfd, c, 1);
