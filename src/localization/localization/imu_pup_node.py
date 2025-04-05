@@ -16,7 +16,7 @@ class BNO08XPublisher(Node):
             self.get_parameter("QueueDepth").get_parameter_value().integer_value
         )
         self.imu_pub = self.create_publisher(Imu, "imu/data", queue_depth)
-        
+
         # Initialize I2C communication
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = adafruit_bno08x.BNO08X_I2C(i2c)
@@ -27,17 +27,23 @@ class BNO08XPublisher(Node):
         self.get_logger().info(f"BNO08X IMU Node Started! Frame ID : {self.frame_id}")
 
     def load_params(self):
-        self.declare_parameter("orientation_covariance", [0.01]*9)
+        self.declare_parameter("orientation_covariance", [0.01] * 9)
         self.orientation_covariance = (
-            self.get_parameter("orientation_covariance").get_parameter_value().double_array_value
+            self.get_parameter("orientation_covariance")
+            .get_parameter_value()
+            .double_array_value
         )
-        self.declare_parameter("angular_velocity_covariance", [0.01]*9)
+        self.declare_parameter("angular_velocity_covariance", [0.01] * 9)
         self.angular_velocity_covariance = (
-            self.get_parameter("angular_velocity_covariance").get_parameter_value().double_array_value
+            self.get_parameter("angular_velocity_covariance")
+            .get_parameter_value()
+            .double_array_value
         )
-        self.declare_parameter("linear_acceleration_covariance", [0.01]*9)
+        self.declare_parameter("linear_acceleration_covariance", [0.01] * 9)
         self.linear_acceleration_covariance = (
-            self.get_parameter("linear_acceleration_covariance").get_parameter_value().double_array_value
+            self.get_parameter("linear_acceleration_covariance")
+            .get_parameter_value()
+            .double_array_value
         )
         self.declare_parameter("Freq", 2.0)
         self.freq = self.get_parameter("Freq").get_parameter_value().double_value
@@ -83,4 +89,3 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
