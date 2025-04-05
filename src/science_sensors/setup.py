@@ -26,6 +26,7 @@ setup(
     entry_points={
         "console_scripts": [
             "gas_sensor = science_sensors.gas_sensor:main",
+            "microscope_control = science_sensors.microscope_control:main",
         ],
     },
 )
