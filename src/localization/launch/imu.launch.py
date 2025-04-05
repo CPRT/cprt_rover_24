@@ -7,7 +7,7 @@ def generate_launch_description():
         [
             launch_ros.actions.Node(
                 package="localization",
-                executable="imu_pub_node",
+                executable="imu_bno08x",
                 name="localization_node",
                 parameters=[
                     {

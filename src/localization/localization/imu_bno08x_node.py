@@ -3,12 +3,33 @@ from rclpy.node import Node
 from sensor_msgs.msg import Imu
 import board
 import busio
+from adafruit_bno08x.i2c import BNO08X_I2C
 import adafruit_bno08x
 import os
+import math
 
+def euler_from_quaternion(q):
+    """
+    Convert a quaternion into euler angles
+    taken from: https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
+    """
+    t0 = +2.0 * (q.w * q.x + q.y * q.z)
+    t1 = +1.0 - 2.0 * (q.x * q.x + q.y * q.y)
+    roll_x = math.atan2(t0, t1)
+
+    t2 = +2.0 * (q.w * q.y - q.z * q.x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    pitch_y = math.asin(t2)
+
+    t3 = +2.0 * (q.w * q.z + q.x * q.y)
+    t4 = +1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+    yaw_z = math.atan2(t3, t4)
+
+    return roll_x, pitch_y, yaw_z
 
 class BNO08XPublisher(Node):
-    def __init__(self, frame_id="imu_link"):
+    def __init__(self):
         super().__init__("imu_pub_node")
         self.load_params()
         # IMU Publisher
@@ -18,12 +39,23 @@ class BNO08XPublisher(Node):
         self.imu_pub = self.create_publisher(Imu, "imu/data", queue_depth)
 
         # Initialize I2C communication
-        i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensor = adafruit_bno08x.BNO08X_I2C(i2c)
+        i2c = busio.I2C(
+            board.SCL_1, board.SDA_1
+        )  # On RPI it was usio.I2C(board.SCL, board.SDA)
+        self.sensor = BNO08X_I2C(
+            i2c, address=0x4b
+        )  # on rpi it was adafruit_bno08x.BNO08X_I2C
+
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_GYROSCOPE)
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_ACCELEROMETER)
+        # self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_ROTATION_VECTOR)
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_GEOMAGNETIC_ROTATION_VECTOR)
+        self.sensor.enable_feature(adafruit_bno08x.BNO_REPORT_MAGNETOMETER)
 
         # Timer to publish data
         self.timer = self.create_timer(1 / self.freq, self.timer_callback)
 
+        self.frame_id="imu_link"
         self.get_logger().info(f"BNO08X IMU Node Started! Frame ID : {self.frame_id}")
 
     def load_params(self):
@@ -54,9 +86,11 @@ class BNO08XPublisher(Node):
 
     def timer_callback(self):
         msg = Imu()
+        msg.header.frame_id = self.frame_id
+        msg.header.stamp = self.get_clock().now().to_msg()
 
         # Get sensor readings
-        quat = self.sensor.quaternion
+        quat = self.sensor.geomagnetic_quaternion
         accel = self.sensor.acceleration
         gyro = self.sensor.gyro
 
@@ -79,9 +113,11 @@ class BNO08XPublisher(Node):
         msg.linear_acceleration_covariance = self.linear_acceleration_covariance
 
         # Publish the IMU message
-        self.publisher_.publish(msg)
-        # self.get_logger().info("Published IMU Data")
+        self.imu_pub.publish(msg)
 
+        # roll, pitch, yaw = euler_from_quaternion(msg.orientation)
+        # roll, pitch, yaw = math.degrees(roll), math.degrees(pitch), math.degrees(yaw)        
+        # self.get_logger().info(f"Roll: {roll:.2f}, pitch: {pitch:.2f}, yaw: {yaw:.2f}")
 
 def main(args=None):
     rclpy.init(args=args)
