@@ -99,7 +99,7 @@ GstElement *WebRTCStreamer::create_vid_conv() {
   if (videoconvert) {
     return videoconvert;
   }
-  RCLCPP_INFO(this->get_logger(),
+  RCLCPP_INFO(rclcpp::get_logger("webrtc_node"),
               "Failed to create nvvidconv, using videoconvert instead");
   return gst_element_factory_make("videoconvert", nullptr);
 }
@@ -113,8 +113,9 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   } else if (src.type == CameraType::V4l2Src) {
     src_element = gst_element_factory_make("v4l2src", nullptr);
     g_object_set(G_OBJECT(src_element), "device", src.path.c_str(), nullptr);
+  } else if (src.type == CameraType::NetworkSrc) {
+    return networkSrc(name, src.path);
   } else {
-    // TODO: Add support for network source for science cameras
     RCLCPP_WARN(this->get_logger(), "Unimplemented Type for camera: %s",
                 name.c_str());
     return nullptr;
@@ -139,6 +140,68 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
     return nullptr;
   }
   return tee;
+}
+
+GstElement *WebRTCStreamer::networkSrc(const std::string &name,
+                                       const std::string &path) {
+  // SRT Source
+  GstElement *src_element = gst_element_factory_make("srtsrc", nullptr);
+  if (!src_element) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to create SRT source for: %s",
+                 name.c_str());
+    return nullptr;
+  }
+  g_object_set(G_OBJECT(src_element), "uri", path.c_str(), nullptr);
+
+  GstElement *decodebin = gst_element_factory_make("decodebin", nullptr);
+  if (!decodebin) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to create decodebin for SRT");
+    return nullptr;
+  }
+
+  // Handle dynamic pad linking
+  g_signal_connect(
+      decodebin, "pad-added",
+      G_CALLBACK(
+          +[](GstElement *decodebin, GstPad *new_pad, gpointer user_data) {
+            GstElement *pipeline = static_cast<GstElement *>(user_data);
+            GstElement *videoconvert = WebRTCStreamer::create_vid_conv();
+            GstUniquePtr<GstPad> sink_pad(
+                gst_element_get_static_pad(videoconvert, "sink"));
+            GstElement *tee = gst_element_factory_make("tee", "Science");
+
+            if (!videoconvert || !tee) {
+              RCLCPP_ERROR(rclcpp::get_logger("webrtc_node"),
+                           "Failed to create processing elements");
+              return;
+            }
+
+            g_object_set(G_OBJECT(tee), "allow-not-linked", TRUE, nullptr);
+
+            // Add to pipeline
+            gst_bin_add_many(GST_BIN(pipeline), videoconvert, tee, nullptr);
+            gst_element_sync_state_with_parent(videoconvert);
+            gst_element_sync_state_with_parent(tee);
+            if (gst_pad_link(new_pad, sink_pad.get()) != GST_PAD_LINK_OK) {
+              RCLCPP_ERROR(rclcpp::get_logger("webrtc_node"),
+                           "Failed to link decodebin to videoconvert");
+            }
+            if (!gst_element_link(videoconvert, tee)) {
+              RCLCPP_ERROR(rclcpp::get_logger("webrtc_node"),
+                           "Failed to link videoconvert to tee");
+              return;
+            }
+          }),
+      pipeline_.get());
+  gst_bin_add_many(GST_BIN(pipeline_.get()), src_element, decodebin, nullptr);
+  gst_element_sync_state_with_parent(src_element);
+  gst_element_sync_state_with_parent(decodebin);
+  if (!gst_element_link(src_element, decodebin)) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to link srtsrc to decodebin");
+    return nullptr;
+  }
+
+  return decodebin;
 }
 
 GstElement *WebRTCStreamer::initialize_pipeline() {
@@ -166,7 +229,6 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
     RCLCPP_ERROR(this->get_logger(), "Failed to create webrtc elements");
     return nullptr;
   }
-
   // Set properties for the elements
   g_object_set(G_OBJECT(stable_source), "pattern", 2, nullptr);
   g_object_set(G_OBJECT(stable_source), "is-live", TRUE, nullptr);
