@@ -57,7 +57,8 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   enum class CameraType {
     V4l2Src = 0, /**< V4L2 source */
-    TestSrc      /**< Test source */
+    TestSrc,     /**< Test source */
+    NetworkSrc,  /**< Network source */
   };
 
   /**
@@ -119,11 +120,20 @@ class WebRTCStreamer : public rclcpp::Node {
   static bool unlink_pad(GstPad* pad);
 
   /**
+   * @brief Creates a GStreamer network source element.
+   *
+   * @param name The name of the source element.
+   * @param path The path to the network source.
+   * @return A pointer to the created GStreamer element.
+   */
+  GstElement* networkSrc(const std::string& name, const std::string& path);
+
+  /**
    * @brief Creates a GStreamer video converter element.
    *
    * @return A pointer to the created video converter element.
    */
-  GstElement* create_vid_conv();
+  static GstElement* create_vid_conv();
 
   bool web_server_; /**< Flag indicating if the web server is enabled */
   std::string web_server_path_; /**< Path to the web server */

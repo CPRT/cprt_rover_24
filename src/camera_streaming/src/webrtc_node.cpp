@@ -42,7 +42,7 @@ WebRTCStreamer::WebRTCStreamer()
                    name.c_str());
       continue;
     }
-    if (source.type != CameraType::TestSrc &&
+    if (source.type == CameraType::V4l2Src &&
         !std::filesystem::exists(source.path)) {
       RCLCPP_ERROR(this->get_logger(), "Camera path does not exist: %s",
                    camera_path.c_str());
@@ -99,7 +99,7 @@ GstElement *WebRTCStreamer::create_vid_conv() {
   if (videoconvert) {
     return videoconvert;
   }
-  RCLCPP_INFO(this->get_logger(),
+  RCLCPP_INFO(rclcpp::get_logger("webrtc_node"),
               "Failed to create nvvidconv, using videoconvert instead");
   return gst_element_factory_make("videoconvert", nullptr);
 }
@@ -113,8 +113,9 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   } else if (src.type == CameraType::V4l2Src) {
     src_element = gst_element_factory_make("v4l2src", nullptr);
     g_object_set(G_OBJECT(src_element), "device", src.path.c_str(), nullptr);
+  } else if (src.type == CameraType::NetworkSrc) {
+    src_element = networkSrc(name, src.path);
   } else {
-    // TODO: Add support for network source for science cameras
     RCLCPP_WARN(this->get_logger(), "Unimplemented Type for camera: %s",
                 name.c_str());
     return nullptr;
@@ -139,6 +140,35 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
     return nullptr;
   }
   return tee;
+}
+
+GstElement *WebRTCStreamer::networkSrc(const std::string &name,
+                                       const std::string &path) {
+  // SRT Source
+  GstElement *src_element = gst_element_factory_make("srtsrc", nullptr);
+  if (!src_element) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to create SRT source for: %s",
+                 name.c_str());
+    return nullptr;
+  }
+  g_object_set(G_OBJECT(src_element), "uri", path.c_str(), nullptr);
+  g_object_set(G_OBJECT(src_element), "automatic-eos", FALSE, nullptr);
+  g_object_set(G_OBJECT(src_element), "wait-for-connection", FALSE, nullptr);
+  g_object_set(G_OBJECT(src_element), "poll-timeout", -1, nullptr);
+
+  GstElement *decoder = gst_element_factory_make("nvv4l2decoder", nullptr);
+  if (!decoder) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to create decoder for SRT");
+    return nullptr;
+  }
+  gst_bin_add_many(GST_BIN(pipeline_.get()), src_element, decoder, nullptr);
+  gst_element_sync_state_with_parent(src_element);
+  gst_element_sync_state_with_parent(decoder);
+  if (!gst_element_link(src_element, decoder)) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to link srtsrc to decoder");
+    return nullptr;
+  }
+  return decoder;
 }
 
 GstElement *WebRTCStreamer::initialize_pipeline() {
@@ -166,7 +196,6 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
     RCLCPP_ERROR(this->get_logger(), "Failed to create webrtc elements");
     return nullptr;
   }
-
   // Set properties for the elements
   g_object_set(G_OBJECT(stable_source), "pattern", 2, nullptr);
   g_object_set(G_OBJECT(stable_source), "is-live", TRUE, nullptr);
