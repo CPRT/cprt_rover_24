@@ -4,7 +4,6 @@ import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
 from geometry_msgs.msg import Twist
-from interfaces.srv import Cam_Reset
 
 
 class microscope_control(Node):
@@ -14,7 +13,7 @@ class microscope_control(Node):
         self.cli = self.create_client(MoveServo, "microscope_control_servaice")
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().warn("service not available, waiting again...")
-        self.declare_parameters()
+        self.load_params()
         self.goal_pos_y = self.default_pos
         self.last_pos_y = self.default_pos
         period = (
