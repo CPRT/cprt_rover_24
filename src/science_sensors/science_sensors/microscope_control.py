@@ -20,7 +20,7 @@ class microscope_control(Node):
             1.0 / self.get_parameter("frequency").get_parameter_value().double_value
         )
         self.subscription = self.create_subscription(
-            Twist, "Direction", self.position_callback, 10
+            Twist, "/microscope_vel", self.position_callback, 10
         )
 
     def load_params(self):
