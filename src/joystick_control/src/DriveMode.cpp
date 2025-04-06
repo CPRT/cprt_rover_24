@@ -5,6 +5,7 @@ DriveMode::DriveMode(rclcpp::Node* node) : Mode("Drive", node) {
   loadParameters();
   twist_pub_ =
       node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+  cam_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cam_vel", 10);
 }
 
 void DriveMode::processJoystickInput(
@@ -56,7 +57,9 @@ void DriveMode::handleTwist(
 
 void DriveMode::handleCam(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
-  // TODO: Implement camera control
+  auto twist = geometry_msgs::msg::Twist();
+  twist.angular.z = joystickMsg->axes[kCamPanAxis];
+  twist.angular.y = joystickMsg->axes[kCamTiltAxis];
 }
 
 void DriveMode::handleVideo(

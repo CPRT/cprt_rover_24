@@ -89,7 +89,9 @@ class DriveMode : public Mode {
   double kMinSpeed;      ///< Minimum speed value.
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
-      twist_pub_;  ///< Publisher for Twist messages.
+      twist_pub_;  ///< Publisher for Drive Twist messages.
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
+      cam_pub_;  ///< Publisher for Camera Twist messages.
 };
 
 #endif  // JOYSTICK_CONTROL__DRIVEMODE_HPP_

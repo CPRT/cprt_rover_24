@@ -23,7 +23,7 @@ class Cam_Servo_Client(Node):
         )
         self.timer = self.create_timer(period, self.camera_mover)
         self.subscription = self.create_subscription(
-            Twist, "Direction", self.direction_callback, 10
+            Twist, "cam_vel", self.direction_callback, 10
         )
         self.start = self.create_service(Cam_Reset, "cam/reset", self.reset_callback)
 

@@ -13,7 +13,9 @@ class pi_Servo(Node):
         super().__init__("pi_servo")
         self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
 
-        self.declare_parameter("out_pin", 32)  # default to pin 32. Should change this is just the pin i was using
+        self.declare_parameter(
+            "out_pin", 32
+        )  # default to pin 32. Should change this is just the pin i was using
         self.out_pin = self.get_parameter("out_pin").get_parameter_value().integer_value
 
         GPIO.setmode(GPIO.BOARD)
@@ -21,8 +23,8 @@ class pi_Servo(Node):
         self.pwm_pin = GPIO.PWM(self.out_pin, 50)  # Sets up the out_pin as a PWM pin
         self.pwm_pin.start(0)
 
-        self.max = 12   #The Max value for the PWM
-        self.min = 3    #The min value for the PWM
+        self.max = 12  # The Max value for the PWM
+        self.min = 3  # The min value for the PWM
         self.maxrom = 180  # max range of motion of the servo, default 180
 
     def set_position(self, request, response) -> MoveServo:
