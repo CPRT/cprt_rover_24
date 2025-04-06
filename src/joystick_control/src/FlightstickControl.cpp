@@ -55,6 +55,7 @@ bool FlightstickControl::changeMode(ModeType mode) {
     case ModeType::SCIENCE:
       RCLCPP_INFO(this->get_logger(), "Entering Science Mode");
       mode_ = std::make_unique<ScienceMode>(this);
+      return true;
     case ModeType::ARM_MANUAL:
       RCLCPP_INFO(this->get_logger(), "Entering Manual Mode");
       mode_ = std::make_unique<ArmManualMode>(this);

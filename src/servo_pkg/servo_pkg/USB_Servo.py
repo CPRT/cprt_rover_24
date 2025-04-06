@@ -80,6 +80,8 @@ class USB_Servo(Node):
         return response
 
     def convert_from_degrees(self, degrees: int) -> int:
+        if degrees == 0:
+            return self.ZERO_DEGREES_VALUE
         return int(
             self.ZERO_DEGREES_VALUE
             + (self.CONVERSION_VALUE / (self.MAX_DEGREES / degrees))

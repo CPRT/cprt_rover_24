@@ -60,6 +60,7 @@ void DriveMode::handleCam(
   auto twist = geometry_msgs::msg::Twist();
   twist.angular.z = joystickMsg->axes[kCamPanAxis];
   twist.angular.y = joystickMsg->axes[kCamTiltAxis];
+  cam_pub_->publish(twist);
 }
 
 void DriveMode::handleVideo(

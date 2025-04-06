@@ -4,20 +4,21 @@ import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
 from geometry_msgs.msg import Twist
-from interfaces.srv import Cam_Reset
+from interfaces.srv import CamReset
 
 
 class Cam_Servo_Client(Node):
     def __init__(self):
         super().__init__("cam_servo_client")
-        self.cli = self.create_client(MoveServo, "cam_servo_service")
+        self.cli = self.create_client(MoveServo, "servo_service")
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().warn("service not available, waiting again...")
         self.load_params()
-        self.goal_pos_x = self.default_pos
-        self.goal_pos_y = self.default_pos
-        self.last_pos_x = self.default_pos
-        self.last_pos_y = self.default_pos
+        self.goal_pos_x = self.default_x_pos
+        self.goal_pos_y = self.default_y_pos
+        self.last_pos_x = -1
+        self.last_pos_y = -1
+        self.camera_mover()
         period = (
             1.0 / self.get_parameter("frequency").get_parameter_value().double_value
         )
@@ -25,7 +26,7 @@ class Cam_Servo_Client(Node):
         self.subscription = self.create_subscription(
             Twist, "cam_vel", self.direction_callback, 10
         )
-        self.start = self.create_service(Cam_Reset, "cam/reset", self.reset_callback)
+        self.start = self.create_service(CamReset, "cam/reset", self.reset_callback)
 
     def load_params(self):
         self.declare_parameter("port_x", 0)
@@ -34,7 +35,7 @@ class Cam_Servo_Client(Node):
         self.declare_parameter("max_servo", 180)
         self.declare_parameter("default_x_pos", 90)
         self.declare_parameter("default_y_pos", 90)
-        self.declare_parameter("step_size", 2)
+        self.declare_parameter("step_size", 2.0)
         self.declare_parameter("frequency", 10.0)
         self.port_x = self.get_parameter("port_x").get_parameter_value().integer_value
         self.port_y = self.get_parameter("port_y").get_parameter_value().integer_value
@@ -79,12 +80,12 @@ class Cam_Servo_Client(Node):
     def camera_mover(self) -> None:
         if self.goal_pos_x != self.last_pos_x:
             self.send_request(
-                self.port_x, self.goal_pos_x, self.min_servo, self.max_servo
+                self.port_x, int(self.goal_pos_x), self.min_servo, self.max_servo
             )
             self.last_pos_x = self.goal_pos_x
         if self.goal_pos_y != self.last_pos_y:
             self.send_request(
-                self.port_y, self.goal_pos_y, self.min_servo, self.max_servo
+                self.port_y, int(self.goal_pos_y), self.min_servo, self.max_servo
             )
             self.last_pos_y = self.goal_pos_y
 

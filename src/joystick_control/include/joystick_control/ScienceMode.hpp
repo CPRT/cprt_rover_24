@@ -4,37 +4,38 @@
 #include "Mode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "ros_phoenix/msg/motor_control.hpp"
 
 class ScienceMode : public Mode {
-	public:
+ public:
+  ScienceMode(rclcpp::Node* node);
 
-		ScienceMode(rclccp::Node* node);
+  void processJoystickInput(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;
 
-		void processJoystickInput(std:shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;
+  static void declareParameters(rclcpp::Node* node);
 
-		static void declareParameters(rclcpp::Node* node);
+ private:
+  void handlePlatform(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleDrill(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleMicroscope(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handlePanoramic(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleSoilCollection(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
 
-	private:
-		void handlePlatform(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handleDrill(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handleMicroscope(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handlePanoramic(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handleSoilCollection(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void loadParameters();
 
-		void loadParameters();
+  int8_t kPlatformAxis;
+  int8_t kDrillButton;
+  int8_t kMicroscopeAxis;
 
-		int8_t kPlatformAxis;
-		int8_t kDrillButton;
-		int8_t kMicroscopeAxis;
+  bool kDrillState;
 
-		bool kDrillState;
-
-		rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
-			platform_pub_;
-		rclcpp::Publisher<Bool>::SharedPtr
-			drill_pub_;
-		rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
-			microscope_pub_;
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr platform_pub_;
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr drill_pub_;
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr microscope_pub_;
 };
 
 #endif
