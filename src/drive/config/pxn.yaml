@@ -41,3 +41,15 @@ flightstick_control:
       simple_forward: 2
       simple_backward: 3
       servo_port: 0
+
+    arm_ik_mode:
+      x_axis: 0
+      y_axis: 1
+      z_axis: 2
+      rotate_around_y: 4
+      rotate_around_x: 5
+      rotate_around_z: 6
+      open_claw: 0
+      close_claw: 1
+      base_frame: 7
+      eef_frame: 8

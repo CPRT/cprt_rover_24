@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(include/${PROJECT_NAME})
 
 # Declare the executables for the nodes
-add_executable(flightstick_control src/FlightstickControl.cpp src/DriveMode.cpp src/ArmManualMode.cpp)
+add_executable(flightstick_control src/FlightstickControl.cpp src/DriveMode.cpp src/ArmManualMode.cpp src/ArmIKMode.cpp)
 
 # Link the dependencies to the executable
 ament_target_dependencies(flightstick_control
