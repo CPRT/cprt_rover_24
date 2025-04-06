@@ -14,8 +14,7 @@ class microscope_control(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().warn("service not available, waiting again...")
         self.load_params()
-        self.last_pos_y = self.default_pos
-        1.0 / self.get_parameter("frequency").get_parameter_value().double_value
+        self.last_pos = self.default_pos
         self.subscription = self.create_subscription(
             Twist, "/microscope_vel", self.position_callback, 10
         )
@@ -26,6 +25,7 @@ class microscope_control(Node):
         self.declare_parameter("max_servo", 180)
         self.declare_parameter("default_pos", 90)
         self.declare_parameter("frequency", 5.0)
+        self.declare_parameter("step_size", 1.0)
         self.pin = self.get_parameter("pin").get_parameter_value().integer_value
         self.min_servo = (
             self.get_parameter("min_servo").get_parameter_value().integer_value
@@ -38,8 +38,9 @@ class microscope_control(Node):
         )
 
     def position_callback(self, msg: Twist):
-        self.goal_pos_y = msg.linear.x * 90 + 90
-        self.send_request(self.pin, self.goal_pos_y, self.min_servo, self.max_servo)
+        goal_pos = last_pos + msg.linear.z * step_size
+        goal_pos = max(min(goal_pos, self.max_servo), self.min_servo)
+        self.send_request(self.pin, goal_pos, self.min_servo, self.max_servo)
 
     def send_request(self, port: int, pos: int, min: int, max: int) -> MoveServo:
         req = MoveServo.Request()
