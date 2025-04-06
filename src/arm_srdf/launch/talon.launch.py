@@ -18,19 +18,19 @@ def generate_launch_description():
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="base",
-                parameters=[{"id": 10}, {"P": 2.0}, {"I": 0.0}, {"D": 1.0}],
+                parameters=[{"id": 10}, {"P": 5.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="act1",
-                parameters=[{"id": 11}, {"P": 50.0}, {"I": 0.0}, {"D": 0.0}],
+                parameters=[{"id": 11}, {"P": 5.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="act2",
-                parameters=[{"id": 12}, {"P": 50.0}, {"I": 0.0}, {"D": 0.0}],
+                parameters=[{"id": 12}, {"P": 5.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
@@ -38,7 +38,7 @@ def generate_launch_description():
                 name="elbow",
                 parameters=[
                     {"id": 13},
-                    {"P": 1.0},
+                    {"P": 5.0},
                     {"I": 0.0},
                     {"D": 0.0},
                     {"invert_sensor": True},
@@ -50,9 +50,9 @@ def generate_launch_description():
                 name="wristTilt",
                 parameters=[
                     {"id": 14},
-                    {"P": 1.5},
+                    {"P": 5.0},
                     {"I": 0.0},
-                    {"D": 1.0},
+                    {"D": 0.0},
                     {"max_voltage": 6.0},
                 ],
             ),
@@ -62,9 +62,9 @@ def generate_launch_description():
                 name="wristTurn",
                 parameters=[
                     {"id": 15},
-                    {"P": 1.5},
+                    {"P": 5.0},
                     {"I": 0.0},
-                    {"D": 1.0},
+                    {"D": 0.0},
                     {"max_voltage": 6.0},
                     {"invert_sensor": True},
                 ],
@@ -73,4 +73,13 @@ def generate_launch_description():
         output="screen",
     )
 
-    return launch.LaunchDescription([container])
+    return launch.LaunchDescription(
+        [
+            container,
+            launch_ros.actions.Node(
+                package="servo_pkg",
+                executable="USB_Servo",
+                name="USB_Servo_node",
+            ),
+        ]
+    )
