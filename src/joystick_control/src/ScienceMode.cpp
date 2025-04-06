@@ -5,11 +5,19 @@ ScienceMode::ScienceMode(rclccp::Node* node) : Mode("Science", node) {
 	RCLCPP_INFO(node_->get_logger(), "Science Mode");
 	loadParameters();
 	platform_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>(
+<<<<<<< HEAD
 			"/platform/set", 10);
 	drill_pub_ = node_->create_publisher<Bool>(
 			"/drill/set", 10); 
 	microscope_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>(
 			"/microscope/set", 10);
+=======
+			"/science_plat_vel", 10);
+	drill_pub_ = node_->create_publisher<Bool>(
+			"/drill/set", 10); //TODO: create drill launch file
+	microscope_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>(
+			"/microscope_vel", 10);
+>>>>>>> e7620a8 (Add first draft of science controls)
 	//TODO:
 	//panoramic_pub_ = node_->create_publisher<Bool?>("/science_panoramic", ?);
 	//soil_collection_pub_ = node_->create_publisher<???>("/science_soil", ?);
@@ -26,17 +34,26 @@ void ScienceMode::processJoystickInput(std:shared_ptr<sensor_msgs::msg::Joy> joy
 void ScienceMode::handlePlatform(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
 	//Process input and output linear component
 	double value = joystickMsg->axes[kPlatformAxis];
+<<<<<<< HEAD
 	mutable platform_ = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
 	platform_.value = value;
 	platform_pub_->publish(platform_);
+=======
+	auto twist = geometry_msgs::msg::Twist();
+	twist.linear.x = value;
+	platform_pub_->publish(twist);
+>>>>>>> e7620a8 (Add first draft of science controls)
 
 }
 
 void ScienceMode::handleDrill(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
 	//Turn it on and off
 	int drill_value = joystickMsg->buttons[kDrillToggle];
+<<<<<<< HEAD
 	mutable ros_phoenix::msg::MotorControl drill_;
 	drill_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
+=======
+>>>>>>> e7620a8 (Add first draft of science controls)
 	if(drill_value == true) {
 		kDrillState = 1;
 	} else {
@@ -48,9 +65,15 @@ void ScienceMode::handleDrill(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg
 void ScienceMode::handleMicroscope(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
 	//Process input and output linear component
 	double value = joystickMsg->axes[kMicroscopeAxis];
+<<<<<<< HEAD
 	mutable microscope_ = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
 	microscope_.value = value;
 	microscope_pub_->publish(microscope_);
+=======
+	auto twist = geometry_msgs::msg::Twist();
+	twist.linear.x = value;
+	microscope_pub_->publish(twist);
+>>>>>>> e7620a8 (Add first draft of science controls)
 }
 
 void ScienceMode::handlePanoramic(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {

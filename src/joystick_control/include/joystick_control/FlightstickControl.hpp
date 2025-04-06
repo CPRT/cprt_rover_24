@@ -3,6 +3,7 @@
 
 #include "ArmManualMode.hpp"
 #include "DriveMode.hpp"
+#include "ScienceMode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
