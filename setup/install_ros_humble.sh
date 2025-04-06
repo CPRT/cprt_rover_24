@@ -57,8 +57,6 @@ pip3 install adafruit-circuitpython-busdevice
 pip3 install adafruit-circuitpython-register
 pip3 install pyubx2
 
-sudo apt install ros-humble-moveit-servo
-
 sudo rosdep init
 rosdep update
 
