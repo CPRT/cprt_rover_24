@@ -58,7 +58,7 @@ def act2_rad_to_pos(node, rad):
     b = 42.3
     c = math.sqrt(a * a + b * b - 2 * a * b * math.cos(rad))
     c -= 30.96 + 1.6
-    node.get_logger().info("diff2 " + str(c))
+    node.get_logger().info("act2 " + str(c))
     node.get_logger().info(str(math.sqrt(a * a + b * b - 2 * a * b * math.cos(rad))))
     node.get_logger().info(str(c / 13.24 * 5109.0))
     return c / 13.64 * 5109.0
@@ -99,8 +99,8 @@ class keyboardArmPublisher(Node):
         # self.gripper = GPIO.PWM(output_pin, 50)
 
         self.base = MotorControl()
-        self.diff1 = MotorControl()
-        self.diff2 = MotorControl()
+        self.act1 = MotorControl()
+        self.act2 = MotorControl()
         self.elbow = MotorControl()  # 96 big gear, 30 small gear
         self.wristTilt = MotorControl()
         self.wristTurn = MotorControl()
@@ -114,8 +114,8 @@ class keyboardArmPublisher(Node):
         # self.gripper.ChangeDutyCycle(self.gripperVal)
 
         self.baseCommand = self.create_publisher(MotorControl, "/base/set", 1)
-        self.diff1Command = self.create_publisher(MotorControl, "/diff1/set", 1)
-        self.diff2Command = self.create_publisher(MotorControl, "/diff2/set", 1)
+        self.act1Command = self.create_publisher(MotorControl, "/act1/set", 1)
+        self.act2Command = self.create_publisher(MotorControl, "/act2/set", 1)
         self.elbowCommand = self.create_publisher(MotorControl, "/elbow/set", 1)
         self.wristTiltCommand = self.create_publisher(MotorControl, "/wristTilt/set", 1)
         self.wristTurnCommand = self.create_publisher(MotorControl, "/wristTurn/set", 1)
@@ -129,13 +129,13 @@ class keyboardArmPublisher(Node):
         self.timer = self.create_timer(period, self.controlPublisher)
 
         self.base.mode = 0
-        self.diff1.mode = 0
-        self.diff2.mode = 0
+        self.act1.mode = 0
+        self.act2.mode = 0
         self.elbow.mode = 0
         self.wristTilt.mode = 0
         self.wristTurn.mode = 0
 
-        self.diff1Offset = 0
+        self.act1Offset = 0
 
         self.keyboard = self.create_subscription(
             String, "/keyboard_arm", self.keyboard_callback, 5
@@ -147,10 +147,10 @@ class keyboardArmPublisher(Node):
         if self.shouldPub:
             # self.get_logger().info("Keyboard arm publisher");
             self.baseCommand.publish(self.base)
-            self.diff1Command.publish(
-                self.diff1
-            )  # diff2 min = 5096, min = -7, diff = 5103
-            self.diff2Command.publish(self.diff2)  # diff1 = 5709
+            self.act1Command.publish(
+                self.act1
+            )  # act2 min = 5096, min = -7, act = 5103
+            self.act2Command.publish(self.act2)  # act1 = 5709
             self.elbowCommand.publish(self.elbow)
             self.wristTiltCommand.publish(self.wristTilt)
             self.wristTurnCommand.publish(self.wristTurn)
@@ -159,20 +159,20 @@ class keyboardArmPublisher(Node):
     def keyboard_callback(self, msg):
         if msg.data == "w":  # elbow up
             self.get_logger().info("What")
-            self.diff1.value = 1.0
+            self.act1.value = 1.0
         elif msg.data == "s":  # elbow down
-            self.diff1.value = -1.0
-        elif msg.data == "q":  # diff2 = 45.2, diff1 = 46.2
-            self.elbow.value = 0.0  # diff1 - 42, diff2 - 130 degrees
-            self.diff1.value = 0.0
-            self.diff2.value = 0.0
+            self.act1.value = -1.0
+        elif msg.data == "q":  # act2 = 45.2, act1 = 46.2
+            self.elbow.value = 0.0  # act1 - 42, act2 - 130 degrees
+            self.act1.value = 0.0
+            self.act2.value = 0.0
             self.base.value = 0.0
             self.wristTilt.value = 0.0
             self.wristTurn.value = 0.0
         elif msg.data == "e":
             self.elbow.mode = 1
-            self.diff1.mode = 1
-            self.diff2.mode = 1
+            self.act1.mode = 1
+            self.act2.mode = 1
             self.base.mode = 1
             self.wristTurn.mode = 1
             self.wristTilt.mode = 1
@@ -181,15 +181,15 @@ class keyboardArmPublisher(Node):
             # pass
         elif msg.data == "g":
             self.elbow.mode = 0
-            self.diff1.mode = 0
-            self.diff2.mode = 0
+            self.act1.mode = 0
+            self.act2.mode = 0
             self.base.mode = 0
             self.wristTurn.mode = 0
             self.wristTilt.mode = 0
         elif msg.data == "a":  # shift left and right
-            self.diff2.value = 1.0
+            self.act2.value = 1.0
         elif msg.data == "d":
-            self.diff2.value = -1.0
+            self.act2.value = -1.0
         elif msg.data == "z":  # shift left and right
             self.wristTilt.value = 1.0
         elif msg.data == "x":
@@ -205,11 +205,11 @@ class keyboardArmPublisher(Node):
         elif msg.data == "V":
             self.base.value = --503.83583267777607
         elif msg.data == "b":
-            self.diff1.value = act1_rad_to_pos(self, 3.14 / 4)
+            self.act1.value = act1_rad_to_pos(self, 3.14 / 4)
         elif msg.data == "n":
-            self.diff2.value = act2_rad_to_pos(self, 3.14 / 4)
+            self.act2.value = act2_rad_to_pos(self, 3.14 / 4)
         elif msg.data == "m":
-            self.diff2.value = act2_rad_to_pos(self, 3.14 / 3)
+            self.act2.value = act2_rad_to_pos(self, 3.14 / 3)
         elif msg.data == "h":
             self.base.value = 1.0
         elif msg.data == "j":

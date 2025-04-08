@@ -167,19 +167,26 @@ class results():
         p_y = (p[2]+p[0])/2.0
         
         print(f"{p_x*1280} - {center_x*1280} {p_y*720} - {center_y*720} {ratio_x*1280} {ratio_y*720}")
-        print(f"Thinks key {key} at {key[0]*720} {key[1]*1280} {key[2]*720} {key[3]*1280} with center {center_x} {center_y}")
+        print(f"Thinks key {key} at {key[0]*720} {key[1]*1280} {key[2]*720} {key[3]*1280} with center {center_x*1280} {center_y*720}")
         print(f"Thinks center {p} at {p[0]*720} {p[1]*1280} {p[2]*720} {p[3]*1280} with center {p_x} {p_y}")
         print(f"Has {ratio_x*1280} pixels per 1.2 cm and {ratio_y*720} pixels per 1.4 cm")
         
-        dist_x = (center_x-p_x)*(1.2/ratio_x)
-        dist_y = (center_y-p_y)*(1.4/ratio_y)
+        #dist_x = (center_x-p_x)*(1.2/ratio_x)
+        #dist_y = (center_y-p_y)*(1.4/ratio_y)
         
-        return (dist_x, dist_y)
+        dist_x = (center_x-0.5)*(1.2/ratio_x)
+        dist_y = (center_y-0.5)*(1.4/ratio_y)
+        
+        d_x = ratio_x*1280*ratio_y*720
+        dist_z = 34.2 + -0.00597*d_x + 0.000000436*d_x*d_x
+        
+        return (dist_x, dist_y, dist_z)
     
     #def center_to_key(self, k)
 
 #IMAGE_PATHS = ["../../images/keyboard2.jpg", "../../images/test3.jpg", "../../images/test4.jpg", "../../images/test5.jpg", "../../images/test6.jpg"]
-image_path = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo//images/keyboard.jpg"
+#image_path = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo//images/keyboard.jpg"
+image_path = "/home/will/cprt_rover_24/key.jpg"
 
 class tf2Keyboard(Node):
     def __init__(self):
@@ -209,10 +216,10 @@ class tf2Keyboard(Node):
         self.srv = self.create_service(KeycapCmd, "keycap_cmd", self.keyboard_callback)
         
         
-        self.get_logger().info("Hello world!")
+        '''self.get_logger().info("Hello world!")
         print('Running inference for {}... '.format(image_path), end='')
 
-        '''image_np = load_image_into_numpy_array(image_path)
+        image_np = load_image_into_numpy_array(image_path)
 
         # Things to try:
         # Flip horizontally
@@ -248,8 +255,8 @@ class tf2Keyboard(Node):
                 detections['detection_scores'],
                 category_index,
                 use_normalized_coordinates=True,
-                max_boxes_to_draw=200,
-                min_score_thresh=.30,
+                max_boxes_to_draw=29,
+                min_score_thresh=.00,
                 agnostic_mode=False)
 
         print('Done')
@@ -382,8 +389,8 @@ class tf2Keyboard(Node):
         response.y = 6.0
         response.z = 15.0
         
-        #cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
-        cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
+        cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
+        #cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
           print("Error: Could not access the camera.")
           exit()
@@ -401,6 +408,10 @@ class tf2Keyboard(Node):
         map1, map2 = cv2.fisheye.initUndistortRectifyMap(k, d, np.eye(3), k, dim, cv2.CV_16SC2)
         frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
+        frame = cv2.rotate(frame, cv2.ROTATE_180)
+        
+        #frame = cv2.imencode('.jpg', frame);
+        #cv2.imwrite("key.jpg", frame)
         
         image_np = np.array(frame)
         
@@ -430,6 +441,10 @@ class tf2Keyboard(Node):
         print(detections['detection_classes'])
         print(detections['detection_scores'])
         print(detections['detection_boxes'])
+        
+        result = results(detections)
+        key = result.dist_to_key(request.key)
+        print(key)
 
         viz_utils.visualize_boxes_and_labels_on_image_array(
                 image_np_with_detections,
@@ -438,7 +453,7 @@ class tf2Keyboard(Node):
                 detections['detection_scores'],
                 category_index,
                 use_normalized_coordinates=True,
-                max_boxes_to_draw=200,
+                max_boxes_to_draw=29,
                 min_score_thresh=.30,
                 agnostic_mode=False)
 
@@ -446,6 +461,10 @@ class tf2Keyboard(Node):
         plt.imshow(image_np_with_detections)
         print('Done')
         plt.show()
+        
+        response.x = key[0]
+        response.y = -key[1]
+        response.z = key[2]
         
         return response
         
