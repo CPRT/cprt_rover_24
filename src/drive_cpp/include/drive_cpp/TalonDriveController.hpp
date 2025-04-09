@@ -78,6 +78,12 @@ class TalonDriveController : public rclcpp::Node {
   double wheelCircumference_;
 
   /**
+   * @brief Ratio of expected slip on angular movement (must be > 0 and <=1)
+   * ~0 means can not turn, 1 means no slip
+   */
+  double angularSlipRatio_;
+
+  /**
    * @brief Flag indicating whether to publish electrical status
    * information. (Not implemented)
    */

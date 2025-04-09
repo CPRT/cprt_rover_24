@@ -26,6 +26,14 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
       std::max(this->get_parameter("frequency").as_double(), 1.0);
   this->declare_parameter("timeout", 2.0);
   timeout_ = this->get_parameter("timeout").as_double();
+  this->declare_parameter("angular_slip_ratio", 1.0);
+  angularSlipRatio_ = this->get_parameter("angular_slip_ratio").as_double();
+  if (angularSlipRatio_ <= 0.0 || angularSlipRatio_ > 1.0) {
+    RCLCPP_WARN(
+        this->get_logger(),
+        "Angular slip ratio should be in range (0.0, 1.0], setting to 1.0");
+    angularSlipRatio_ = 1.0;
+  }
 
   this->declare_parameter(
       "wheels", std::vector<std::string>{"frontRight", "frontLeft", "backRight",
@@ -80,9 +88,10 @@ void TalonDriveController::odom_pub_callback() {
 
   Odometry odom;
   odom.header.stamp = this->get_clock()->now();
+  odom.header.frame_id = "odom";
   odom.child_frame_id = frameId_;
   odom.twist.twist.linear.x = (vr + vl) / 2;
-  odom.twist.twist.angular.z = (vl - vr) / baseWidth_;
+  odom.twist.twist.angular.z = angularSlipRatio_ * (vl - vr) / baseWidth_;
   odom.twist.covariance = {0};
   odom.twist.covariance[0] = linearCov_;
   odom.twist.covariance[35] = angularCov_;
@@ -110,9 +119,11 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
   if (linearX < -maxSpeed_) {
     linearX = -maxSpeed_;
   }
+  const double angular_portion =
+      msg->angular.z * baseWidth_ / angularSlipRatio_;
 
-  double vr = linearX + msg->angular.z * baseWidth_ / 2;
-  double vl = linearX - msg->angular.z * baseWidth_ / 2;
+  double vr = linearX + angular_portion / 2;
+  double vl = linearX - angular_portion / 2;
 
   for (auto &wheel : wheels_) {
     if (wheel.getWheelSide() == WheelSide::LEFT) {

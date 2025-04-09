@@ -95,6 +95,7 @@ def generate_launch_description():
                     {"pub_odom": True},
                     {"pub_elec": True},
                     {"wheel_rad": 0.10},
+                    {"angular_slip_ratio": 0.8},
                 ],
             ),
         ]
