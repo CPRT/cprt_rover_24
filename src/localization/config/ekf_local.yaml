@@ -21,12 +21,12 @@ local_ekf:
     base_link_frame: base_link
     world_frame: odom
 
-    odom0: /zed/zed_node/odom
-    odom0_config: [
+    pose0: /zed/zed_node/pose_with_covariance
+    pose0_config: [
         # position
         true, true, true,
         # orientation
-        true, true, true,
+        false, false, false,
         # lineal vel 
         false, false, false,
         # angular vel
@@ -34,15 +34,15 @@ local_ekf:
         # lineal acc
         false, false, false,
       ]
-    # odom0_queue_size: 2
-    # odom0_nodelay: false
-    odom0_differential: true
-    odom0_relative: false
-    odom0_pose_rejection_threshold: 5.0 # Mahalanobis Distance
-    # odom0_twist_rejection_threshold: 1.0
+    # pose0_queue_size: 2
+    # pose0_nodelay: false
+    pose0_differential: true
+    pose0_relative: false
+    pose0_pose_rejection_threshold: 5.0 # Mahalanobis Distance
+    # pose0_twist_rejection_threshold: 1.0
 
-    odom1: /drive/odom
-    odom1_config: [
+    odom0: /drive/odom
+    odom0_config: [
         # position
         false, false, false,
         # orientation
@@ -50,23 +50,23 @@ local_ekf:
         # lineal vel
         true, false, false,
         # angular vel
-        false, false, true,
+        false, false, false,
         # lineal acc
         false, false, false,
       ]
-    # odom1_queue_size: 2
-    # odom1_nodelay: false
-    odom1_differential: true
-    odom1_relative: false
-    # odom1_pose_rejection_threshold: 5.0
-    # odom1_twist_rejection_threshold: 1.0
+    # odom0_queue_size: 2
+    # odom0_nodelay: false
+    odom0_differential: false
+    odom0_relative: false
+    # odom0_pose_rejection_threshold: 5.0
+    # odom0_twist_rejection_threshold: 1.0
 
-    imu0: /zed/zed_node/imu/data
+    imu0: gps/heading
     imu0_config: [
         # position
         false, false, false,
         # orientation
-        true, true, true,
+        false, false, true,
         # lineal vel
         false, false, false,
         # angular vel
@@ -75,35 +75,53 @@ local_ekf:
         false, false, false,
       ]
     # imu0_nodelay: false
-    imu0_differential: true
-    imu0_relative: false
+    imu0_differential: false
+    imu0_relative: true
     # imu0_queue_size: 5
-    imu0_pose_rejection_threshold: 0.8
+    # imu0_pose_rejection_threshold: 0.8
     # imu0_twist_rejection_threshold: 0.8
     # imu0_linear_acceleration_rejection_threshold: 0.8
-    imu0_remove_gravitational_acceleration: true
+    imu0_remove_gravitational_acceleration: false
 
-    imu1: gps/heading
+    imu1: /zed/zed_node/imu/data
     imu1_config: [
         # position
         false, false, false,
         # orientation
-        false, false, true,
-        # lineal vel
+        true, true, false,
+        # lineal vel 
         false, false, false,
         # angular vel
         false, false, false,
         # lineal acc
         false, false, false,
       ]
+    # imu1_queue_size: 2
     # imu1_nodelay: false
     imu1_differential: false
-    imu1_relative: true
-    # imu1_queue_size: 5
-    # imu1_pose_rejection_threshold: 0.8
-    # imu1_twist_rejection_threshold: 0.8
-    # imu1_linear_acceleration_rejection_threshold: 0.8
-    imu1_remove_gravitational_acceleration: false
+    imu1_relative: false
+    imu1_pose_rejection_threshold: 5.0 # Mahalanobis Distance
+    # imu1_twist_rejection_threshold: 1.0
+
+    imu2: /zed/zed_node/imu/data
+    imu2_config: [
+        # position
+        false, false, false,
+        # orientation
+        false, false, true,
+        # lineal vel 
+        false, false, false,
+        # angular vel
+        false, false, false,
+        # lineal acc
+        false, false, false,
+      ]
+    # imu2_queue_size: 2
+    # imu2_nodelay: false
+    imu2_differential: false
+    imu2_relative: true
+    imu2_pose_rejection_threshold: 5.0 # Mahalanobis Distance
+    # imu2_twist_rejection_threshold: 1.0
 
     # use_control: false
     # stamped_control: false
