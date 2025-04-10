@@ -32,6 +32,8 @@ matplotlib.use('tkagg')
 #keyboard: 35.3 x 12.3 cm
 #keycap: 1.2 x 1.4 cm
 #reverse fisheye technique dimensions: 1280x720 pixels
+#8.5 cm down to claw
+#4.8 cm down the other way to claw
 keyboard_dim = [35.3, 12.3, 1]
 m_dim = [1280, 446, 1]
 

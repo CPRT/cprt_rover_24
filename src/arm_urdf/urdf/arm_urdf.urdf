@@ -258,7 +258,7 @@
       link="Link_5" />
     <axis
       xyz="-0.866025403784437 0 0.500000000000002" />
-    <limit effort="100.0" velocity="0.03688" lower="-3.14" upper="3.14"/>
+    <limit effort="100.0" velocity="0.60385" lower="-3.14" upper="3.14"/>
   </joint>
   <link
     name="Link_6">
@@ -312,7 +312,7 @@
       link="Link_6" />
     <axis
       xyz="0 -1 0" />
-    <limit effort="100.0" velocity="1.0" lower="-2.0944" upper="1.0472"/>
+    <limit effort="100.0" velocity="0.0415" lower="-2.0944" upper="1.0472"/>
   </joint>
   <link
     name="Link_7">
@@ -366,6 +366,6 @@
       link="Link_7" />
     <axis
       xyz="-1 0 0" />
-    <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"/>
+    <limit effort="100.0" velocity="0.28545" lower="-3.14" upper="3.14"/>
   </joint>
 </robot>
