@@ -10,7 +10,7 @@ MinimalPublisher::MinimalPublisher()
 {
   publisher_ = this->create_publisher<std_msgs::msg::String>("typing_topic", 10);
   timer_ = this->create_wall_timer(500ms, std::bind(&MinimalPublisher::timer_callback, this));//*/
-  std::cout<<"Type w, a, s, d to move. Use zxrtfgcv to change orientation. Type 'h' to change step size (default is 10 rviz units). Type 'n' to reset. Type 'm' to open/close gripper. Type 'b' to plan to the orange arm in rviz."<<std::endl;
+  std::cout<<"Please enter something to type:"<<std::endl;
 }
 
 void MinimalPublisher::timer_callback()

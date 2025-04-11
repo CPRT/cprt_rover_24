@@ -37,6 +37,9 @@ matplotlib.use('tkagg')
 keyboard_dim = [35.3, 12.3, 1]
 m_dim = [1280, 446, 1]
 
+bs = [(-12.0, 2.5, 18.0), (-5.0, 0.3, 18.0), (-0.1, 0.1, 18.0), (-0.05, 0.05, 18.0)] #stands for, well, you know
+bsCount = 0
+
 colors = [(255,0,0), (229, 52, 235), (235, 85, 52),
           (14, 115, 51), (14, 115, 204)]
 
@@ -71,6 +74,37 @@ classes = {
   "enter" : 27,
   "keyboard" : 28,
 }
+
+grid = {
+  16 : (0, 0), #q
+  22 : (1, 0), #w
+  4 : (2, 0), #e
+  17 : (3, 0), #r
+  19 : (4, 0), #t
+  24 : (5, 0), #y
+  20 : (6, 0), #u
+  8 : (7, 0), #i
+  14 : (8, 0), #o
+  15 : (9, 0), #p
+  26 : (-1, 1), #caps lock
+  0 : (0, 1), #a
+  18 : (1, 1), #s
+  3 : (2, 1), #d
+  5 : (3, 1), #f
+  6 : (4, 1), #g
+  7 : (5, 1), #h
+  9 : (6, 1), #j
+  10 : (7, 1), #k
+  11 : (8, 1), #l
+  27 : (11, 1), #enter
+  25 : (0, 2), #z
+  23 : (1, 2), #x
+  2 : (2, 2), #c
+  21 : (3, 2), #v
+  1 : (4, 2), #b
+  13 : (5, 2), #n
+  12 : (6, 2) #m
+};
 
 PATH_TO_CFG = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/pipeline.config"
 PATH_TO_CKPT = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/checkpoint"
@@ -139,8 +173,9 @@ class results():
     def get_key_pos(self, k):
         ind = self.get_key_index(k)
         return self.data["detection_boxes"][ind];
+        
     
-    def get_likely_keycap_pos(self): #returns the pixel dimensions of the keycap closest to the center
+    def get_likely_keycap_index(self):
         closest = 0
         mse = 10000 #stands for "mean sum of square error", or "distance" I suppose
         
@@ -151,6 +186,28 @@ class results():
             if (dist < mse and self.data["detection_classes"][x] <= 25):
                 mse = dist
                 closest = x
+        
+        return closest
+    
+    def check_superior_overlaps(self, k):
+        index = self.get_key_index(k)
+        pos = self.data["detection_boxes"][index]
+        
+        pos_x = (pos[3]+pos[1])/2.0
+        pos_y = (pos[2]+pos[0])/2.0
+        
+        for x in range(len(self.data["detection_boxes"])):
+            if (x >= index):
+                return False
+            box = self.data["detection_boxes"][x]
+            print(f'Index {index} with score {self.data["detection_scores"][index]} box {pos} {pos_x} {pos_y} compared to {x} {self.data["detection_scores"][x]} {box} {self.data["detection_classes"][x]}')
+            if (pos_x > box[1] and pos_x < box[3] and pos_y > box[0] and pos_y < box[2] and self.data["detection_classes"][x] != classes["keyboard"]):
+                return True
+        
+        return False
+    
+    def get_likely_keycap_pos(self): #returns the pixel dimensions of the keycap closest to the center
+        closest = self.get_likely_keycap_index()
         
         print(f"Closest = {self.data['detection_boxes'][closest]} id {self.data['detection_classes'][closest]}")
         return self.data["detection_boxes"][closest]
@@ -167,6 +224,22 @@ class results():
         
         p_x = (p[3]+p[1])/2.0
         p_y = (p[2]+p[0])/2.0
+        
+        if (self.check_superior_overlaps(k)):
+            print("This key sucks!!! Gotta estimate I guess")
+            ind = self.get_likely_keycap_index()
+            ind = self.data['detection_classes'][ind]
+            cx = grid[ind][0]
+            cy = grid[ind][1]
+            
+            i2 = classes[k]
+            tx = grid[i2][0]
+            ty = grid[i2][1]
+            
+            center_x = p_x + (tx-cx)*ratio_x*1.25
+            center_y = p_y + (ty-cy)*ratio_y*1.2
+        else:
+            print("This key is fine.")
         
         print(f"{p_x*1280} - {center_x*1280} {p_y*720} - {center_y*720} {ratio_x*1280} {ratio_y*720}")
         print(f"Thinks key {key} at {key[0]*720} {key[1]*1280} {key[2]*720} {key[3]*1280} with center {center_x*1280} {center_y*720}")
@@ -188,33 +261,12 @@ class results():
 
 #IMAGE_PATHS = ["../../images/keyboard2.jpg", "../../images/test3.jpg", "../../images/test4.jpg", "../../images/test5.jpg", "../../images/test6.jpg"]
 #image_path = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo//images/keyboard.jpg"
-image_path = "/home/will/cprt_rover_24/key.jpg"
+#image_path = "/home/will/cprt_rover_24/key.jpg"
+image_path = "/home/will/cprt_rover_24/key3.jpg"
 
 class tf2Keyboard(Node):
     def __init__(self):
         super().__init__("tfKeyboard")
-
-        # GPIO.setmode(GPIO.BOARD)
-        # output_pins = {
-        #     'JETSON_XAVIER': 18,
-        #     'JETSON_NANO': 33,
-        #     'JETSON_NX': 33,
-        #     'CLARA_AGX_XAVIER': 18,
-        #     'JETSON_TX2_NX': 32,
-        #     'JETSON_ORIN': 18,
-        #     'JETSON_ORIN_NX': 33,
-        #     'JETSON_ORIN_NANO': 33
-        # }
-        # output_pin = output_pins.get(GPIO.model, None)
-        # if output_pin is None:
-        #     raise Exception('PWM not supported on this board')
-        
-
-        # GPIO.setup(output_pin, GPIO.OUT, initial=GPIO.HIGH)
-        # self.gripper = GPIO.PWM(output_pin, 50)
-        
-        #self.joystick = self.create_subscription(
-         #   Joy, "/joystick/arm", self.joy_callback, 5)
         self.srv = self.create_service(KeycapCmd, "keycap_cmd", self.keyboard_callback)
         
         
@@ -385,13 +437,21 @@ class tf2Keyboard(Node):
           plt.show()
           plt.imshow(frame)
           plt.show()''' #it could be useful later no cope
-          
+
+
     def keyboard_callback(self, request, response):
-        response.x = 5.0
-        response.y = 6.0
-        response.z = 15.0
+        '''global bsCount
+        response.x = bs[bsCount][0]
+        response.y = bs[bsCount][1]
+        response.z = bs[bsCount][2]
         
-        cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
+        bsCount += 1
+        if (bsCount >= len(bs)):
+          bsCount = 0
+        
+        return response'''
+        
+        '''cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
         #cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
           print("Error: Could not access the camera.")
@@ -412,10 +472,8 @@ class tf2Keyboard(Node):
 
         frame = cv2.rotate(frame, cv2.ROTATE_180)
         
-        #frame = cv2.imencode('.jpg', frame);
-        #cv2.imwrite("key.jpg", frame)
-        
-        image_np = np.array(frame)
+        image_np = np.array(frame)'''
+        image_np = load_image_into_numpy_array(image_path)
         
         plt.imshow(image_np)
         plt.show()

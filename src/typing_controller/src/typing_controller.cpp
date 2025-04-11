@@ -14,6 +14,7 @@ void emptyCmd(interfaces::msg::ArmCmd& poseCmd)
 	poseCmd.estop = false;
 	poseCmd.reset = false;
 	poseCmd.query_goal_state = false;
+	poseCmd.reverse = false;
 }
 
 TypingNode::TypingNode() : Node("Typing_controller")
@@ -62,7 +63,7 @@ void TypingNode::topic_callback(const std_msgs::msg::String &msg)
   key = msg.data;
   currDim = 0;
   currLetter = 0;
-  adjusted = true;
+  adjusted = false;
   hasJob = true;
   
   getCmd(key[0]);
@@ -70,109 +71,60 @@ void TypingNode::topic_callback(const std_msgs::msg::String &msg)
   //make the arm move the first thing
   interfaces::msg::ArmCmd poseCmd;
   emptyCmd(poseCmd);
-  poseCmd.speed = (cmd.x < 0) ? -0.02 : 0.02;
-  poseCmd.pose.position.x = 1;
+  //poseCmd.speed = (cmd.x < 0) ? -0.02 : 0.02;
+  //poseCmd.pose.position.x = 1;
+  poseCmd.pose.position.x = cmd.x/100.0; //position commands are in meters, but tf2_keyboard returns cm
+  poseCmd.pose.position.y = cmd.y/100.0;
+  
   publisher_->publish(poseCmd);
 }
 
 void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_FeedbackMessage &msg)
 {
-  RCLCPP_INFO(this->get_logger(), "I got %s", msg.feedback.state.c_str()); //"IDLE" for when it's done
+  RCLCPP_INFO(this->get_logger(), "I got %s with job %i", msg.feedback.state.c_str(), hasJob); //"IDLE" for when it's done
   
   string data = msg.feedback.state;
   
   if (data == "IDLE" && hasJob) //idle death gambit? jjk reference??
   {
     interfaces::msg::ArmCmd poseCmd;
-		emptyCmd(poseCmd);
-    //previous trajectory finished executing, now do next one
-    if (!adjusted && !goingBack)
+    emptyCmd(poseCmd);
+    
+    if (!adjusted)
     {
-      /*adjusted = true;
-      interfaces::msg::ArmCmd poseCmd;
-  		emptyCmd(poseCmd);
-  		poseCmd.speed = 0.02;
-  		poseCmd.pose.position.y = 1;
-  		publisher_->publish(poseCmd);*/
-  		if (currDim == 0) //about to do x
-  		{
-  		  poseCmd.speed = (cmd.x < 0) ? -0.02 : 0.02;
-  		  poseCmd.pose.position.x = 1;
-  		}
-  		else if (currDim == 1) //about to do y
-  		{
-  		  poseCmd.speed = (cmd.y < 0) ? -0.02 : 0.02;
-  		  poseCmd.pose.position.y = 1;
-  		}
-  		else
-  		{
-  		  poseCmd.speed = (cmd.z < 0) ? -0.02 : 0.02;
-  		  poseCmd.pose.position.z = 1;
-  		}
-  		/*currDim++;
-  		if (currDim >= 3)
-  		{
-  		  currDim = 0;
-  		  if (goingBack)
-  		  {
-				  currLetter++;
-				  if (currLetter >= key.size())
-				  {
-				    hasJob = false;
-				  }
-				}
-				adjusted = true;
-  		}*/
-  		adjusted = true;
-    }
-    else //it adjusted itself already lol
+  		getCmd(key[currLetter]); //refresh position
+  	}
+    
+    RCLCPP_INFO(this->get_logger(), "%f %f %f %f %f %f", cmd.x, cmd.y, std::abs(double(cmd.x)),(std::abs(double(cmd.x)) < 0.08),std::abs(double(cmd.y)),(std::abs(double(cmd.y)) < 0.08));
+    
+    if (std::abs(double(cmd.x)) < 0.08 && std::abs(double(cmd.y)) < 0.08) //if within under a milimeter, and ready to press
     {
-      if (!goingBack)
+      if (!adjusted)
       {
-      	getCmd(key[currLetter]); //re-read the stuff
+        RCLCPP_INFO(this->get_logger(), "Aligning my 'end-effector' with the 'key'");
+        adjusted = true;
+        poseCmd.pose.position.x = 0.048; //currently, camera aligned with key. Make claw aligned with key.
       }
-      int d = (goingBack) ? -1 : 1;
-      double e = (goingBack) ? d*0.02 : 0;
-      if (currDim == 0) //about to do x
-  		{
-  		  poseCmd.speed = cmd.x/100.0*d + e;
-  		  poseCmd.pose.position.x = 1;
-  		}
-  		else if (currDim == 1) //about to do y
-  		{
-  		  poseCmd.speed = cmd.y/100.0*d + e;
-  		  poseCmd.pose.position.y = 1;
-  		}
-  		else
-  		{
-  		  poseCmd.speed = cmd.z/100.0*d + e;
-  		  poseCmd.pose.position.z = 1;
-  		}
-  		
-  		if (goingBack)
-  		{
-  			currDim--;
-  		}
-  		else
-  		{
-  		  currDim++;
-  		  adjusted = false;
-  		}
-  		if (currDim >= 3 || currDim < 0)
-  		{
-  		  currDim = (goingBack) ? 0 : 2;
-  		  if (goingBack)
-  		  {
-				  currLetter++;
-				  if (currLetter >= key.size())
-				  {
-				    hasJob = false;
-				  }
-				}
-				goingBack = !goingBack;
-  		}
-      
+      else
+      {
+        RCLCPP_INFO(this->get_logger(), "Pressing key");
+        adjusted = false;
+        currLetter++;
+        if (currLetter >= key.size())
+        {
+          hasJob = false;
+        }
+        poseCmd.pose.position.z = -(cmd.z-8.5)/100.0;
+        poseCmd.reverse = true;
+      }
     }
+    else
+    {
+      RCLCPP_INFO(this->get_logger(), "I'm straight adjusting it");
+      poseCmd.pose.position.x = cmd.x/100.0; //keep adjusting pleb
+			poseCmd.pose.position.y = cmd.y/100.0;
+    }
+    
     publisher_->publish(poseCmd);
   }
 }

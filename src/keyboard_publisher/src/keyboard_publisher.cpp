@@ -27,33 +27,34 @@ void KeyboardPublisher::timer_callback() {
   poseCmd.end_effector = interfaces::msg::ArmCmd::END_EFF_UNKNOWN;
   poseCmd.estop = false;
   poseCmd.reset = false;
+  poseCmd.reverse = reverse;
   poseCmd.query_goal_state = false;
   char c;
   std::cin >> c;
   if (c == 'w') {
-    poseCmd.pose.position.x = 1;
+    poseCmd.pose.position.x = defSpeed;
   } else if (c == 's') {
-    poseCmd.pose.position.x = -1;
+    poseCmd.pose.position.x = -defSpeed;
   } else if (c == 'a') {
-    poseCmd.pose.position.y = 1;
+    poseCmd.pose.position.y = defSpeed;
   } else if (c == 'd') {
-    poseCmd.pose.position.y = -1;
+    poseCmd.pose.position.y = -defSpeed;
   } else if (c == 'z') {
-    poseCmd.pose.position.z = 1;
+    poseCmd.pose.position.z = defSpeed;
   } else if (c == 'x') {
-    poseCmd.pose.position.z = -1;
+    poseCmd.pose.position.z = -defSpeed;
   } else if (c == 'r') {
-    poseCmd.pose.orientation.x = 1;
+    poseCmd.pose.orientation.x = defSpeed;
   } else if (c == 't') {
-    poseCmd.pose.orientation.x = -1;
+    poseCmd.pose.orientation.x = -defSpeed;
   } else if (c == 'f') {
-    poseCmd.pose.orientation.y = 1;
+    poseCmd.pose.orientation.y = defSpeed;
   } else if (c == 'g') {
-    poseCmd.pose.orientation.y = -1;
+    poseCmd.pose.orientation.y = -defSpeed;
   } else if (c == 'c') {
-    poseCmd.pose.orientation.z = 1;
+    poseCmd.pose.orientation.z = defSpeed;
   } else if (c == 'v') {
-    poseCmd.pose.orientation.z = -1;
+    poseCmd.pose.orientation.z = -defSpeed;
   } else if (c == 'h') {
     double newSpeed = 0;
     std::cin >> newSpeed;
@@ -81,6 +82,10 @@ void KeyboardPublisher::timer_callback() {
       RCLCPP_INFO(this->get_logger(), "Goal angle [%ld]: %f", i,
                   poseCmd.goal_angles[i]);
     }
+  }
+  else if (c == 'j')
+  {
+    reverse = !reverse;
   }
 
   publisher_->publish(poseCmd);

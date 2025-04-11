@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
+#include <cmath>
 
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/move_group_interface/move_group_interface.h>
@@ -23,7 +24,7 @@ using namespace std;
 
 struct Cmd
 {
-  int x, y, z;
+  double x, y, z;
 };
 
 class TypingNode : public rclcpp::Node
