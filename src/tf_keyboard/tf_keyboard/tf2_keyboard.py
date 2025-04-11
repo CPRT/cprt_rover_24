@@ -21,6 +21,7 @@ from object_detection.builders import model_builder
 import os
 import matplotlib
 import math
+import time
 
 from interfaces.srv import KeycapCmd
 
@@ -473,6 +474,7 @@ class tf2Keyboard(Node):
         frame = cv2.rotate(frame, cv2.ROTATE_180)
         
         image_np = np.array(frame)'''
+        time.sleep(1) #wait for camera to stop shaking IRL
         image_np = load_image_into_numpy_array(image_path)
         
         plt.imshow(image_np)
