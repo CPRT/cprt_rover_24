@@ -452,7 +452,7 @@ class tf2Keyboard(Node):
         
         return response'''
         
-        '''cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
+        cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
         #cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
           print("Error: Could not access the camera.")
@@ -473,9 +473,9 @@ class tf2Keyboard(Node):
 
         frame = cv2.rotate(frame, cv2.ROTATE_180)
         
-        image_np = np.array(frame)'''
+        image_np = np.array(frame)#'''
         time.sleep(1) #wait for camera to stop shaking IRL
-        image_np = load_image_into_numpy_array(image_path)
+        #image_np = load_image_into_numpy_array(image_path)
         
         plt.imshow(image_np)
         plt.show()
