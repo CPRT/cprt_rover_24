@@ -2,7 +2,7 @@
 
 echo "Starting Gstreamer upgrade..."
 
-sudo apt-get update && sudo apt-get install -y zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip flex bison libglib2.0-dev libmount-dev
+sudo apt-get update && sudo apt-get install -y zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip flex bison libglib2.0-dev libmount-dev gtk-doc-tools
 python3 -m pip install --upgrade pip
 pip3 install meson
 export PATH=$PATH:~/.local/bin
@@ -56,6 +56,17 @@ cd ..
 cp -r rtp $GSTREAMER_DIR
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$GSTREAMER_DIR/rtp/build/release
 
+# Interpipe
+cd /tmp
+git clone https://github.com/RidgeRun/gst-interpipe.git
+cd gst-interpipe
+mkdir build
+meson build --prefix=/usr
+ninja -C build
+cd ..
+cp -r gst-interpipe/ $GSTREAMER_DIR
+
+export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$GSTREAMER_DIR/gst-interpipe/build/gst/interpipe/
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:/usr/lib/aarch64-linux-gnu/gstreamer-1.0/deepstream:/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
 
 echo "export GST_PLUGIN_PATH=$GST_PLUGIN_PATH" >> $GSTREAMER_DIR/setupGstreamer.sh

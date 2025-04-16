@@ -125,6 +125,17 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   GstElement* create_vid_conv();
 
+  /**
+   * @brief Sets the state of a GStreamer pipeline.
+   *
+   * @param pipe The GStreamer pipeline element.
+   * @param state The desired state to set.
+   * @return True if the state was successfully set, false otherwise.
+   */
+  bool setPipelineState(GstElement* pipe, GstState state);
+
+  std::vector<GstUniquePtr<GstElement>> source_pipelines_;
+
   bool web_server_; /**< Flag indicating if the web server is enabled */
   std::string web_server_path_; /**< Path to the web server */
   std::vector<GstElement*>

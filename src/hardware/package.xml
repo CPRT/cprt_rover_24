@@ -18,7 +18,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>interfaces</depend>
-  <depend>ros_phoenix></depend>
+  <depend>ros_phoenix</depend>
 
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>forward_command_controller</exec_depend>
