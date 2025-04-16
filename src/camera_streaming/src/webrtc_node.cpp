@@ -33,10 +33,14 @@ WebRTCStreamer::WebRTCStreamer()
                             static_cast<int>(CameraType::V4l2Src));
     int camera_type;
     this->get_parameter(name + ".type", camera_type);
+    this->declare_parameter(name + ".encoded", false);
+    bool encoded;
+    this->get_parameter(name + ".encoded", encoded);
     CameraSource source;
     source.name = name;
     source.path = camera_path;
     source.type = static_cast<CameraType>(camera_type);
+    source.encoded = encoded;
     if (source.type != CameraType::TestSrc && camera_path.empty()) {
       RCLCPP_ERROR(this->get_logger(), "Camera path not set for %s",
                    name.c_str());
@@ -124,7 +128,28 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   gst_element_sync_state_with_parent(src_element);
   gst_element_sync_state_with_parent(sink);
   gst_element_sync_state_with_parent(videoconvert);
-  if (!gst_element_link_many(src_element, videoconvert, sink, nullptr)) {
+  gboolean ret;
+  if (src.encoded) {
+    GstElement *parser = gst_element_factory_make("jpegparse", nullptr);
+    if (!parser) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to create jpegparse");
+      return nullptr;
+    }
+    GstElement *decoder = gst_element_factory_make("nvv4l2decoder", nullptr);
+    if (!decoder) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to create nvv4l2decoder");
+      return nullptr;
+    }
+    gst_bin_add_many(GST_BIN(pipe), parser, decoder, nullptr);
+    gst_element_sync_state_with_parent(parser);
+    gst_element_sync_state_with_parent(decoder);
+    ret = gst_element_link_many(src_element, parser, decoder, videoconvert,
+                                sink, nullptr);
+  } else {
+    ret = gst_element_link_many(src_element, videoconvert, sink, nullptr);
+  }
+
+  if (!ret) {
     RCLCPP_ERROR(this->get_logger(), "%s: Failed to link elements",
                  __FUNCTION__);
     return nullptr;
