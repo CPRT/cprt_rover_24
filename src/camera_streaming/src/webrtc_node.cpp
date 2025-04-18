@@ -117,17 +117,15 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
 
   GstElement *pipe = gst_pipeline_new(std::string(name + "_pipe").c_str());
 
-  GstElement *videoconvert = create_vid_conv();
   GstElement *sink = gst_element_factory_make("interpipesink", name.c_str());
-  if (!src_element || !videoconvert || !sink) {
+  if (!src_element || !sink) {
     RCLCPP_ERROR(this->get_logger(), "Failed to create source for camera: %s",
                  name.c_str());
     return nullptr;
   }
-  gst_bin_add_many(GST_BIN(pipe), src_element, videoconvert, sink, nullptr);
+  gst_bin_add_many(GST_BIN(pipe), src_element, sink, nullptr);
   gst_element_sync_state_with_parent(src_element);
   gst_element_sync_state_with_parent(sink);
-  gst_element_sync_state_with_parent(videoconvert);
   gboolean ret;
   if (src.encoded) {
     GstElement *parser = gst_element_factory_make("jpegparse", nullptr);
@@ -143,10 +141,9 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
     gst_bin_add_many(GST_BIN(pipe), parser, decoder, nullptr);
     gst_element_sync_state_with_parent(parser);
     gst_element_sync_state_with_parent(decoder);
-    ret = gst_element_link_many(src_element, parser, decoder, videoconvert,
-                                sink, nullptr);
+    ret = gst_element_link_many(src_element, parser, decoder, sink, nullptr);
   } else {
-    ret = gst_element_link_many(src_element, videoconvert, sink, nullptr);
+    ret = gst_element_link_many(src_element, sink, nullptr);
   }
 
   if (!ret) {
@@ -278,15 +275,26 @@ bool WebRTCStreamer::update_pipeline(
     g_object_set(G_OBJECT(src), "accept-eos-event", FALSE, nullptr);
     g_object_set(G_OBJECT(src), "listen-to", name.c_str(), nullptr);
     g_object_set(G_OBJECT(src), "format", GST_FORMAT_TIME, nullptr);
+    g_object_set(G_OBJECT(src), "stream-sync", 2, nullptr);
+    g_object_set(G_OBJECT(src), "is-live", TRUE, nullptr);
 
     GstElement *queue = gst_element_factory_make("queue", nullptr);
     if (!queue) {
       RCLCPP_ERROR(this->get_logger(), "Failed to create queue");
       return false;
     }
-    gst_bin_add_many(GST_BIN(pipeline_.get()), src, queue, nullptr);
+    GstElement *videoconvert = create_vid_conv();
+    if (!videoconvert) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to create video converter");
+      return false;
+    }
+    gst_bin_add_many(GST_BIN(pipeline_.get()), src, queue, videoconvert,
+                     nullptr);
+    gst_element_sync_state_with_parent(src);
     gst_element_sync_state_with_parent(queue);
-    if (gst_element_link(src, queue) != TRUE) {
+    gst_element_sync_state_with_parent(videoconvert);
+
+    if (!gst_element_link_many(src, queue, videoconvert, nullptr)) {
       RCLCPP_ERROR(this->get_logger(), "%s: Failed to link elements",
                    __FUNCTION__);
       return false;
@@ -297,13 +305,14 @@ bool WebRTCStreamer::update_pipeline(
       RCLCPP_ERROR(this->get_logger(), "Failed to get pad");
       return false;
     }
-    if (gst_pad_link(gst_element_get_static_pad(queue, "src"), pad.get()) !=
-        GST_PAD_LINK_OK) {
+    if (gst_pad_link(gst_element_get_static_pad(videoconvert, "src"),
+                     pad.get()) != GST_PAD_LINK_OK) {
       RCLCPP_ERROR(this->get_logger(), "Failed to link pads");
       return false;
     }
     connected_sources_.push_back(queue);
     connected_sources_.push_back(src);
+    connected_sources_.push_back(videoconvert);
     g_object_set(G_OBJECT(pad.get()), "xpos", origin_x, "ypos", origin_y,
                  "height", height, "width", width, NULL);
     ++i;
