@@ -12,6 +12,7 @@ webrtc_node:
     Secondary:
       path: "/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
       type: 0
+      encoded: true
     Test:
       type: 1
     web_server: true
