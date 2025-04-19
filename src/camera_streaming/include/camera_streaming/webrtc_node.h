@@ -57,7 +57,8 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   enum class CameraType {
     V4l2Src = 0, /**< V4L2 source */
-    TestSrc      /**< Test source */
+    TestSrc,     /**< Test source */
+    NetworkSrc,  /**< Network source */
   };
 
   /**
@@ -125,6 +126,9 @@ class WebRTCStreamer : public rclcpp::Node {
    * @return A pointer to the created video converter element.
    */
   GstElement* create_vid_conv();
+  GstElement* add_element_chain(const std::vector<GstElement*>& chain);
+  GstElement* create_element(std::string element_type,
+                             std::string element_name = "");
 
   bool web_server_; /**< Flag indicating if the web server is enabled */
   std::string web_server_path_; /**< Path to the web server */
