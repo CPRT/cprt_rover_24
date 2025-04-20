@@ -139,7 +139,9 @@ void WebRTCStreamer::capture_frame(
   constexpr auto timeout = 1000000000;  // 1 second
   GstSample *sample = gst_app_sink_try_pull_sample(GST_APP_SINK(sink), timeout);
 
-  unlink_pad(gst_element_get_static_pad(elements.front(), "sink"));
+  auto pad = GstUniquePtr<GstPad>(
+      gst_element_get_static_pad(elements.front(), "sink"));
+  unlink_pad(pad.get());
   for (auto element : elements) {
     gst_bin_remove(GST_BIN(pipeline_.get()), element);
   }
