@@ -57,7 +57,8 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   enum class CameraType {
     V4l2Src = 0, /**< V4L2 source */
-    TestSrc      /**< Test source */
+    TestSrc,     /**< Test source */
+    NetworkSrc,  /**< Network source */
   };
 
   /**
@@ -68,6 +69,7 @@ class WebRTCStreamer : public rclcpp::Node {
     std::string name;
     std::string path;
     CameraType type;
+    bool encoded;
   };
 
  private:
@@ -124,6 +126,22 @@ class WebRTCStreamer : public rclcpp::Node {
    * @return A pointer to the created video converter element.
    */
   GstElement* create_vid_conv();
+  /**
+   * @brief Adds a chain of GStreamer elements to the pipeline.
+   *
+   * @param chain The vector of GStreamer elements to be added.
+   * @return A pointer to the last element in the chain.
+   */
+  GstElement* add_element_chain(const std::vector<GstElement*>& chain);
+  /**
+   * @brief Creates a GStreamer element of the specified type.
+   *
+   * @param element_type The type of the GStreamer element to create.
+   * @param element_name The name of the GStreamer element (optional).
+   * @return A pointer to the created GStreamer element.
+   */
+  GstElement* create_element(std::string element_type,
+                             std::string element_name = "");
 
   bool web_server_; /**< Flag indicating if the web server is enabled */
   std::string web_server_path_; /**< Path to the web server */
@@ -132,7 +150,8 @@ class WebRTCStreamer : public rclcpp::Node {
   GstUniquePtr<GstElement> pipeline_; /**< GStreamer pipeline element */
   GstElement* compositor_;            /**< GStreamer compositor element */
   rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr
-      start_video_service_; /**< ROS2 service for starting video output */
+      start_video_service_;  /**< ROS2 service for starting video output */
+  GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
 
   /**
    * @brief Callback function for handling GStreamer bus messages.
