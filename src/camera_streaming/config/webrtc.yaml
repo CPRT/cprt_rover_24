@@ -1,4 +1,4 @@
-#Types: 0 for v4l2, 1 for test source, Other types are not supported yet
+#Types: 0 for v4l2, 1 for test source, 2 for rtp jpeg source, Other types are not supported yet
 
 webrtc_node:
   ros__parameters:

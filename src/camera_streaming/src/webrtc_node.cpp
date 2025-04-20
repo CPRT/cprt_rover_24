@@ -1,6 +1,9 @@
 #include "webrtc_node.h"
 
+#include <gst/app/gstappsink.h>
+
 #include <filesystem>
+#include <fstream>
 
 #include "rclcpp/executors.hpp"
 
@@ -19,6 +22,9 @@ WebRTCStreamer::WebRTCStreamer()
   start_video_service_ = this->create_service<interfaces::srv::VideoOut>(
       "start_video", std::bind(&WebRTCStreamer::start_video_cb, this,
                                std::placeholders::_1, std::placeholders::_2));
+  capture_service_ = this->create_service<interfaces::srv::VideoCapture>(
+      "capture_frame", std::bind(&WebRTCStreamer::capture_frame, this,
+                                 std::placeholders::_1, std::placeholders::_2));
 
   // Fetch camera parameters
   std::vector<std::string> camera_name;
@@ -98,6 +104,89 @@ void WebRTCStreamer::start_video_cb(
                             "pipeline");
 }
 
+void WebRTCStreamer::capture_frame(
+    const std::shared_ptr<interfaces::srv::VideoCapture::Request> request,
+    std::shared_ptr<interfaces::srv::VideoCapture::Response> response) {
+  response->success = true;
+  const std::string &name = request->source;
+  auto source_tee = GstUniquePtr<GstElement>(
+      gst_bin_get_by_name(GST_BIN(pipeline_.get()), name.c_str()));
+  if (!source_tee) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to get source: %s", name.c_str());
+    return;
+  }
+  std::vector<GstElement *> elements;
+  elements.emplace_back(create_vid_conv());
+  elements.emplace_back(create_jpeg_enc());
+
+  GstElement *sink = create_element("appsink");
+  elements.push_back(sink);
+  if (!add_element_chain(elements)) {
+    response->success = false;
+    return;
+  }
+
+  if (!gst_element_link(source_tee.get(), elements.front())) {
+    RCLCPP_ERROR(this->get_logger(),
+                 "%s: Failed to link capture pipe section to %s", __FUNCTION__,
+                 name.c_str());
+    response->success = false;
+    for (auto element : elements) {
+      gst_bin_remove(GST_BIN(pipeline_.get()), element);
+    }
+    return;
+  }
+  constexpr auto timeout = 1000000000;  // 1 second
+  GstSample *sample = gst_app_sink_try_pull_sample(GST_APP_SINK(sink), timeout);
+
+  unlink_pad(gst_element_get_static_pad(elements.front(), "sink"));
+  for (auto element : elements) {
+    gst_bin_remove(GST_BIN(pipeline_.get()), element);
+  }
+
+  if (!sample) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to pull sample from appsink");
+    response->success = false;
+    return;
+  }
+  GstBuffer *buffer = gst_sample_get_buffer(sample);
+  if (!buffer) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to get buffer from sample");
+    gst_sample_unref(sample);
+    response->success = false;
+    return;
+  }
+  GstMapInfo map;
+  if (!gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to map buffer");
+    gst_sample_unref(sample);
+    response->success = false;
+    return;
+  }
+  std::vector<uint8_t> &img_vec = response->image.data;
+  std::string &filename = request->filename;
+  img_vec.resize(map.size);
+  std::memcpy(img_vec.data(), map.data, map.size);
+  if (!filename.empty()) {
+    std::ofstream file(filename, std::ios::binary);
+    if (!file) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to open file %s for writing",
+                   filename.c_str());
+      response->success = false;
+    } else {
+      file.write(reinterpret_cast<const char *>(map.data), map.size);
+      if (!file) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to write to file %s",
+                     filename.c_str());
+        response->success = false;
+      }
+      file.close();
+    }
+  }
+  gst_buffer_unmap(buffer, &map);
+  gst_sample_unref(sample);
+}
+
 GstElement *WebRTCStreamer::create_vid_conv() {
   GstElement *videoconvert = create_element("nvvidconv");
   if (videoconvert) {
@@ -106,6 +195,15 @@ GstElement *WebRTCStreamer::create_vid_conv() {
   RCLCPP_INFO(this->get_logger(),
               "Failed to create nvvidconv, using videoconvert instead");
   return create_element("videoconvert");
+}
+GstElement *WebRTCStreamer::create_jpeg_enc() {
+  GstElement *encoder = create_element("nvjpegenc");
+  if (encoder) {
+    return encoder;
+  }
+  RCLCPP_INFO(this->get_logger(),
+              "Failed to create nvjpegenc, using jpegenc instead");
+  return create_element("jpegenc");
 }
 GstElement *WebRTCStreamer::create_element(std::string element_type,
                                            std::string element_name) {
@@ -126,10 +224,12 @@ GstElement *WebRTCStreamer::create_element(std::string element_type,
 GstElement *WebRTCStreamer::add_element_chain(
     const std::vector<GstElement *> &chain) {
   GstElement *lastElement = nullptr;
+  bool success = true;
   for (auto element : chain) {
     if (!element) {
       RCLCPP_ERROR(this->get_logger(), "%s: Bad chain", __FUNCTION__);
-      return nullptr;
+      success = false;
+      break;
     }
     gst_bin_add(GST_BIN(pipeline_.get()), element);
     gst_element_sync_state_with_parent(element);
@@ -144,11 +244,23 @@ GstElement *WebRTCStreamer::add_element_chain(
                    name2);
       g_free(name1);
       g_free(name2);
-      return nullptr;
+      success = false;
+      break;
     }
     lastElement = element;
   }
-  return lastElement;
+  if (success) {
+    return lastElement;
+  }
+  for (auto element : chain) {
+    if (element) {
+      gst_bin_remove(GST_BIN(pipeline_.get()), element);
+    }
+    if (element == lastElement) {
+      break;
+    }
+  }
+  return nullptr;
 }
 GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   std::vector<GstElement *> elements;
@@ -209,7 +321,6 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
     return nullptr;
   }
   g_object_set(G_OBJECT(elements.back()), "allow-not-linked", TRUE, nullptr);
-  elements.push_back(elements.back());
   return add_element_chain(elements);
 }
 

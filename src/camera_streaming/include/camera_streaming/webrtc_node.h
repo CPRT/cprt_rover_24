@@ -12,6 +12,7 @@
 
 #include <gst/gst.h>
 
+#include <interfaces/srv/video_capture.hpp>
 #include <interfaces/srv/video_out.hpp>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
@@ -84,6 +85,16 @@ class WebRTCStreamer : public rclcpp::Node {
       std::shared_ptr<interfaces::srv::VideoOut::Response> response);
 
   /**
+   * @brief Callback function to handle video capture requests.
+   *
+   * @param request The request object containing video capture parameters.
+   * @param response The response object to be populated with the result.
+   */
+  void capture_frame(
+      const std::shared_ptr<interfaces::srv::VideoCapture::Request> request,
+      std::shared_ptr<interfaces::srv::VideoCapture::Response> response);
+
+  /**
    * @brief Creates a GStreamer source element for the given camera source.
    *
    * @param src The camera source information.
@@ -127,6 +138,12 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   GstElement* create_vid_conv();
   /**
+   * @brief Creates a GStreamer JPEG encoder element.
+   *
+   * @return A pointer to the created JPEG encoder element.
+   */
+  GstElement* create_jpeg_enc();
+  /**
    * @brief Adds a chain of GStreamer elements to the pipeline.
    *
    * @param chain The vector of GStreamer elements to be added.
@@ -150,7 +167,9 @@ class WebRTCStreamer : public rclcpp::Node {
   GstUniquePtr<GstElement> pipeline_; /**< GStreamer pipeline element */
   GstElement* compositor_;            /**< GStreamer compositor element */
   rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr
-      start_video_service_;  /**< ROS2 service for starting video output */
+      start_video_service_; /**< ROS2 service for starting video output */
+  rclcpp::Service<interfaces::srv::VideoCapture>::SharedPtr
+      capture_service_;      /**< ROS2 service for capturing frames */
   GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
 
   /**
