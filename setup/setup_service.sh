@@ -17,6 +17,7 @@ sudo ln -s $PWD/start_rover.sh /usr/local/bin/start_rover.sh
 
 cd ..
 sudo ln -s $PWD/install/setup.bash /opt/ros/humble/cprt_setup.bash
+sudo chown $CURRENT_USER /opt/ros/humble/cprt_setup.bash
 
 sudo systemctl daemon-reload
 sudo systemctl enable start_rover.service
