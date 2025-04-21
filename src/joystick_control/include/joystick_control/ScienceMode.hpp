@@ -4,37 +4,53 @@
 #include "Mode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "ros_phoenix/msg/motor_control.hpp"
+#include "ros_phoenix/msg/motor_status.hpp"
 
 class ScienceMode : public Mode {
-	public:
+ public:
+  ScienceMode(rclcpp::Node* node);
 
-		ScienceMode(rclccp::Node* node);
+  void processJoystickInput(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;
 
-		void processJoystickInput(std:shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;
+  static void declareParameters(rclcpp::Node* node);
 
-		static void declareParameters(rclcpp::Node* node);
+ private:
+  void handlePlatform(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleDrill(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleMicroscope(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handlePanoramic(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleSoilCollection(
+      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) ;
 
-	private:
-		void handlePlatform(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handleDrill(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handleMicroscope(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handlePanoramic(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-		void handleSoilCollection(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+    void drill_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
+    void platform_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
 
-		void loadParameters();
+  void auto_drill_callback();
+  void loadParameters();
 
-		int8_t kPlatformAxis;
-		int8_t kDrillButton;
-		int8_t kMicroscopeAxis;
+  int8_t kPlatformAxis;
+  int8_t kDrillButton;
+  int8_t kDrillBackwardButton;
+  int8_t kMicroscopeAxis;
+  int8_t kDrillToggle;
 
-		bool kDrillState;
+  int drillHeight;
+  bool autoDrill;
 
-		rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
-			platform_pub_;
-		rclcpp::Publisher<Bool>::SharedPtr
-			drill_pub_;
-		rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
-			microscope_pub_;
+  bool kDrillState;
+
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr platform_pub_;
+  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr drill_pub_;
+  rclcpp::Subscription<ros_phoenix::msg::MotorStatus>::SharedPtr drill_sub_;
+  rclcpp::Subscription<ros_phoenix::msg::MotorStatus>::SharedPtr platform_sub_;
+
+  rclcpp::TimerBase::SharedPtr autoDrillTimer_;
+  //   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr
+  //   microscope_pub_;
 };
 
 #endif
