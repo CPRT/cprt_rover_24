@@ -52,16 +52,13 @@ bool FlightstickControl::changeMode(ModeType mode) {
       RCLCPP_INFO(this->get_logger(), "Entering Drive Mode");
       mode_ = std::make_unique<DriveMode>(this);
       return true;
-<<<<<<< HEAD
     case ModeType::ARM_MANUAL:
       RCLCPP_INFO(this->get_logger(), "Entering Manual Mode");
       mode_ = std::make_unique<ArmManualMode>(this);
       return true;
-=======
     case ModeType::SCIENCE:
       RCLCPP_INFO(this->get_logger(), "Entering Science Mode");
       mode_ = std::make_unique<ScienceMode>(this);
->>>>>>> e7620a8 (Add first draft of science controls)
     default:
       RCLCPP_WARN(this->get_logger(),
                   "Mode not implemented, returning to NONE");
