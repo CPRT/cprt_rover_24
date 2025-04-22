@@ -28,6 +28,12 @@
 #define KEYCODE_W 0x77
 #define KEYCODE_E 0x65
 #define KEYCODE_R 0x72
+#define KEYCODE_A 0x61
+#define KEYCODE_S 0x73
+#define KEYCODE_D 0x64
+#define KEYCODE_F 0x66
+#define KEYCODE_Z 0x7A
+#define KEYCODE_X 0x78
 
 // Some constants used in the Servo Teleop demo
 const std::string TWIST_TOPIC = "/servo_node/delta_twist_cmds";
