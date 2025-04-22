@@ -51,8 +51,8 @@ void TypingNode::getCmd(char k)
     {
       auto resultCopy = result.get();
       RCLCPP_INFO(this->get_logger(), "Letter %lu, Centimeter: %f, %f, %f", currLetter, resultCopy->x, resultCopy->y, resultCopy->z);
-      cmd.x = resultCopy->x;
-      cmd.y = resultCopy->y;
+      cmd.x = resultCopy->y;
+      cmd.y = -resultCopy->x;
       cmd.z = resultCopy->z;
     }
 }
@@ -85,6 +85,12 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
   
   string data = msg.feedback.state;
   
+  if (data == "Solution found but controller failed during execution")
+  {
+    data = "IDLE";
+    adjusted = false;
+  }
+  
   if (data == "IDLE" && hasJob) //idle death gambit? jjk reference??
   {
     interfaces::msg::ArmCmd poseCmd;
@@ -97,13 +103,13 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
     
     RCLCPP_INFO(this->get_logger(), "%f %f %f %f %f %f", cmd.x, cmd.y, std::abs(double(cmd.x)),(std::abs(double(cmd.x)) < 0.08),std::abs(double(cmd.y)),(std::abs(double(cmd.y)) < 0.08));
     
-    if (std::abs(double(cmd.x)) < 0.08 && std::abs(double(cmd.y)) < 0.08) //if within under a milimeter, and ready to press
+    if (std::abs(double(cmd.x)) < 0.5 && std::abs(double(cmd.y)) < 0.5) //if within under a milimeter, and ready to press
     {
       if (!adjusted)
       {
         RCLCPP_INFO(this->get_logger(), "Aligning my 'end-effector' with the 'key'");
         adjusted = true;
-        poseCmd.pose.position.x = 0.048; //currently, camera aligned with key. Make claw aligned with key.
+        poseCmd.pose.position.x = 0.058; //currently, camera aligned with key. Make claw aligned with key.
       }
       else
       {
@@ -114,7 +120,7 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
         {
           hasJob = false;
         }
-        poseCmd.pose.position.z = -(cmd.z-8.5)/100.0;
+        poseCmd.pose.position.z = -(cmd.z-12.0)/100.0;
         poseCmd.reverse = true;
       }
     }

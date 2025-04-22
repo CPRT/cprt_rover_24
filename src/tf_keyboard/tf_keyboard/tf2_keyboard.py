@@ -250,7 +250,9 @@ class results():
         #dist_x = (center_x-p_x)*(1.2/ratio_x)
         #dist_y = (center_y-p_y)*(1.4/ratio_y)
         
-        dist_x = (center_x-0.5)*(1.2/ratio_x)
+        cam_center_x = 0.5 - ratio_x*1.5
+        
+        dist_x = (center_x-cam_center_x)*(1.2/ratio_x)
         dist_y = (center_y-0.5)*(1.4/ratio_y)
         
         d_x = ratio_x*1280*ratio_y*720
@@ -452,8 +454,8 @@ class tf2Keyboard(Node):
         
         return response'''
         
-        cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
-        #cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
+        #cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
+        cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
           print("Error: Could not access the camera.")
           exit()
@@ -477,8 +479,8 @@ class tf2Keyboard(Node):
         time.sleep(1) #wait for camera to stop shaking IRL
         #image_np = load_image_into_numpy_array(image_path)
         
-        plt.imshow(image_np)
-        plt.show()
+        #plt.imshow(image_np)
+        #plt.show()
         
         self.get_logger().info("Detecting keys, please wait")
         
@@ -519,10 +521,10 @@ class tf2Keyboard(Node):
                 min_score_thresh=.30,
                 agnostic_mode=False)
 
-        plt.figure()
-        plt.imshow(image_np_with_detections)
+        #plt.figure()
+        #plt.imshow(image_np_with_detections)
         print('Done')
-        plt.show()
+        #plt.show()
         
         response.x = key[0]
         response.y = -key[1]
