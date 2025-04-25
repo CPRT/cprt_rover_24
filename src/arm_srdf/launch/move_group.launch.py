@@ -3,5 +3,7 @@ from moveit_configs_utils.launches import generate_move_group_launch
 
 
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("arm_urdf", package_name="arm_srdf").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder(
+        "arm_urdf", package_name="arm_srdf"
+    ).to_moveit_configs()
     return generate_move_group_launch(moveit_config)

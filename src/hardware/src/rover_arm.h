@@ -27,23 +27,26 @@
 #define BASE_BIG_GEAR 100.0
 #define BASE_SMALL_GEAR 15.0
 #define BASE_GEARBOX 1100
-#define ACT1_URDF_OFFSET 0.7832711  // thanks alot ivan >:((
-#define ACT1_SIDE_A 20.1
-#define ACT1_SIDE_B 48.5
+#define ACT1_URDF_OFFSET 0.872665  // thanks alot ivan >:((
+#define ACT1_SIDE_A 20.0
+#define ACT1_SIDE_B 49.544
 #define ACT1_SHAFT_LENGTH 15.24
 #define ACT1_SHAFT_TICKS 5709.0
 #define ACT_LENGTH 30.96
-#define ACT2_URDF_OFFSET -0.89151
+#define ACT1_DIRECTION 1
+#define ACT2_URDF_OFFSET -0.663225
 #define ACT2_SIDE_A 15.0
-#define ACT2_SIDE_B 42.3
+#define ACT2_SIDE_B 42.053
 #define ACT2_SHAFT_LENGTH 13.64
 #define ACT2_SHAFT_TICKS 5109.0
+#define ACT2_DIRECTION -1
 #define ELBOW_SMALL_GEAR 30.0
 #define ELBOW_BIG_GEAR 96.0
 #define ELBOW_GEARBOX 10000.0
 #define WRISTTILT_GEARBOX \
   7760215.0  // I'm confident that nobody knows what the ratios are for this
              // gearbox
+#define WRISTTILT_URDF_OFFSET 0.137357412
 #define WRISTTURN_GEAR 498.0
 #define WRISTTURN_GEARBOX 4000.0
 
@@ -103,6 +106,7 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   std::vector<double> hw_commands_;
   std::vector<double> hw_position_states_;
   std::vector<double> hw_velocity_states_;
+  std::vector<double> hw_velocity_commands_;
   std::vector<double> temp_;
 
   // handling publisher and subscriber callbacks
@@ -147,7 +151,8 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   double act_pos(double rad, double a, double b, double urdf_offset,
                  double shaft_length, double shaft_ticks, double act_length);
   double act_rad(double pos, double a, double b, double urdf_offset,
-                 double shaft_length, double shaft_ticks, double act_length);
+                 double shaft_length, double shaft_ticks, double act_length,
+                 double direction);
 
   std::vector<PublisherTopic> publisher_topics_ = {
       {"base/set", std::bind(&RoverArmHardwareInterface::base_pos, this,

@@ -18,12 +18,16 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="darren",
-    maintainer_email="darrenwallace@gmail.com",
+    maintainer="will",
+    maintainer_email="51888361+MaybeWilli@users.noreply.github.com",
     description="TODO: Package description",
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [],
+        "console_scripts": [
+            "typing_controller = arm_interface.typingController:main",
+            "keyboard_arm_publisher = arm_interface.keyboardArmPublisher:main",
+            "keyboard_arm_controller = arm_interface.keyboardArmController:main",
+        ],
     },
 )

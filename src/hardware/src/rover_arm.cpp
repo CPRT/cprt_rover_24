@@ -14,6 +14,8 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
                              std::numeric_limits<double>::quiet_NaN());
 
   hw_commands_.resize(info_.joints.size(), 0);
+
+  hw_velocity_commands_.resize(info_.joints.size(), 0);
   // s
 
   temp_.resize(info_.joints.size(), 0);
@@ -23,10 +25,17 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
     // RRBotSystemPositionOnly has exactly one state and command interface on
     // each joint
-    if (joint.command_interfaces.size() != 1) {
-      RCLCPP_FATAL(rclcpp::get_logger("RoverArmHardwareInterface"),
-                   "Joint '%s' has %zu command interfaces found. 1 expected.",
-                   joint.name.c_str(), joint.command_interfaces.size());
+    if (joint.command_interfaces.size() != 2) {
+      RCLCPP_FATAL(
+          rclcpp::get_logger("RoverArmHardwareInterface"),
+          "Joint '%s' has %zu command interfaces found. 2 expected.",  // used
+                                                                       // to be
+                                                                       // 1, but
+                                                                       // then
+                                                                       // we
+                                                                       // added
+                                                                       // velocity
+          joint.name.c_str(), joint.command_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
 
@@ -106,14 +115,14 @@ void RoverArmHardwareInterface::base_callback(
 double RoverArmHardwareInterface::act_rad(double pos, double a, double b,
                                           double urdf_offset,
                                           double shaft_length,
-                                          double shaft_ticks,
-                                          double act_length) {
+                                          double shaft_ticks, double act_length,
+                                          double direction) {
   double c = pos / shaft_ticks * shaft_length + act_length;
   double d = (a * a + b * b - c * c) / (2 * a * b);
   if (d > 1 or d < -1) {
     return 0.0;  // just for safety
   }
-  return std::acos(d) - urdf_offset;
+  return direction * std::acos(d) - urdf_offset;
 }
 
 void RoverArmHardwareInterface::act1_callback(
@@ -124,7 +133,7 @@ void RoverArmHardwareInterface::act1_callback(
 
   temp_[1] =
       act_rad(motorStatus.position, ACT1_SIDE_A, ACT1_SIDE_B, ACT1_URDF_OFFSET,
-              ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH);
+              ACT1_SHAFT_LENGTH, ACT1_SHAFT_TICKS, ACT_LENGTH, ACT1_DIRECTION);
 }
 
 void RoverArmHardwareInterface::act2_callback(
@@ -135,7 +144,7 @@ void RoverArmHardwareInterface::act2_callback(
 
   temp_[2] =
       act_rad(motorStatus.position, ACT2_SIDE_A, ACT2_SIDE_B, ACT2_URDF_OFFSET,
-              ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH);
+              ACT2_SHAFT_LENGTH, ACT2_SHAFT_TICKS, ACT_LENGTH, ACT2_DIRECTION);
 }
 
 void RoverArmHardwareInterface::elbow_callback(
@@ -152,8 +161,8 @@ void RoverArmHardwareInterface::wrist_tilt_callback(
   if (encoderPassthrough_) {
     return;
   }
-  temp_[4] =
-      -motorStatus.position / WRISTTILT_GEARBOX * (M_PI / 2) - (M_PI / 6);
+  temp_[4] = -motorStatus.position / WRISTTILT_GEARBOX * (M_PI / 2) -
+             WRISTTILT_URDF_OFFSET;
 }
 
 void RoverArmHardwareInterface::wrist_turn_callback(
@@ -205,6 +214,12 @@ RoverArmHardwareInterface::export_command_interfaces() {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
         info_.joints[i].name, hardware_interface::HW_IF_POSITION,
         &hw_commands_[i]));
+  }
+
+  for (uint i = 0; i < info_.joints.size(); i++) {
+    command_interfaces.emplace_back(hardware_interface::CommandInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY,
+        &hw_velocity_commands_[i]));
   }
 
   return command_interfaces;
@@ -266,7 +281,7 @@ double RoverArmHardwareInterface::elbow_pos(double rad) {
   return (rad * ELBOW_SMALL_GEAR / ELBOW_BIG_GEAR) * ELBOW_GEARBOX;
 }
 double RoverArmHardwareInterface::wrist_tilt_pos(double rad) {
-  return (-(rad + M_PI / 6) / (M_PI / 2) * WRISTTILT_GEARBOX);
+  return (-(rad + WRISTTILT_URDF_OFFSET) / (M_PI / 2) * WRISTTILT_GEARBOX);
 }
 
 double RoverArmHardwareInterface::wrist_turn_pos(double rad) {
