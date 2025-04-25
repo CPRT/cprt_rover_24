@@ -2,8 +2,8 @@
 
 # For beginners, we downscale velocity and acceleration limits.
 # You can always specify higher scaling factors (<= 1.0) in your motion requests.  # Increase the values below to 1.0 to always move at maximum speed.
-default_velocity_scaling_factor: 1.0
-default_acceleration_scaling_factor: 1.0
+default_velocity_scaling_factor: 0.1
+default_acceleration_scaling_factor: 0.1
 
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
@@ -13,31 +13,28 @@ joint_limits:
     max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
-    has_position_limits: true
-    max_position: 1.57
-    min_position: -1.57
   Joint_2:
-    has_velocity_limits: true
-    max_velocity: 0.0234 #Takes 23.5 seconds to rotate 45 degrees - roughly 0.0334 rad/s, but set at 0.0234 to account for the cosine nature of lin act joint speeds
+    has_velocity_limits: false
+    max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
   Joint_3:
-    has_velocity_limits: true
-    max_velocity: 0.03688 #Takes 13.8 seconds to go 45 degrees
+    has_velocity_limits: false
+    max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
   Joint_4:
-    has_velocity_limits: true #takes 1.3 seconds to go 90 degrees
-    max_velocity: 0.60385
+    has_velocity_limits: false
+    max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
   Joint_5:
-    has_velocity_limits: true #takes 2.75 seconds to go 90 degrees
-    max_velocity: 0.28545
-    has_acceleration_limits: false #
+    has_velocity_limits: false
+    max_velocity: 0
+    has_acceleration_limits: false
     max_acceleration: 0
   Joint_6:
-    has_velocity_limits: true
-    max_velocity: 0.0202 #0.0202
-    has_acceleration_limits: false #angle: 150 deg, takes 38.87 seconds to go 90 degrees
+    has_velocity_limits: false
+    max_velocity: 0
+    has_acceleration_limits: false
     max_acceleration: 0
