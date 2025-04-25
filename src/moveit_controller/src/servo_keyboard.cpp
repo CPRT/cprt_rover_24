@@ -102,6 +102,36 @@ int KeyboardServo::keyLoop() {
         twist_msg->twist.linear.z = 1.0;
         publish_twist = true;
         break;
+      case KEYCODE_A:
+        RCLCPP_DEBUG(nh_->get_logger(), "A");
+        twist_msg->twist.angular.x = 1.0;
+        publish_twist = true;
+        break;
+      case KEYCODE_S:
+        RCLCPP_DEBUG(nh_->get_logger(), "S");
+        twist_msg->twist.angular.x = -1.0;
+        publish_twist = true;
+        break;
+      case KEYCODE_D:
+        RCLCPP_DEBUG(nh_->get_logger(), "D");
+        twist_msg->twist.angular.y = 1.0;
+        publish_twist = true;
+        break;
+      case KEYCODE_F:
+        RCLCPP_DEBUG(nh_->get_logger(), "F");
+        twist_msg->twist.angular.y = -1.0;
+        publish_twist = true;
+        break;
+      case KEYCODE_Z:
+        RCLCPP_DEBUG(nh_->get_logger(), "Z");
+        twist_msg->twist.angular.z = 1.0;
+        publish_twist = true;
+        break;
+      case KEYCODE_X:
+        RCLCPP_DEBUG(nh_->get_logger(), "X");
+        twist_msg->twist.angular.z = -1.0;
+        publish_twist = true;
+        break;
       case KEYCODE_E:
         RCLCPP_DEBUG(nh_->get_logger(), "E");
         frame_to_publish_ = EEF_FRAME_ID;
