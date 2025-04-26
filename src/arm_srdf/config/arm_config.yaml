@@ -43,7 +43,7 @@ is_primary_planning_scene_monitor: false
 check_octomap_collisions: false  # Check collision against the octomap (if a 3D sensor plugin is available)
 
 ## MoveIt properties
-move_group_name: rover_arm3  # Often 'manipulator' or 'arm'
+move_group_name: rover_arm  # Often 'manipulator' or 'arm'
 planning_frame: Link_1
 ee_frame_name: Link_7
 robot_link_command_frame: Link_1

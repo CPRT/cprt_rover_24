@@ -8,8 +8,6 @@ moveit_simple_controller_manager:
 
   rover_arm_controller:
     type: FollowJointTrajectory
-    action_ns: follow_joint_trajectory
-    default: true
     joints:
       - Joint_1
       - Joint_2
