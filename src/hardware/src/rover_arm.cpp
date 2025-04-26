@@ -26,11 +26,10 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     // RRBotSystemPositionOnly has exactly one state and command interface on
     // each joint
     if (joint.command_interfaces.size() != 2) {
-      RCLCPP_FATAL(
-          rclcpp::get_logger("RoverArmHardwareInterface"),
-          // Expects 2 command interfaces: velocity, position
-          "Joint '%s' has %zu command interfaces found. 2 expected.",
-          joint.name.c_str(), joint.command_interfaces.size());
+      RCLCPP_FATAL(rclcpp::get_logger("RoverArmHardwareInterface"),
+                   // Expects 2 command interfaces: velocity, position
+                   "Joint '%s' has %zu command interfaces found. 2 expected.",
+                   joint.name.c_str(), joint.command_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
 
