@@ -28,13 +28,8 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     if (joint.command_interfaces.size() != 2) {
       RCLCPP_FATAL(
           rclcpp::get_logger("RoverArmHardwareInterface"),
-          "Joint '%s' has %zu command interfaces found. 2 expected.",  // used
-                                                                       // to be
-                                                                       // 1, but
-                                                                       // then
-                                                                       // we
-                                                                       // added
-                                                                       // velocity
+          // Expects 2 command interfaces: velocity, position
+          "Joint '%s' has %zu command interfaces found. 2 expected.",
           joint.name.c_str(), joint.command_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
