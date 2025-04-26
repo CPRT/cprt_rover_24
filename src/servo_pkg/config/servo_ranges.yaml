@@ -1,5 +1,5 @@
 usb_controller:
-  port0:
+  port0: #these value are for the MS24 servo
     min: 500
     max: 2500
   port1:
