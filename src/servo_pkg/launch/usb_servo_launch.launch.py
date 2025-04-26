@@ -20,10 +20,10 @@ def generate_launch_description():
                 ],
             ),
             # for example client
-            #launch_ros.actions.Node(
+            # launch_ros.actions.Node(
             #    package="servo_pkg",
             #    executable="servo_client",
             #    name="servo_client_node",
-            #),
+            # ),
         ]
     )
