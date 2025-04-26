@@ -463,6 +463,7 @@ bool WebRTCStreamer::update_pipeline(
     if (iter == source_pads_.end()) {
       RCLCPP_WARN(this->get_logger(), "%s: Could not find camera %s",
                   __FUNCTION__, name.c_str());
+      continue;
     }
     auto &pad = iter->second;
     g_object_set(G_OBJECT(pad.get()), "xpos", origin_x, "ypos", origin_y,
