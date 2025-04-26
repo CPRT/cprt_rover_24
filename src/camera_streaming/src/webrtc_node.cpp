@@ -25,6 +25,9 @@ WebRTCStreamer::WebRTCStreamer()
   capture_service_ = this->create_service<interfaces::srv::VideoCapture>(
       "capture_frame", std::bind(&WebRTCStreamer::capture_frame, this,
                                  std::placeholders::_1, std::placeholders::_2));
+  get_cams_service_ = this->create_service<interfaces::srv::GetCameras>(
+      "get_cameras", std::bind(&WebRTCStreamer::get_cameras, this,
+                               std::placeholders::_1, std::placeholders::_2));
 
   // Fetch camera parameters
   std::vector<std::string> camera_name;
@@ -58,7 +61,10 @@ WebRTCStreamer::WebRTCStreamer()
                    camera_path.c_str());
       continue;
     }
-    create_source(source);
+    if (create_source(source)) {
+      source_names_.push_back(name);
+      RCLCPP_INFO(this->get_logger(), "Camera source %s created", name.c_str());
+    }
   }
   const auto ret = gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
   if (ret != GST_STATE_CHANGE_FAILURE) {
@@ -187,6 +193,12 @@ void WebRTCStreamer::capture_frame(
   }
   gst_buffer_unmap(buffer, &map);
   gst_sample_unref(sample);
+}
+
+void WebRTCStreamer::get_cameras(
+    const std::shared_ptr<interfaces::srv::GetCameras::Request> request,
+    std::shared_ptr<interfaces::srv::GetCameras::Response> response) {
+  response->sources = source_names_;
 }
 
 GstElement *WebRTCStreamer::create_vid_conv() {

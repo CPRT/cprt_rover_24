@@ -12,6 +12,7 @@
 
 #include <gst/gst.h>
 
+#include <interfaces/srv/get_cameras.hpp>
 #include <interfaces/srv/video_capture.hpp>
 #include <interfaces/srv/video_out.hpp>
 #include <map>
@@ -95,6 +96,17 @@ class WebRTCStreamer : public rclcpp::Node {
       std::shared_ptr<interfaces::srv::VideoCapture::Response> response);
 
   /**
+   * @brief Callback function to get available camera sources.
+   *
+   * @param request The request object (not used).
+   * @param response The response object to be populated with the camera
+   * sources.
+   */
+  void get_cameras(
+      const std::shared_ptr<interfaces::srv::GetCameras::Request> request,
+      std::shared_ptr<interfaces::srv::GetCameras::Response> response);
+
+  /**
    * @brief Creates a GStreamer source element for the given camera source.
    *
    * @param src The camera source information.
@@ -169,8 +181,11 @@ class WebRTCStreamer : public rclcpp::Node {
   rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr
       start_video_service_; /**< ROS2 service for starting video output */
   rclcpp::Service<interfaces::srv::VideoCapture>::SharedPtr
-      capture_service_;      /**< ROS2 service for capturing frames */
+      capture_service_; /**< ROS2 service for capturing frames */
+  rclcpp::Service<interfaces::srv::GetCameras>::SharedPtr
+      get_cams_service_;     /**< ROS2 service for getting camera list */
   GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
+  std::vector<std::string> source_names_; /**< List of camera source names */
 
   /**
    * @brief Callback function for handling GStreamer bus messages.
