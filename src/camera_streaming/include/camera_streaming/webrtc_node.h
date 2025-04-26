@@ -150,12 +150,6 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   GstElement* create_vid_conv();
   /**
-   * @brief Creates a GStreamer JPEG encoder element.
-   *
-   * @return A pointer to the created JPEG encoder element.
-   */
-  GstElement* create_jpeg_enc();
-  /**
    * @brief Adds a chain of GStreamer elements to the pipeline.
    *
    * @param chain The vector of GStreamer elements to be added.
@@ -185,7 +179,11 @@ class WebRTCStreamer : public rclcpp::Node {
   rclcpp::Service<interfaces::srv::GetCameras>::SharedPtr
       get_cams_service_;     /**< ROS2 service for getting camera list */
   GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
-  std::vector<std::string> source_names_; /**< List of camera source names */
+  std::map<std::string, GstUniquePtr<GstPad>>
+      source_pads_; /**< Maps camera names to compositor pads*/
+  int height_;      /**< Max height of the video */
+  int width_;       /**< Max width of the video */
+  int framerate_;   /**< Max framerate of the video */
 
   /**
    * @brief Callback function for handling GStreamer bus messages.
