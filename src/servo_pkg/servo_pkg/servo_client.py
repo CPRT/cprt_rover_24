@@ -29,7 +29,7 @@ class Servo_Client(Node):
     def servo_tester(self) -> None:
         random_pos = random.randint(0, 180)
 
-        self.servo_request(0, random_pos, 0, 180)
+        self.servo_request(0, random_pos, 500, 2500)
 
 
 def main(args=None):

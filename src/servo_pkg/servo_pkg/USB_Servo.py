@@ -26,65 +26,61 @@ class USB_Servo(Node):
         #
         # For the HS-40 615-2495 microseconds, converted: 2460 - 9980
         # https://www.servocity.com/hs-40-servo/
-        self.min = 2048  # 0 Degrees
-        self.max = 9600  # 180 Degrees
-
+        # Default SG90 values
+        self.DEFAULT_MIN = 2048
+        self.DEFAULT_MAX = 9600
         self.ZERO_DEGREES_VALUE = 2048
-        self.CONVERSION_VALUE = 7552
+        self.CONVERSION_RANGE = 7552  # 9600 - 2048
         self.MAX_DEGREES = 180
 
-        for i in range(0, 12):  # usb controller has 12 channels
-            self.servo.setRange(i, self.min, self.max)
+        # port number -> (min, max)
+        self.servo_ranges = {}
 
-    # Set target within valid range (min to max quarter-microseconds)
+        # Initialize default ranges for 12 channels
+        for port in range(0, 12):
+            self.servo.setRange(port, self.DEFAULT_MIN, self.DEFAULT_MAX)
+            self.servo_ranges[port] = (self.DEFAULT_MIN, self.DEFAULT_MAX)
+
     def set_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
-        # if ranges fall outside typical range this must be changed
-        # servo dependent, which I would like to change later
-        if request.min != None and request.max != None and request.max > 0:
-            if request.min == 0:
-                self.min = self.ZERO_DEGREES_VALUE
-            else:
-                self.min = self.convert_from_degrees(request.min)
+        port = request.port
 
-            self.max = self.convert_from_degrees(request.max)
+        # Update min/max if provided 
+        if request.min is not None and request.max is not None and request.max > 0:
+            self.min = request.min * 4
+            self.max = request.max * 4
+            self.servo_ranges[port] = (self.min, self.max)
+            self.servo.setRange(port, self.min, self.max)
 
-        self.servo.setRange(request.port, self.min, self.max)
-        if (
-            self.convert_from_degrees(request.pos) > self.max
-            or self.convert_from_degrees(request.pos) < self.min
-        ):
-            response.status = False
-            current_position = self.servo.getPosition(request.port)
-            response.status_msg = f"Servo {request.port} input out of range\ncurrent position: {current_position}"
-
-        else:
-            USB_Servo.get_logger(self).info(
-                "Received request for: %s, Converted: %s"
-                % (request.pos, self.convert_from_degrees(request.pos))
-            )
-            self.servo.setTarget(request.port, self.convert_from_degrees(request.pos))
-
-            response.status = True
-            current_position = self.servo.getPosition(request.port)
-            response.status_msg = (
-                f"Servo {request.port} current position: {current_position}"
-            )
-
-        return response
-
-    def get_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
-        response.status = True
-        current_position = self.servo.getPosition(request.port)
-        response.status_msg = f"{current_position}"
-
-        return response
-
-    def convert_from_degrees(self, degrees: int) -> int:
-        return int(
-            self.ZERO_DEGREES_VALUE
-            + (self.CONVERSION_VALUE / (self.MAX_DEGREES / degrees))
+        min_range, max_range = self.servo_ranges.get(
+            port, (self.DEFAULT_MIN, self.DEFAULT_MAX)
         )
 
+        # Convert requested from degrees 
+        target_value = self.convert_from_degrees(request.pos, port)
+
+        if not (min_range <= target_value <= max_range):
+            response.status = False
+            current_position = self.servo.getPosition(port)
+            response.status_msg = f"Servo {port} input out of range.\nCurrent position: {current_position}"
+        else:
+            self.get_logger().info(
+                f"Received request for port {port}: {request.pos} degrees -> {target_value}"
+            )
+            self.servo.setTarget(port, target_value)
+
+            response.status = True
+            current_position = self.servo.getPosition(port)
+            response.status_msg = f"Servo {port} moved to: {current_position}"
+
+        return response
+    
+    def convert_from_degrees(self, degrees: int, port: int) -> int:
+        min_range, max_range = self.servo_ranges.get(port, (self.DEFAULT_MIN, self.DEFAULT_MAX))
+        total_range = max_range - min_range
+
+        return int(
+            min_range + (total_range * degrees / self.MAX_DEGREES)
+    )
 
 def main(args=None):
     rclpy.init(args=args)
