@@ -97,9 +97,6 @@ class USB_Servo(Node):
             self.get_logger().info(
                 f"Updated range for port {port}: Min: {servo_info.min}, Max: {servo_info.max}"
             )
-        self.get_logger().info(
-            f"Current range for port {port}: Min: {servo_info.min}, Max: {servo_info.max}"
-        )
 
         target_value = convert_from_degrees(request.pos, servo_info)
         current_position = convert_to_degrees(self.servo.getPosition(port), servo_info)

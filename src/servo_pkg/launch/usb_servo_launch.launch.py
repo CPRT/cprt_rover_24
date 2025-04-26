@@ -17,10 +17,10 @@ def generate_launch_description():
                 parameters=[parameters_file],
             ),
             # for example client
-            launch_ros.actions.Node(
-                package="servo_pkg",
-                executable="servo_client",
-                name="servo_client_node",
-            ),
+            # launch_ros.actions.Node(
+            #     package="servo_pkg",
+            #     executable="servo_client",
+            #     name="servo_client_node",
+            # ),
         ]
     )
