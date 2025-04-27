@@ -32,6 +32,28 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
 
   executor_ptr_->add_node(node_ptr_);
   executor_thread_ = std::thread([this]() { this->executor_ptr_->spin(); });
+
+  // default pose, chosen to optimize starting movement
+  /*default_pose_.position.x = ARM_DEFAULT_X;
+  default_pose_.position.y = ARM_DEFAULT_Y;
+  default_pose_.position.z = ARM_DEFAULT_Z;
+
+  geometry_msgs::msg::Pose target_pose;
+  target_pose.position = default_pose_.position;
+  move_group_ptr_->setMaxVelocityScalingFactor(1.0);
+  move_group_ptr_->setMaxAccelerationScalingFactor(1.0);
+  move_group_ptr_->setPoseTarget(target_pose);
+
+  // Create a plan to that target pose
+  moveit::planning_interface::MoveGroupInterface::Plan plan;
+  bool success = static_cast<bool>(move_group_ptr_->plan(plan));
+
+  // Execute the plan
+  if (success) {
+    move_group_ptr_->execute(plan);
+  } else {
+    RCLCPP_ERROR(this->get_logger(), "Planing failed!");
+  }*/
 }
 
 void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
@@ -91,9 +113,9 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
     }
   } else {
     geometry_msgs::msg::Pose new_pose = current_pose;
-    new_pose.position.x += poseMsg.position.x * stepSize;
-    new_pose.position.y += poseMsg.position.y * stepSize;
-    new_pose.position.z += poseMsg.position.z * stepSize;
+    new_pose.position.x += poseMsg.position.x;
+    new_pose.position.y += poseMsg.position.y;
+    new_pose.position.z += poseMsg.position.z;
 
     if (poseMsg.orientation.x != 0 || poseMsg.orientation.y != 0 ||
         poseMsg.orientation.z != 0 ||
@@ -110,6 +132,11 @@ void MoveitController::topic_callback(const interfaces::msg::ArmCmd &armMsg) {
       new_pose.orientation = q4;
     }
     points.push_back(new_pose);
+    if (armMsg.reverse)
+    {
+      RCLCPP_INFO(this->get_logger(), "Reversing");
+      points.push_back(current_pose);
+    }
     move_group_ptr_->computeCartesianPath(points, EEF_STEP, JUMP_THRESHOLD,
                                           trajectory_);
 
