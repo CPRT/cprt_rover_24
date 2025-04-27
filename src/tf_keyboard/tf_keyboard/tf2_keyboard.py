@@ -253,15 +253,18 @@ class results():
         #dist_x = (center_x-p_x)*(1.2/ratio_x)
         #dist_y = (center_y-p_y)*(1.4/ratio_y)
         
-        x_shift = SHAFT*math.sin(self.tilt)
+        x_shift = SHAFT*math.sin(self.tilt) - 2.5 #supposed to be 1.5
         y_stick = SHAFT*math.cos(self.tilt)
         
         y_shift = SHAFT - y_stick
         
         print(f"Sticks: {x_shift} {y_shift}")
         
-        cam_center_x = 0.5 - ratio_x*1.5 + ratio_x*x_shift
-        cam_center_y = 0.5 + ratio_y*y_shift
+        #cam_center_x = 0.5 - ratio_x*1.5 + ratio_x*x_shift
+        cam_center_x = 0.5# - ratio_x*x_shift
+        cam_center_y = 0.5# - ratio_y*y_shift
+        
+        print(f"Thinks camera center at {cam_center_x*1280} {cam_center_y*720}")
         
         dist_x = (center_x-cam_center_x)*(1.2/ratio_x)
         dist_y = (center_y-cam_center_y)*(1.4/ratio_y)
@@ -269,7 +272,9 @@ class results():
         d_x = ratio_x*1280*ratio_y*720
         dist_z = 34.2 + -0.00597*d_x + 0.000000436*d_x*d_x
         
-        return (dist_x, dist_y, dist_z)
+        print(f"Old dists: {dist_x} {dist_y}")
+        print(f"New dists: {dist_x+x_shift} {dist_y-y_shift}")
+        return (dist_x+x_shift, dist_y-y_shift, dist_z)
     
     #def center_to_key(self, k)
 
@@ -475,8 +480,8 @@ class tf2Keyboard(Node):
         return response'''
         
         
-        #cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
-        cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
+        cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
+        #cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
         if not cap.isOpened():
           print("Error: Could not access the camera.")
           exit()
@@ -494,7 +499,7 @@ class tf2Keyboard(Node):
         map1, map2 = cv2.fisheye.initUndistortRectifyMap(k, d, np.eye(3), k, dim, cv2.CV_16SC2)
         frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
-        frame = cv2.rotate(frame, cv2.ROTATE_180)
+        #frame = cv2.rotate(frame, cv2.ROTATE_180)
         
         image_np = np.array(frame)
         time.sleep(1) #wait for camera to stop shaking IRL
@@ -502,8 +507,8 @@ class tf2Keyboard(Node):
         
         #image_np = np.array(image)
         
-        plt.imshow(image_np)
-        plt.show()
+        #plt.imshow(image_np)
+        #plt.show()
         
         #What I desired from Tensorflow was a "model" to adapt to your infinite rotation. At first, TensorFlow altered the properties 
         #of its own degrees of freedom to bypass your slack, but I was unable to do so. However, once TensorFlow adapts to an
@@ -515,10 +520,10 @@ class tf2Keyboard(Node):
         angle = -self.tilt/(2*math.pi)*360
         print(f"Angle = {angle}")
         world_rotating_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-        image_np = cv2.warpAffine(image_np, world_rotating_matrix, np.array([1280, 760]))
+        image_np = cv2.warpAffine(image_np, world_rotating_matrix, np.array([1280, 720]))
         
-        plt.imshow(image_np)
-        plt.show()
+        #plt.imshow(image_np)
+        #plt.show()
         
         self.get_logger().info("Detecting keys, please wait")
         
@@ -559,10 +564,9 @@ class tf2Keyboard(Node):
                 min_score_thresh=.30,
                 agnostic_mode=False)
 
-        #plt.figure()
-        plt.imshow(image_np_with_detections)
+        #plt.imshow(image_np_with_detections)
         print('Done')
-        plt.show()
+        #plt.show()
         
         response.x = key[0]
         response.y = -key[1]

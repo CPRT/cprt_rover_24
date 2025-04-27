@@ -103,13 +103,13 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
     
     RCLCPP_INFO(this->get_logger(), "%f %f %f %f %f %f", cmd.x, cmd.y, std::abs(double(cmd.x)),(std::abs(double(cmd.x)) < 0.08),std::abs(double(cmd.y)),(std::abs(double(cmd.y)) < 0.08));
     
-    if (std::abs(double(cmd.x)) < 0.5 && std::abs(double(cmd.y)) < 0.5) //if within under a milimeter, and ready to press
+    if (std::abs(double(cmd.x)) < 0.2 && std::abs(double(cmd.y)) < 0.2) //if within under a milimeter, and ready to press
     {
       if (!adjusted)
       {
         RCLCPP_INFO(this->get_logger(), "Aligning my 'end-effector' with the 'key'");
         adjusted = true;
-        poseCmd.pose.position.x = 0.058; //currently, camera aligned with key. Make claw aligned with key.
+        poseCmd.pose.position.x = TIP_DEPTH/100.0; //currently, camera aligned with key. Make claw aligned with key.
       }
       else
       {
@@ -120,7 +120,7 @@ void TypingNode::arm_callback(const moveit_msgs::action::ExecuteTrajectory_Feedb
         {
           hasJob = false;
         }
-        poseCmd.pose.position.z = -(cmd.z-12.0)/100.0;
+        poseCmd.pose.position.z = -(cmd.z-TIP_LENGTH)/100.0;
         poseCmd.reverse = true;
       }
     }

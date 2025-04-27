@@ -32,12 +32,12 @@ joint_limits:
     has_acceleration_limits: false
     max_acceleration: 0
   Joint_5:
-    has_velocity_limits: true #takes 2.75 seconds to go 90 degrees
-    max_velocity: 0.28545
-    has_acceleration_limits: false #
-    max_acceleration: 0
-  Joint_6:
     has_velocity_limits: true
     max_velocity: 0.0202 #0.0202
     has_acceleration_limits: false #angle: 150 deg, takes 38.87 seconds to go 90 degrees
+    max_acceleration: 0
+  Joint_6:
+    has_velocity_limits: true #takes 2.75 seconds to go 90 degrees
+    max_velocity: 0.28545
+    has_acceleration_limits: false #
     max_acceleration: 0

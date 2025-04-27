@@ -22,6 +22,7 @@
 using namespace std::chrono_literals;
 using namespace std;
 
+
 struct Cmd
 {
   double x, y, z;
@@ -33,6 +34,10 @@ class TypingNode : public rclcpp::Node
     TypingNode();
 
   private:
+    //LOOK HERE FOR WHEN MECH DECIDES TO CHANGE END-EFFECTOR LENGTHS. Recommended to figure it out experimentally instead of getting them from mech drawings. They're in centimeters.
+    const double TIP_LENGTH = 23; //lateral dist from camera to nub +/- some cm to make it work. Used in "push-down" distance offset.
+    const double TIP_DEPTH = 8.3; //vertical distance from camera center down to center of nub. Used in "align nub with key" distance offset.
+    
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Subscription<moveit_msgs::action::ExecuteTrajectory_FeedbackMessage>::SharedPtr subscription2_;
     void topic_callback(const std_msgs::msg::String &msg);
