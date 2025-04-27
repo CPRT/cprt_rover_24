@@ -28,7 +28,7 @@ MoveitController::MoveitController(const rclcpp::NodeOptions &options)
 
   move_group_ptr_ =
       std::make_shared<moveit::planning_interface::MoveGroupInterface>(
-          node_ptr_, "rover_arm3");  // used to be rover_arm, then rover_arm2
+          node_ptr_, "rover_arm");  // used to be rover_arm, then rover_arm2
 
   executor_ptr_->add_node(node_ptr_);
   executor_thread_ = std::thread([this]() { this->executor_ptr_->spin(); });
