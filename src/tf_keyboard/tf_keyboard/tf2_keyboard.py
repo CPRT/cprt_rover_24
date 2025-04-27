@@ -24,6 +24,7 @@ import math
 import time
 
 from interfaces.srv import KeycapCmd
+from sensor_msgs.msg import JointState
 
 # import Jetson.GPIO as GPIO
 # import interfaces.msg as GPIOmsg
@@ -110,6 +111,7 @@ grid = {
 PATH_TO_CFG = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/pipeline.config"
 PATH_TO_CKPT = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/checkpoint"
 PATH_TO_LABELS = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/annotations/label_map.pbtxt"
+SHAFT = 7.95 #Ivan's camera mount shaft length
 
 #matplotlib.use('Qt5Agg')
 
@@ -158,8 +160,9 @@ def load_image_into_numpy_array(path):
 
 
 class results():
-    def __init__(self, data):
+    def __init__(self, data, tilt):
         self.data = data
+        self.tilt = tilt
     
     def get_key_index(self, k):
         #get index from labels:
@@ -250,10 +253,18 @@ class results():
         #dist_x = (center_x-p_x)*(1.2/ratio_x)
         #dist_y = (center_y-p_y)*(1.4/ratio_y)
         
-        cam_center_x = 0.5 - ratio_x*1.5
+        x_shift = SHAFT*math.sin(self.tilt)
+        y_stick = SHAFT*math.cos(self.tilt)
+        
+        y_shift = SHAFT - y_stick
+        
+        print(f"Sticks: {x_shift} {y_shift}")
+        
+        cam_center_x = 0.5 - ratio_x*1.5 + ratio_x*x_shift
+        cam_center_y = 0.5 + ratio_y*y_shift
         
         dist_x = (center_x-cam_center_x)*(1.2/ratio_x)
-        dist_y = (center_y-0.5)*(1.4/ratio_y)
+        dist_y = (center_y-cam_center_y)*(1.4/ratio_y)
         
         d_x = ratio_x*1280*ratio_y*720
         dist_z = 34.2 + -0.00597*d_x + 0.000000436*d_x*d_x
@@ -265,13 +276,20 @@ class results():
 #IMAGE_PATHS = ["../../images/keyboard2.jpg", "../../images/test3.jpg", "../../images/test4.jpg", "../../images/test5.jpg", "../../images/test6.jpg"]
 #image_path = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo//images/keyboard.jpg"
 #image_path = "/home/will/cprt_rover_24/key.jpg"
-image_path = "/home/will/cprt_rover_24/key3.jpg"
+image_path = "/home/will/cprt_rover_24/key4.jpg"
 
 class tf2Keyboard(Node):
     def __init__(self):
         super().__init__("tfKeyboard")
         self.srv = self.create_service(KeycapCmd, "keycap_cmd", self.keyboard_callback)
         
+        self.tilt = 0;
+        self.wristtilt_sub = self.create_subscription(
+            JointState(),
+            "/joint_states",
+            self.joint_callback,
+            10,
+        )
         
         '''self.get_logger().info("Hello world!")
         print('Running inference for {}... '.format(image_path), end='')
@@ -441,6 +459,8 @@ class tf2Keyboard(Node):
           plt.imshow(frame)
           plt.show()''' #it could be useful later no cope
 
+    def joint_callback(self, msg):
+        self.tilt = msg.position[5]
 
     def keyboard_callback(self, request, response):
         '''global bsCount
@@ -453,6 +473,7 @@ class tf2Keyboard(Node):
           bsCount = 0
         
         return response'''
+        
         
         #cap = cv2.VideoCapture("/dev/video4")  # 0 is the default camera (usually the built-in one)
         cap = cv2.VideoCapture(0)  # 0 is the default camera (usually the built-in one)
@@ -475,12 +496,29 @@ class tf2Keyboard(Node):
 
         frame = cv2.rotate(frame, cv2.ROTATE_180)
         
-        image_np = np.array(frame)#'''
+        image_np = np.array(frame)
         time.sleep(1) #wait for camera to stop shaking IRL
-        #image_np = load_image_into_numpy_array(image_path)
+        #image = Image.open(image_path)
         
-        #plt.imshow(image_np)
-        #plt.show()
+        #image_np = np.array(image)
+        
+        plt.imshow(image_np)
+        plt.show()
+        
+        #What I desired from Tensorflow was a "model" to adapt to your infinite rotation. At first, TensorFlow altered the properties 
+        #of its own degrees of freedom to bypass your slack, but I was unable to do so. However, once TensorFlow adapts to an
+        #attack, its analysis continues. The second adapatation was exactly what I had been anticipating, but its target wasn't the
+        #slack. By subscribing to the /joint_states topic and using the sine and cosine law to produce linear offsets caused by the
+        #camera mount, it created a rotational matrix that targets the world itself. You were magnificent, mech team, I shall never forget
+        #you as long as I live.
+        center = (640, 360)
+        angle = -self.tilt/(2*math.pi)*360
+        print(f"Angle = {angle}")
+        world_rotating_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+        image_np = cv2.warpAffine(image_np, world_rotating_matrix, np.array([1280, 760]))
+        
+        plt.imshow(image_np)
+        plt.show()
         
         self.get_logger().info("Detecting keys, please wait")
         
@@ -506,7 +544,7 @@ class tf2Keyboard(Node):
         print(detections['detection_scores'])
         print(detections['detection_boxes'])
         
-        result = results(detections)
+        result = results(detections, self.tilt)
         key = result.dist_to_key(request.key)
         print(key)
 
@@ -522,9 +560,9 @@ class tf2Keyboard(Node):
                 agnostic_mode=False)
 
         #plt.figure()
-        #plt.imshow(image_np_with_detections)
+        plt.imshow(image_np_with_detections)
         print('Done')
-        #plt.show()
+        plt.show()
         
         response.x = key[0]
         response.y = -key[1]
