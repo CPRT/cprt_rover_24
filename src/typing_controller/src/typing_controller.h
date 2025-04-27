@@ -35,7 +35,7 @@ class TypingNode : public rclcpp::Node
 
   private:
     //LOOK HERE FOR WHEN MECH DECIDES TO CHANGE END-EFFECTOR LENGTHS. Recommended to figure it out experimentally instead of getting them from mech drawings. They're in centimeters.
-    const double TIP_LENGTH = 23; //lateral dist from camera to nub +/- some cm to make it work. Used in "push-down" distance offset.
+    const double TIP_LENGTH = 22.5; //lateral dist from camera to nub +/- some cm to make it work. Used in "push-down" distance offset.
     const double TIP_DEPTH = 8.3; //vertical distance from camera center down to center of nub. Used in "align nub with key" distance offset.
     
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;

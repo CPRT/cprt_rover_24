@@ -253,7 +253,7 @@ class results():
         #dist_x = (center_x-p_x)*(1.2/ratio_x)
         #dist_y = (center_y-p_y)*(1.4/ratio_y)
         
-        x_shift = SHAFT*math.sin(self.tilt) - 2.5 #supposed to be 1.5
+        x_shift = SHAFT*math.sin(self.tilt)# - 2.5 #supposed to be 1.5
         y_stick = SHAFT*math.cos(self.tilt)
         
         y_shift = SHAFT - y_stick
@@ -273,8 +273,8 @@ class results():
         dist_z = 34.2 + -0.00597*d_x + 0.000000436*d_x*d_x
         
         print(f"Old dists: {dist_x} {dist_y}")
-        print(f"New dists: {dist_x+x_shift} {dist_y-y_shift}")
-        return (dist_x+x_shift, dist_y-y_shift, dist_z)
+        print(f"New dists: {dist_x-x_shift} {dist_y-y_shift}")
+        return (dist_x-x_shift, dist_y-y_shift, dist_z)
     
     #def center_to_key(self, k)
 
@@ -502,7 +502,7 @@ class tf2Keyboard(Node):
         #frame = cv2.rotate(frame, cv2.ROTATE_180)
         
         image_np = np.array(frame)
-        time.sleep(1) #wait for camera to stop shaking IRL
+        time.sleep(2.5) #wait for camera to stop shaking IRL
         #image = Image.open(image_path)
         
         #image_np = np.array(image)
@@ -564,9 +564,9 @@ class tf2Keyboard(Node):
                 min_score_thresh=.30,
                 agnostic_mode=False)
 
-        #plt.imshow(image_np_with_detections)
+        plt.imshow(image_np_with_detections)
         print('Done')
-        #plt.show()
+        plt.show()
         
         response.x = key[0]
         response.y = -key[1]
