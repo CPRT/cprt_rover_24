@@ -29,7 +29,7 @@ ScienceMode::ScienceMode(rclcpp::Node* node) : Mode("Science", node) {
 
 void ScienceMode::auto_drill_callback() {
   if (this->autoDrill) {
-    if(this->drillHeight < 100) { // 100mm /10cm
+    if (this->drillHeight < 100) {  // 100mm /10cm
       ros_phoenix::msg::MotorControl drill_control;
       drill_control.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
       drill_control.value = 1.0;
@@ -40,7 +40,8 @@ void ScienceMode::auto_drill_callback() {
       platform_pub_->publish(platform_control);
 
     } else {
-      //handle the servo grabbing soil, and then stop the drill once it reaches 11 ish cm
+      // handle the servo grabbing soil, and then stop the drill once it reaches
+      // 11 ish cm
       this->autoDrill = false;
       ros_phoenix::msg::MotorControl drill_control;
       drill_control.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
@@ -51,18 +52,17 @@ void ScienceMode::auto_drill_callback() {
       platform_control.value = 0.0;
       platform_pub_->publish(platform_control);
     }
-    
   }
 }
 
 void ScienceMode::drill_callback(
-    const ros_phoenix::msg::MotorStatus::SharedPtr msg) {
-}
+    const ros_phoenix::msg::MotorStatus::SharedPtr msg) {}
 void ScienceMode::platform_callback(
     const ros_phoenix::msg::MotorStatus::SharedPtr msg) {
   // convert from msg position to movement in the platform for drill height
   int distTraveled =
-      msg->position - this->drillHeight;  // do better conversion math for the difference betwen now and before
+      msg->position - this->drillHeight;  // do better conversion math for the
+                                          // difference betwen now and before
   if (distTraveled > 0) {
     this->drillHeight -= distTraveled;
   }

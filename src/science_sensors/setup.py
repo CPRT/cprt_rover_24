@@ -7,7 +7,13 @@ package_name = "science_sensors"
 setup(
     name=package_name,
     version="0.0.0",
-    packages=find_packages(exclude=["test"]),
+    packages=find_packages(
+        include=["science_sensors", "science_sensors.*"], exclude=["test"]
+    ),
+    package_data={
+        "science_sensors.stellarnet_driverLibs": ["*.so"],
+    },
+    include_package_data=True,
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
@@ -22,10 +28,11 @@ setup(
     maintainer_email="aj01cars@outlook.com",
     description="Nodes for science sensors",
     license="TODO: License declaration",
-    tests_require=["pytest"],
+    # tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "gas_sensor = science_sensors.gas_sensor:main",
+            "raman = science_sensors.raman:main",
         ],
     },
 )

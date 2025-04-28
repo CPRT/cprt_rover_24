@@ -36,6 +36,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/MoveServo.srv"
   "srv/VideoCapture.srv"
   "srv/GetCameras.srv"
+  "srv/Raman.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 
