@@ -111,7 +111,7 @@ grid = {
 PATH_TO_CFG = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/pipeline.config"
 PATH_TO_CKPT = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/exported-models/my_model/checkpoint"
 PATH_TO_LABELS = "/data_disk/will/python/TensorFlow/workspace/keycap_demo2/keycap_demo/annotations/label_map.pbtxt"
-SHAFT = 7.95 #Ivan's camera mount shaft length
+SHAFT = 7.95 #Ivan's camera mount shaft length (FIGURE OUT EXPERIMENTALLY)
 
 #matplotlib.use('Qt5Agg')
 
@@ -253,7 +253,7 @@ class results():
         #dist_x = (center_x-p_x)*(1.2/ratio_x)
         #dist_y = (center_y-p_y)*(1.4/ratio_y)
         
-        x_shift = SHAFT*math.sin(self.tilt)# - 2.5 #supposed to be 1.5
+        x_shift = SHAFT*math.sin(self.tilt) - 1.5# - 2.5 #supposed to be 1.5
         y_stick = SHAFT*math.cos(self.tilt)
         
         y_shift = SHAFT - y_stick
@@ -273,8 +273,8 @@ class results():
         dist_z = 34.2 + -0.00597*d_x + 0.000000436*d_x*d_x
         
         print(f"Old dists: {dist_x} {dist_y}")
-        print(f"New dists: {dist_x-x_shift} {dist_y-y_shift}")
-        return (dist_x-x_shift, dist_y-y_shift, dist_z)
+        print(f"New dists: {dist_x+x_shift} {dist_y-y_shift}")
+        return (dist_x+x_shift, dist_y-y_shift, dist_z)
     
     #def center_to_key(self, k)
 
