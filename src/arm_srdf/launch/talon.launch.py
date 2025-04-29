@@ -30,14 +30,14 @@ def generate_launch_description():
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="act2",
-                parameters=[{"id": 12}, {"P": 50.0}, {"I": 0.0}, {"D": 0.0}],
+                parameters=[{"id": 14}, {"P": 50.0}, {"I": 0.0}, {"D": 0.0}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="elbow",
                 parameters=[
-                    {"id": 13},
+                    {"id": 15},
                     {"P": 1.0},
                     {"I": 0.0},
                     {"D": 0.0},
@@ -49,7 +49,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="wristTilt",
                 parameters=[
-                    {"id": 14},
+                    {"id": 12},
                     {"P": 1.5},
                     {"I": 0.0},
                     {"D": 1.0},
@@ -61,7 +61,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="wristTurn",
                 parameters=[
-                    {"id": 15},
+                    {"id": 13},
                     {"P": 1.5},
                     {"I": 0.0},
                     {"D": 1.0},
