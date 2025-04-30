@@ -2,7 +2,19 @@
 
 echo "Starting Gstreamer upgrade..."
 
-sudo apt-get update && sudo apt-get install -y zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip flex bison libglib2.0-dev libmount-dev
+sudo apt-get update
+sudo apt-get install -y \
+              zlib1g-dev \
+              libffi-dev \
+              libssl-dev \
+              python3-dev \
+              python3-pip \
+              flex \
+              bison \
+              libglib2.0-dev \
+              libmount-dev \
+              libsrt-openssl-dev
+
 python3 -m pip install --upgrade pip
 pip3 install meson
 export PATH=$PATH:~/.local/bin

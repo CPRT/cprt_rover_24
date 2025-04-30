@@ -1,4 +1,4 @@
-#Types: 0 for v4l2, 1 for test source, Other types are not supported yet
+#Types: 0 for v4l2, 1 for test source, 2 for rtp jpeg source, Other types are not supported yet
 
 webrtc_node:
   ros__parameters:
@@ -6,13 +6,19 @@ webrtc_node:
     - "Drive"
     - "Secondary"
     - "Test"
+    - "Science"
     Drive:
       path: "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
       type: 0
     Secondary:
       path: "/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
       type: 0
+      encoded: true
     Test:
       type: 1
+    Science:
+      type: 2
+      path: "udp://0.0.0.0:5004"
+      encoded: true
     web_server: true
     web_server_path: "/home/cprt/gstreamer/webrtc/gstwebrtc-api/dist"

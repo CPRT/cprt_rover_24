@@ -12,6 +12,8 @@
 
 #include <gst/gst.h>
 
+#include <interfaces/srv/get_cameras.hpp>
+#include <interfaces/srv/video_capture.hpp>
 #include <interfaces/srv/video_out.hpp>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
@@ -57,7 +59,8 @@ class WebRTCStreamer : public rclcpp::Node {
    */
   enum class CameraType {
     V4l2Src = 0, /**< V4L2 source */
-    TestSrc      /**< Test source */
+    TestSrc,     /**< Test source */
+    NetworkSrc,  /**< Network source */
   };
 
   /**
@@ -68,6 +71,7 @@ class WebRTCStreamer : public rclcpp::Node {
     std::string name;
     std::string path;
     CameraType type;
+    bool encoded;
   };
 
  private:
@@ -80,6 +84,27 @@ class WebRTCStreamer : public rclcpp::Node {
   void start_video_cb(
       const std::shared_ptr<interfaces::srv::VideoOut::Request> request,
       std::shared_ptr<interfaces::srv::VideoOut::Response> response);
+
+  /**
+   * @brief Callback function to handle video capture requests.
+   *
+   * @param request The request object containing video capture parameters.
+   * @param response The response object to be populated with the result.
+   */
+  void capture_frame(
+      const std::shared_ptr<interfaces::srv::VideoCapture::Request> request,
+      std::shared_ptr<interfaces::srv::VideoCapture::Response> response);
+
+  /**
+   * @brief Callback function to get available camera sources.
+   *
+   * @param request The request object (not used).
+   * @param response The response object to be populated with the camera
+   * sources.
+   */
+  void get_cameras(
+      const std::shared_ptr<interfaces::srv::GetCameras::Request> request,
+      std::shared_ptr<interfaces::srv::GetCameras::Response> response);
 
   /**
    * @brief Creates a GStreamer source element for the given camera source.
@@ -124,6 +149,22 @@ class WebRTCStreamer : public rclcpp::Node {
    * @return A pointer to the created video converter element.
    */
   GstElement* create_vid_conv();
+  /**
+   * @brief Adds a chain of GStreamer elements to the pipeline.
+   *
+   * @param chain The vector of GStreamer elements to be added.
+   * @return A pointer to the last element in the chain.
+   */
+  GstElement* add_element_chain(const std::vector<GstElement*>& chain);
+  /**
+   * @brief Creates a GStreamer element of the specified type.
+   *
+   * @param element_type The type of the GStreamer element to create.
+   * @param element_name The name of the GStreamer element (optional).
+   * @return A pointer to the created GStreamer element.
+   */
+  GstElement* create_element(std::string element_type,
+                             std::string element_name = "");
 
   bool web_server_; /**< Flag indicating if the web server is enabled */
   std::string web_server_path_; /**< Path to the web server */
@@ -133,6 +174,16 @@ class WebRTCStreamer : public rclcpp::Node {
   GstElement* compositor_;            /**< GStreamer compositor element */
   rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr
       start_video_service_; /**< ROS2 service for starting video output */
+  rclcpp::Service<interfaces::srv::VideoCapture>::SharedPtr
+      capture_service_; /**< ROS2 service for capturing frames */
+  rclcpp::Service<interfaces::srv::GetCameras>::SharedPtr
+      get_cams_service_;     /**< ROS2 service for getting camera list */
+  GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
+  std::map<std::string, GstUniquePtr<GstPad>>
+      source_pads_; /**< Maps camera names to compositor pads*/
+  int height_;      /**< Max height of the video */
+  int width_;       /**< Max width of the video */
+  int framerate_;   /**< Max framerate of the video */
 
   /**
    * @brief Callback function for handling GStreamer bus messages.

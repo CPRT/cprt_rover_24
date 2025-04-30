@@ -15,7 +15,8 @@ find_package(rosidl_default_generators REQUIRED)
 
 #for msgs
 find_package(geometry_msgs REQUIRED)
-  find_package(geographic_msgs REQUIRED)
+find_package(geographic_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SixFloats.msg"
@@ -33,10 +34,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/NavToGPSGeopose.srv"
   "srv/VideoOut.srv"
   "srv/MoveServo.srv"
+  "srv/VideoCapture.srv"
+  "srv/GetCameras.srv"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 
   geographic_msgs # Add packages that above messages depend on
+  sensor_msgs
  )
 
 ament_export_dependencies(rosidl_default_runtime)
