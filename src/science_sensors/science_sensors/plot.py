@@ -13,7 +13,7 @@ intensity = data[:, 1]
 plt.figure(figsize=(10, 6))
 
 # Plot wavelength vs intensity.
-plt.plot(wavelength, intensity, marker='o', linestyle='-', label="Spectrum")
+plt.plot(wavelength, intensity, marker="o", linestyle="-", label="Spectrum")
 
 # Add title and labels.
 plt.title("StellarNet Spectrum")

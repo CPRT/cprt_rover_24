@@ -7,13 +7,13 @@ package_name = "science_sensors"
 setup(
     name=package_name,
     version="0.0.0",
-    packages = find_packages(include=['science_sensors', 'science_sensors.*'], exclude=["test"]),
-    package_data = {
-        'science_sensors.stellarnet_driverLibs': ['*.so'],
+    packages=find_packages(
+        include=["science_sensors", "science_sensors.*"], exclude=["test"]
+    ),
+    package_data={
+        "science_sensors.stellarnet_driverLibs": ["*.so"],
     },
     include_package_data=True,
-
-
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),

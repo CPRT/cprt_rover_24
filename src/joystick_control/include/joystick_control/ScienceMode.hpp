@@ -23,11 +23,10 @@ class ScienceMode : public Mode {
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
   void handlePanoramic(
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
-  void handleSoilCollection(
-      std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) ;
+  void handleSoilCollection(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
 
-    void drill_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
-    void platform_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
+  void drill_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
+  void platform_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
 
   void auto_drill_callback();
   void loadParameters();
