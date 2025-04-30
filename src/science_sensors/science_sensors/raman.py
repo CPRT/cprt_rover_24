@@ -21,7 +21,7 @@ CSV_DIR.mkdir(exist_ok=True)
 
 sudo -E bash -c '
   source /opt/ros/humble/setup.bash
-  source ~/cprt_rover_24/install/setup.bash   # if the client needs your workspace
+  source ~/cprt_rover_24/install/setup.bash
   ros2 service call /get_raman_spectrum interfaces/srv/Raman \
     "{inittime: 500, scansavg: 1, smoothing: 1}"
 '
@@ -53,7 +53,10 @@ class RamanServ(Node):
             f"Request  int={request.inittime} ms  "
             f"avg={request.scansavg}  smooth={request.smoothing}"
         )
-
+        if(Raman.Request.laser):
+            #turn on or off the laser using the GPIO relay/send ros message to do so. Maybe put a wait if its swapping states before getting spect
+            pass
+            
 
         data = self._get_spectrum(request.inittime,
                                   request.scansavg,
