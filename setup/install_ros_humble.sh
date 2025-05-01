@@ -1,5 +1,21 @@
 locale  # check for UTF-8
 
+# Download Will's AI model to detect URC keyboard
+# Needs to be downloaded here so we don't accidently forget to download it and then loose internet connection at competition
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+gdown_will_model_dir="$SCRIPT_DIR/../src/tf_keyboard/tf_keyboard"
+echo "WIll Mode path: $gdown_will_model"
+if [ ! -f "$gdown_will_model"]; then
+  echo "Unable to download will's ai model to detect keyboard."
+  echo "Please download it manually by running download_model.py from it's directory at src/tf_keyboard/tf_keyboard"
+else
+  echo "Downloading will's ai model to detect keyboard."
+  curr_dir=$(pwd)
+  cd $gdown_will_model_dir
+  python3 download_model.py
+  cd $curr_dir
+fi
+
 set -e
 
 sudo apt update && sudo apt install -y locales
@@ -56,6 +72,7 @@ pip3 install adafruit-circuitpython-ens160
 pip3 install adafruit-circuitpython-busdevice
 pip3 install adafruit-circuitpython-register
 pip3 install pyubx2
+pip3 install tensorflow
 
 sudo rosdep init
 rosdep update
