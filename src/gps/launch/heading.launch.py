@@ -20,7 +20,7 @@ def generate_launch_description():
                 executable="heading_pub_node",
                 name="gps_heading_node",
                 parameters=[
-                    {"frame_id": "gps"},
+                    {"frame_id": "gps_link"},
                     {"Freq": 5.0},  # Publish rate (hz)
                     {"Baudrate": 115200},
                     {"Device": "/dev/ttyUSB0"},

@@ -2,7 +2,7 @@ ublox_gps_node:
   ros__parameters:
     debug: 0                    # Range 0-4 (0 means no debug statements will print)
     device: /dev/ttyACM0
-    frame_id: gps
+    frame_id: gps_link
     uart1:
       baudrate: 115200
       in: 32
