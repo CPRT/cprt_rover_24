@@ -103,7 +103,6 @@ def generate_launch_description():
                     {"invert_sensor": True},
                     {"invert": True},
                     {"period_ms": PUBLISH_PERIOD},
-                    {"max_voltage": 22.0},
                     {"non_continuous": True},
                 ],
             ),
