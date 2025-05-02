@@ -24,7 +24,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     }
     if (node_name.empty()) {
       RCLCPP_FATAL(rclcpp::get_logger("RoverArmHardwareInterface"),
-                   "Missing necessary paramater node_name for joint %s",
+                   "Missing necessary parameter node_name for joint %s",
                    joint.name.c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
