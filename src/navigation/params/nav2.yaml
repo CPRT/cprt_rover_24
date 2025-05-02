@@ -162,7 +162,7 @@ global_costmap:
       track_unknown_space: true
       trinary_costmap: false
       lethal_cost_threshold: 200
-      plugins: [static_layer, denoise_layer, inflation_layer, obstacle_layer]
+      plugins: [static_layer, inflation_layer, obstacle_layer]
       static_layer:
         enabled: true
         plugin: nav2_costmap_2d::StaticLayer
@@ -170,11 +170,6 @@ global_costmap:
         subscribe_to_updates: True
         footprint_clearing_enabled: True
         map_topic: /map
-      denoise_layer:
-        plugin: "nav2_costmap_2d::DenoiseLayer"
-        enabled: true
-        minimal_group_size: 2
-        group_connectivity_type: 8
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
