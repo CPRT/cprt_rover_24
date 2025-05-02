@@ -4,7 +4,7 @@ controller_manager:
     update_rate: 100  # Hz
 
     rover_arm_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: velocity_controllers/JointGroupVelocityController
 
 
     joint_state_broadcaster:
@@ -20,7 +20,6 @@ rover_arm_controller:
       - Joint_5
       - Joint_6
     command_interfaces:
-      - position
       - velocity
     state_interfaces:
       - position

@@ -1,32 +1,30 @@
 #include "ArmManualMode.hpp"
 
+#include "ArmHelpers.hpp"
+#include "control_msgs/msg/joint_jog.hpp"
+
 ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
   RCLCPP_INFO(node_->get_logger(), "Arm Manual Mode");
   loadParameters();
-  twist_pub_ =
-      node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
-  base_pub_ =
-      node_->create_publisher<ros_phoenix::msg::MotorControl>("/base/set", 10);
-  act1_pub_ =
-      node_->create_publisher<ros_phoenix::msg::MotorControl>("/act1/set", 10);
-  act2_pub_ =
-      node_->create_publisher<ros_phoenix::msg::MotorControl>("/act2/set", 10);
-  elbow_pub_ =
-      node_->create_publisher<ros_phoenix::msg::MotorControl>("/elbow/set", 10);
-  wristTilt_pub_ = node_->create_publisher<ros_phoenix::msg::MotorControl>(
-      "/wristTilt/set", 10);
-  wristTurn_pub_ = node_->create_publisher<ros_phoenix::msg::MotorControl>(
-      "/wristTurn/set", 10);
+  joint_pub_ = node_->create_publisher<control_msgs::msg::JointJog>(
+      "/servo_node/delta_joint_cmds", 10);
   servo_client_ =
       node_->create_client<interfaces::srv::MoveServo>("servo_service");
+  if (!ArmHelpers::start_moveit_servo(node_)) {
+    return;
+  }
 
   kServoMin = 0;
   kServoMax = 180;
   kClawMax = 62;
   kClawMin = 8;
-  servoPos = kClawMax;
-  servoRequest(kServoPort, servoPos, kServoMin, kServoMax);
-  buttonPressed = false;
+  servoPos_ = kClawMax;
+  servoRequest(kServoPort, servoPos_, kServoMin, kServoMax);
+  buttonPressed_ = false;
+  joint_msg_ = control_msgs::msg::JointJog();
+  joint_msg_.joint_names = {"Joint_1", "Joint_2", "Joint_3",
+                            "Joint_4", "Joint_5", "Joint_6"};
+  joint_msg_.velocities = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 }
 
 double ArmManualMode::getThrottleValue(
@@ -47,86 +45,71 @@ void ArmManualMode::processJoystickInput(
 }
 
 void ArmManualMode::handleTwist(
-    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
+    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
   double throttle = getThrottleValue(joystickMsg);
-
-  base_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  act1_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  act2_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  elbow_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  wristTilt_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  wristTurn_.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  act1Scaler = 0.75;
-  act2Scaler = 0.80;
+  joint_msg_.header = joystickMsg->header;
 
   // Base (might want a deadzone. TBD)
-  base_.value = -joystickMsg->axes[kBaseAxis] * throttle;
+  joint_msg_.velocities[0] = -joystickMsg->axes[kBaseAxis] * throttle;
 
   // Simple straight movement (NOT inverse kin)
   // some scaling to move in a straight line
   if (joystickMsg->buttons[kSimpleForward] == 1) {
-    act1_.value = -joystickMsg->buttons[kSimpleForward] * act1Scaler * throttle;
-    act2_.value = -joystickMsg->buttons[kSimpleForward] * throttle;
+    // TODO: reimplement this
   } else if (joystickMsg->buttons[kSimpleBackward] == 1) {
-    act1_.value = joystickMsg->buttons[kSimpleBackward] * act1Scaler * throttle;
-    act2_.value = joystickMsg->buttons[kSimpleBackward] * act2Scaler * throttle;
+    // TODO: reimplement this
   } else {
     // act1
-    act1_.value = -joystickMsg->axes[kAct1Axis] * throttle;
+    joint_msg_.velocities[1] = -joystickMsg->axes[kAct1Axis] * throttle;
 
     // act2
-    act2_.value = -joystickMsg->axes[kAct2Axis] * throttle;
+    joint_msg_.velocities[2] = -joystickMsg->axes[kAct2Axis] * throttle;
   }
 
   // Elbow
   // Deadzone, easy to turn this one by accident.
   if (joystickMsg->axes[kElbowYaw] < 0.2 &&
       joystickMsg->axes[kElbowYaw] > -0.2) {
-    elbow_.value = 0;
+    joint_msg_.velocities[3] = 0;
   } else {
-    elbow_.value = joystickMsg->axes[kElbowYaw] * throttle;
+    joint_msg_.velocities[3] = joystickMsg->axes[kElbowYaw] * throttle;
   }
 
   // Wrist Tilt
-  wristTilt_.value = (joystickMsg->buttons[kWristYawPositive] -
-                      joystickMsg->buttons[kWristYawNegative]) *
-                     throttle;
+  joint_msg_.velocities[4] = (joystickMsg->buttons[kWristYawPositive] -
+                              joystickMsg->buttons[kWristYawNegative]) *
+                             throttle;
 
   // Wrist Turn
-  wristTurn_.value = -joystickMsg->axes[kWristRoll] * throttle;
+  joint_msg_.velocities[5] = -joystickMsg->axes[kWristRoll] * throttle;
 
   // Gripper. Will cycle between open, half open, and close on button release.
-  if (joystickMsg->buttons[kClawOpen] == 1 && !buttonPressed) {
-    if (servoPos + ((kClawMax - kClawMin) / 2) < kClawMax + 1) {
-      buttonPressed = true;
-      servoPos = servoPos + ((kClawMax - kClawMin) / 2);
-      servoRequest(kServoPort, servoPos, kClawMin, kClawMax);
+  if (joystickMsg->buttons[kClawOpen] == 1 && !buttonPressed_) {
+    if (servoPos_ + ((kClawMax - kClawMin) / 2) < kClawMax + 1) {
+      buttonPressed_ = true;
+      servoPos_ = servoPos_ + ((kClawMax - kClawMin) / 2);
+      servoRequest(kServoPort, servoPos_, kClawMin, kClawMax);
     } else {
-      buttonPressed = true;
+      buttonPressed_ = true;
       RCLCPP_INFO(node_->get_logger(), "Max Open");
-      RCLCPP_INFO(node_->get_logger(), "%d", servoPos);
+      RCLCPP_INFO(node_->get_logger(), "%d", servoPos_);
     }
-  } else if (joystickMsg->buttons[kClawClose] == 1 && !buttonPressed) {
-    if (servoPos - ((kClawMax - kClawMin) / 2) > kClawMin - 1) {
-      buttonPressed = true;
-      servoPos = servoPos - ((kClawMax - kClawMin) / 2);
-      servoRequest(kServoPort, servoPos, kClawMin, kClawMax);
+  } else if (joystickMsg->buttons[kClawClose] == 1 && !buttonPressed_) {
+    if (servoPos_ - ((kClawMax - kClawMin) / 2) > kClawMin - 1) {
+      buttonPressed_ = true;
+      servoPos_ = servoPos_ - ((kClawMax - kClawMin) / 2);
+      servoRequest(kServoPort, servoPos_, kClawMin, kClawMax);
     } else {
-      buttonPressed = true;
+      buttonPressed_ = true;
       RCLCPP_INFO(node_->get_logger(), "Max Close");
-      RCLCPP_INFO(node_->get_logger(), "%d", servoPos);
+      RCLCPP_INFO(node_->get_logger(), "%d", servoPos_);
     }
   } else if ((joystickMsg->buttons[kClawClose] == 0) &&
              (joystickMsg->buttons[kClawOpen] == 0)) {
-    buttonPressed = false;
+    buttonPressed_ = false;
   }
 
-  base_pub_->publish(base_);
-  act1_pub_->publish(act1_);
-  act2_pub_->publish(act2_);
-  elbow_pub_->publish(elbow_);
-  wristTilt_pub_->publish(wristTilt_);
-  wristTurn_pub_->publish(wristTurn_);
+  joint_pub_->publish(joint_msg_);
 }
 
 void ArmManualMode::declareParameters(rclcpp::Node* node) {
@@ -163,35 +146,6 @@ void ArmManualMode::loadParameters() {
   node_->get_parameter("arm_manual_mode.throttle.axis", kThrottleAxis);
   node_->get_parameter("arm_manual_mode.throttle.max", kThrottleMax);
   node_->get_parameter("arm_manual_mode.throttle.min", kThrottleMin);
-}
-
-interfaces::srv::MoveServo::Response ArmManualMode::sendRequest(int port,
-                                                                int pos,
-                                                                int min,
-                                                                int max) const {
-  auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
-  request->port = port;
-  request->pos = pos;
-  request->min = min;
-  request->max = max;
-
-  // Wait for the service to be available
-  if (!servo_client_->wait_for_service(std::chrono::seconds(1))) {
-    RCLCPP_WARN(node_->get_logger(), "Service not available after waiting");
-    return interfaces::srv::MoveServo::Response();
-  }
-
-  auto future = servo_client_->async_send_request(request);
-
-  // Wait for the result (with timeout)
-  if (rclcpp::spin_until_future_complete(node_->get_node_base_interface(),
-                                         future, std::chrono::seconds(1)) !=
-      rclcpp::FutureReturnCode::SUCCESS) {
-    RCLCPP_ERROR(node_->get_logger(), "Service call failed");
-    return interfaces::srv::MoveServo::Response();
-  }
-
-  return *future.get();
 }
 
 void ArmManualMode::servoRequest(int req_port, int req_pos, int req_min,

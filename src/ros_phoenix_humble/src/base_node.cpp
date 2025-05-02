@@ -27,11 +27,13 @@ BaseNode::BaseNode(const std::string &name, const rclcpp::NodeOptions &options)
                                        // for Falcon built-in encoder)
   this->declare_parameter<bool>("invert", false);
   this->declare_parameter<bool>("invert_sensor", false);
+  this->declare_parameter<bool>("non_continuous", false);
   this->declare_parameter<bool>("brake_mode", true);
   this->declare_parameter<int>("input_type", RELATIVE);
   this->declare_parameter<double>("max_voltage", 12);
   this->declare_parameter<double>("max_current", 30);
   this->declare_parameter<double>("sensor_multiplier", 1.0);
+  this->declare_parameter<double>("sensor_offset", 0.0);
 
   this->declare_parameter<double>("P", 0);
   this->declare_parameter<double>("I", 0);
@@ -45,6 +47,7 @@ BaseNode::BaseNode(const std::string &name, const rclcpp::NodeOptions &options)
   this->follow_id_ = this->get_parameter("follow_id").as_int();
   this->sensor_multiplier_ =
       this->get_parameter("sensor_multiplier").as_double();
+  this->sensor_offset_ = this->get_parameter("sensor_offset").as_double();
 
   this->last_update_ = this->now();
 
@@ -104,6 +107,8 @@ rcl_interfaces::msg::SetParametersResult BaseNode::reconfigure(
 
     } else if (param.get_name() == "sensor_multiplier") {
       this->sensor_multiplier_ = param.as_double();
+    } else if (param.get_name() == "sensor_offset") {
+      this->sensor_offset_ = param.as_double();
     }
   }
 

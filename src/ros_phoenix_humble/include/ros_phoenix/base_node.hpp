@@ -45,6 +45,7 @@ class BaseNode : public Node {
 
   int follow_id_;
   double sensor_multiplier_ = 1.0;
+  double sensor_offset_ = 0.0;
 
   bool configured_ = false;
   std::mutex config_mutex_;
