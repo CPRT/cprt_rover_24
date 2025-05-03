@@ -8,6 +8,9 @@ import random
 class Servo_Client(Node):
     def __init__(self):
         super().__init__("servo_Client")
+        self.declare_parameter("port", 0)
+        self.port = self.get_parameter("port").get_parameter_value().integer_value
+        self.get_logger().info(f"{self.port}")
 
         self.cli = self.create_client(MoveServo, "servo_service")
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -27,7 +30,7 @@ class Servo_Client(Node):
     def servo_tester(self) -> None:
         random_pos = random.randint(0, 180)
 
-        self.servo_request(0, random_pos)
+        self.servo_request(self.port, random_pos)
 
 
 def main(args=None):

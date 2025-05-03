@@ -13,7 +13,7 @@ class Cam_Servo_Client(Node):
         self.cli = self.create_client(MoveServo, "cam_servo_service")
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().warn("service not available, waiting again...")
-        self.declare_parameters()
+        self.load_params()
         self.goal_pos_x = self.default_pos
         self.goal_pos_y = self.default_pos
         self.last_pos_x = self.default_pos

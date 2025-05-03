@@ -1,0 +1,8 @@
+pi_Servo_node:
+  ros__parameters:
+    ports_used: 1
+    port0:
+      out_pin: 32
+      min: 3   # Min PWM value
+      max: 12  # Max PWM value
+      rom: 360 # 360 degrees
