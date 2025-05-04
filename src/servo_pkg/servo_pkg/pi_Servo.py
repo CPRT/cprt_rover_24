@@ -41,7 +41,9 @@ class pi_Servo(Node):
 
     def load_params(self):
         self.declare_parameter("servos_used", 0)
-        num_servos = self.get_parameter("servos_used").get_parameter_value().integer_value
+        num_servos = (
+            self.get_parameter("servos_used").get_parameter_value().integer_value
+        )
         if num_servos <= 0:
             self.get_logger().error("Invalid number of ports")
             raise ValueError("Invalid number of ports")
@@ -63,7 +65,9 @@ class pi_Servo(Node):
             max_pos = (
                 self.get_parameter(f"servo{i}.max").get_parameter_value().integer_value
             )
-            rom = self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
+            rom = (
+                self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
+            )
             outpin = (
                 self.get_parameter(f"servo{i}.out_pin")
                 .get_parameter_value()
