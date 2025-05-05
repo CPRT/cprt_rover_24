@@ -7,7 +7,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
       hardware_interface::CallbackReturn::SUCCESS) {
     return hardware_interface::CallbackReturn::ERROR;
   }
-  hw_position_commands_.resize(info_.joints.size(), 0);
+  hw_commands_.resize(info_.joints.size(), 0);
   hw_position_states_.resize(info_.joints.size(),
                              std::numeric_limits<double>::quiet_NaN());
   hw_velocity_states_.resize(info_.joints.size(), 0);
@@ -87,7 +87,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_configure(
   for (uint i = 0; i < hw_position_states_.size(); i++) {
     hw_position_states_[i] = 0;
     hw_velocity_states_[i] = 0;
-    hw_position_commands_[i] = 0;
+    hw_commands_[i] = 0;
   }
   RCLCPP_INFO(rclcpp::get_logger("RoverArmHardwareInterface"),
               "Successfully configured!");
@@ -119,7 +119,7 @@ RoverArmHardwareInterface::export_command_interfaces() {
   for (uint i = 0; i < info_.joints.size(); i++) {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
         info_.joints[i].name, phoenix_to_HW_type(control_type_[i]),
-        &hw_position_commands_[i]));
+        &hw_commands_[i]));
   }
   return command_interfaces;
 }
@@ -129,7 +129,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_activate(
   // command and state should be equal when starting
   const size_t num_joints = info_.joints.size();
   for (size_t i = 0; i < num_joints; i++) {
-    hw_position_commands_[i] = hw_position_states_[i];
+    hw_commands_[i] = hw_position_states_[i];
     encoder_subscribers_.emplace_back(
         node_ptr_->create_subscription<ros_phoenix::msg::MotorStatus>(
             node_names_[i] + "/status", 10,
@@ -167,7 +167,7 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
   const int num_joints = info_.joints.size();
   if (open_loop_) {
     for (int i = 0; i < num_joints; i++) {
-      hw_position_states_[i] = hw_position_commands_[i];
+      hw_position_states_[i] = hw_commands_[i];
       hw_velocity_states_[i] = 0;
     }
     return hardware_interface::return_type::OK;
@@ -186,7 +186,7 @@ hardware_interface::return_type RoverArmHardwareInterface::write(
   const int num_joints = info_.joints.size();
   for (int i = 0; i < num_joints; i++) {
     request.mode = control_type_[i];
-    request.value = hw_position_commands_[i];
+    request.value = hw_commands_[i];
     motor_publishers_[i]->publish(request);
   }
 

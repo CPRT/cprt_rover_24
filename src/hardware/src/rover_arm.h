@@ -68,7 +68,7 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
  private:
   // Store the command for the simulated robot
   std::vector<std::string> node_names_;
-  std::vector<double> hw_position_commands_;
+  std::vector<double> hw_commands_;
   std::vector<double> hw_position_states_;
   std::vector<double> hw_velocity_states_;
   std::vector<double> temp_;
