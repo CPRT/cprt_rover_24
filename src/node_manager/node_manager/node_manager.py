@@ -13,6 +13,9 @@ from .node_info import NodeInfo
 from .node_monitor import NodeMonitor
 from . import node_launcher, node_terminator
 
+import os
+import tempfile
+import json
 import logging
 import threading
 import time
@@ -28,13 +31,22 @@ class NodeManager(Node):
         super().__init__("node_manager")
 
         self.declare_parameter("launch_keys", None)
+        self.declare_parameter("state_file_path", "~/.ros/node_manager_state.json")
 
         self._nodes: dict[str, NodeInfo] = {}
         self._mutex: threading.Lock = threading.Lock()
 
-        self.node_monitor = NodeMonitor()
+        self._persistent_state_file_ref: str = os.path.expanduser(self.get_parameter("state_file_path").value)
+        os.makedirs(os.path.dirname(self._persistent_state_file_ref), exist_ok=True)
+
 
         threading.Thread(target=self._node_monitor_loop, daemon=True)
+
+        # --- Recovery Init ----
+        intended_nodes = self._load_state()
+        self.get_logger().info(f"Loaded state from {self._persistent_state_file_ref}")
+        self.create_timer(1.0, lambda: self._recover_nodes(intended_nodes), oneshot=True)
+
 
         self.launcher_service = self.create_service(
             LaunchNode, "/node_manager/launch_node", self._launch_node_callback
@@ -121,8 +133,11 @@ class NodeManager(Node):
                 self._nodes[name] = node_info
                 node_logger.info(f"Started {node_info.mode} '{name}' (PID {proc.pid}).")
 
+                self._save_state()
+
             except Exception as e:
                 node_logger.error(f"Error launching node '{name}': {e}")
+                self._nodes.pop(name, None)
                 return False
 
         if node_info.mode == "launch":
@@ -166,6 +181,7 @@ class NodeManager(Node):
             node_terminator.terminate(node_info)
             with self._mutex:
                 _ = self._nodes.pop(name, None)
+            self._save_state()
             node_logger.info(f"Node '{name}' stopped.")
             return True
         except Exception as e:
@@ -280,6 +296,9 @@ class NodeManager(Node):
                         node_logger.info(f"Not respawning '{name}' (respawn disabled).")
                         with self._mutex:
                             self._nodes.pop(name, None)
+                        should_save_state = True
+                    if should_save_state:
+                        self._save_state()
                 else:
                     if node_info.mode == "launch":
                         try:
@@ -333,8 +352,71 @@ class NodeManager(Node):
             f"No child processes discovered for '{node_info.name}' within timeout."
         )
 
-    def __del__(self):
+
+    def _load_state(self) -> list[str]:
+        try:
+            with open(self._persistent_state_file_ref, 'r') as f:
+                data = json.load(f)
+                return data.get("intended_nodes", [])
+        except FileNotFoundError:
+            self.get_logger().info(f"State file not found: {self._persistent_state_file_ref}")
+            return []
+        except (json.JSONDecodeError, IOError) as e:
+            self.get_logger().error(f"Error loading state file {self._persistent_state_file_ref}")
+            # back up corrupted shit here maybe?
+            return []
+    
+    def _save_state(self) -> None:
+        with self._mutex:
+            intended_nodes = list(self._nodes.keys())
+
+        self.get_logger().debug(f"Saving state: {intended_nodes}")
+        data = {"intended_nodes" : intended_nodes}
+
+        try:
+            dirname = os.path.dirname(self._persistent_state_file_ref)
+            with tempfile.NamedTemporaryFile('w', dir=dirname, delete=False) as tf:
+                json.dump(data, tf, indent=2)
+                temp_path = tf.name
+            os.replace(temp_path, self._persistent_state_file_ref)
+            self.get_logger().debug(f"State saved to uhhhhh this file {self._persistent_state_file_ref}")
+        except (IOError, OSError) as e:
+            self.get_logger().error(f"Failed to save the state to {self._persistent_state_file_ref}")
+            if 'temp_path' in locals() and os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except OSError as remove_e:
+                    self.get_logger().error(f"Failed to remove temporary file {temp_path}: {remove_e}")
+
+
+    def _recover_nodes(self, intended_nodes: list[str]) -> None:
+        self.get_logger().info(f"Attempting recovery launch for: {intended_nodes}")
+        active_nodes_before_recovery = set(self._nodes.keys())
+
+        nodes_to_recover = [name for name in intended_nodes if name not in active_nodes_before_recovery]
+
+        if not nodes_to_recover:
+            self.get_logger().info("No nodes require recovery launch.")
+            return
+
+        for name in nodes_to_recover:
+            if name not in self.launch_files:
+                self.get_logger().warning(f"Skipping recovery for '{name}': Not found in launch configurations.")
+                continue
+
+            self.get_logger().info(f"Attempting recovery launch for '{name}'...")
+            success = self.launch_node(name)
+            if success:
+                self.get_logger().info(f"Successfully recovered '{name}'.")
+            else:
+                self.get_logger().error(f"Failed to recover '{name}'.")
+            time.sleep(0.5)
+    
+    def _graceful_shutdown(self) -> None:
+        self.get_logger().info("Node Manager shutting down gracefully...")
         self.shutdown_all()
+        self.get_logger().info("Node Manager shutdown complete.")
+
 
 
 def main(args=None):
