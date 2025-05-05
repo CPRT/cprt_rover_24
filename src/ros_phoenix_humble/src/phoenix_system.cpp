@@ -6,7 +6,7 @@
 #include "ros_phoenix/phoenix_manager.hpp"
 #include "ros_phoenix/phoenix_nodes.hpp"
 
-hardware_interface::return_type set_parameters(
+hardware_interface::CallbackReturn set_parameters(
     const std::unordered_map<std::string, std::string> parameters,
     rclcpp::Node::SharedPtr node) {
   for (const auto &p : parameters) {
@@ -35,22 +35,22 @@ hardware_interface::return_type set_parameters(
                 node->get_logger(),
                 "Boolean parameter '%s' must be either 'true' or 'false'",
                 name.c_str());
-            return hardware_interface::return_type::ERROR;
+            return hardware_interface::CallbackReturn::ERROR;
           }
           break;
         default:
           RCLCPP_FATAL(node->get_logger(), "Unsupported parameter type: %s",
                        param.get_type_name().c_str());
-          return hardware_interface::return_type::ERROR;
+          return hardware_interface::CallbackReturn::ERROR;
       }
     } else {
       RCLCPP_FATAL(node->get_logger(), "Unknown parameter '%s' for node '%s'",
                    name.c_str(), node->get_name());
-      return hardware_interface::return_type::ERROR;
+      return hardware_interface::CallbackReturn::ERROR;
     }
   }
 
-  return hardware_interface::return_type::OK;
+  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 namespace ros_phoenix {
@@ -89,7 +89,7 @@ ControlMode PhoenixSystem::str_to_interface(const std::string &str) {
 
 PhoenixSystem::PhoenixSystem() : logger_(rclcpp::get_logger("PhoenixSystem")) {}
 
-hardware_interface::return_type PhoenixSystem::configure(
+hardware_interface::CallbackReturn PhoenixSystem::on_init(
     const hardware_interface::HardwareInfo &info) {
   this->logger_ = rclcpp::get_logger(info.name);
   this->exec_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
@@ -100,11 +100,11 @@ hardware_interface::return_type PhoenixSystem::configure(
     RCLCPP_FATAL(this->logger_,
                  "Multiple instance of PhoenixSystem were "
                  "detected. Only one per process is allowed!");
-    return hardware_interface::return_type::ERROR;
+    return hardware_interface::CallbackReturn::ERROR;
   }
 
   auto rc = set_parameters(info.hardware_parameters, phoenix_manager);
-  if (rc != hardware_interface::return_type::OK) return rc;
+  if (rc != hardware_interface::CallbackReturn::SUCCESS) return rc;
 
   this->exec_->add_node(phoenix_manager);
 
@@ -114,7 +114,7 @@ hardware_interface::return_type PhoenixSystem::configure(
       RCLCPP_FATAL(phoenix_manager->get_logger(),
                    "Joint '%s' is missing required parameter 'type'",
                    joint.name.c_str());
-      return hardware_interface::return_type::ERROR;
+      return hardware_interface::CallbackReturn::ERROR;
     }
 
     auto type_name = (*type_param).second;
@@ -123,12 +123,12 @@ hardware_interface::return_type PhoenixSystem::configure(
       RCLCPP_FATAL(phoenix_manager->get_logger(),
                    "Joint '%s' is of invalid type '%s'", joint.name.c_str(),
                    type_name.c_str());
-      return hardware_interface::return_type::ERROR;
+      return hardware_interface::CallbackReturn::ERROR;
     }
     auto parameters = joint.parameters;
     parameters.erase("type");
     auto rc = set_parameters(parameters, node);
-    if (rc != hardware_interface::return_type::OK) return rc;
+    if (rc != hardware_interface::CallbackReturn::SUCCESS) return rc;
 
     this->exec_->add_node(node);
 
@@ -140,7 +140,7 @@ hardware_interface::return_type PhoenixSystem::configure(
                    "Joint '%s' has %d command interfaces. Expected 1.",
                    joint.name.c_str(),
                    static_cast<int>(joint.command_interfaces.size()));
-      return hardware_interface::return_type::ERROR;
+      return hardware_interface::CallbackReturn::ERROR;
     }
     ControlMode cmd_interface =
         str_to_interface(joint.command_interfaces[0].name);
@@ -148,7 +148,7 @@ hardware_interface::return_type PhoenixSystem::configure(
       RCLCPP_FATAL(
           this->logger_, "Joint '%s' has an invalid command interface: %s",
           joint.name.c_str(), joint.command_interfaces[0].name.c_str());
-      return hardware_interface::return_type::ERROR;
+      return hardware_interface::CallbackReturn::ERROR;
     }
     control->mode = static_cast<int>(cmd_interface);
 
@@ -157,14 +157,13 @@ hardware_interface::return_type PhoenixSystem::configure(
         RCLCPP_FATAL(this->logger_,
                      "Joint '%s' has an invalid state interface: %s",
                      joint.name.c_str(), state_intf.name.c_str());
-        return hardware_interface::return_type::ERROR;
+        return hardware_interface::CallbackReturn::ERROR;
       }
     }
 
     this->joints_.push_back({joint, node, control, status});
   }
-
-  return hardware_interface::return_type::OK;
+  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 std::vector<hardware_interface::StateInterface>
@@ -205,17 +204,18 @@ PhoenixSystem::export_command_interfaces() {
   return command_interfaces;
 }
 
-hardware_interface::return_type PhoenixSystem::start() {
+hardware_interface::CallbackReturn PhoenixSystem::on_activate(
+    const rclcpp_lifecycle::State & /*previous_state*/) {
   this->spin_thread_ = std::thread([this] { this->exec_->spin(); });
-
-  return hardware_interface::return_type::OK;
+  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type PhoenixSystem::stop() {
+hardware_interface::CallbackReturn PhoenixSystem::on_deactivate(
+    const rclcpp_lifecycle::State & /*previous_state*/) {
   this->exec_->cancel();
   this->spin_thread_.join();
 
-  return hardware_interface::return_type::OK;
+  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::return_type PhoenixSystem::read(const rclcpp::Time &,

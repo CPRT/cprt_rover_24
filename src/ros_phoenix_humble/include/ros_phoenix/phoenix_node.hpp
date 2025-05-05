@@ -46,7 +46,8 @@ class PhoenixNode : public BaseNode {
     status->output_current = this->get_output_current();
 
     status->position = this->controller_->GetSelectedSensorPosition() *
-                       this->sensor_multiplier_;
+                           this->sensor_multiplier_ -
+                       this->sensor_offset_;
     // CTRE library returns velocity in units/100ms. Multiply by 10 to get
     // units/s.
     status->velocity = this->controller_->GetSelectedSensorVelocity() * 10.0 *
@@ -68,8 +69,8 @@ class PhoenixNode : public BaseNode {
       this->controller_->Set(
           mode, control_msg->value / 10.0 / this->sensor_multiplier_);
     } else if (mode == ControlMode::Position) {
-      this->controller_->Set(mode,
-                             control_msg->value / this->sensor_multiplier_);
+      this->controller_->Set(mode, (this->sensor_offset_ + control_msg->value) /
+                                       this->sensor_multiplier_);
     } else if (mode == ControlMode::PercentOutput ||
                mode == ControlMode::Disabled) {
       this->controller_->Set(mode, control_msg->value);
@@ -114,7 +115,6 @@ class PhoenixNode : public BaseNode {
           RCLCPP_WARN(
               this->get_logger(),
               "Motor controller has not been seen and cannot be configured!");
-          warned = true;
         }
         continue;
       }

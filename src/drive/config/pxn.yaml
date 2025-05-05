@@ -31,7 +31,7 @@ flightstick_control:
         max: 1.0
       base_axis: 0
       wrist_roll: 4
-      wrist_yaw_positive: 4
+      wrist_yaw_positive: 3
       wrist_yaw_negative: 5
       act1_axis: 1
       act2_axis: 5
@@ -41,3 +41,16 @@ flightstick_control:
       simple_forward: 2
       simple_backward: 3
       servo_port: 0
+  
+    arm_ik_mode:
+      x_axis: 1
+      y_axis: 0
+      up_button: 5
+      down_button: 3
+      rotate_around_y: 5
+      rotate_around_x: 4
+      rotate_around_z: 3
+      open_claw: 0
+      close_claw: 1
+      base_frame: 4
+      eef_frame: 2

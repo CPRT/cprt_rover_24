@@ -72,7 +72,7 @@ def test_launch(moveit_config, launch_package_path=None):
             description="By default, we are not in debug mode",
         )
     )
-    ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=True))
+    ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=False))
     # If there are virtual joints, broadcast static tf by including virtual_joints launch
     virtual_joints_launch = (
         launch_package_path / "launch/static_virtual_joint_tfs.launch.py"
@@ -112,7 +112,6 @@ def test_launch(moveit_config, launch_package_path=None):
         )
     )
 
-    # Fake joint driver
     ld.add_action(
         Node(
             package="controller_manager",
@@ -148,12 +147,13 @@ def test_launch(moveit_config, launch_package_path=None):
             # Assuming ROS2 intraprocess communications works well, this is a more efficient way.
             # ComposableNode(
             #     package="moveit_servo",
-            #     plugin="moveit_servo::ServoServer",
+            #     plugin="moveit_servo::ServoNode",
             #     name="servo_server",
             #     parameters=[
             #         servo_params,
             #         moveit_config.robot_description,
             #         moveit_config.robot_description_semantic,
+            #         moveit_config.robot_description_kinematics,
             #     ],
             # ),
             ComposableNode(
@@ -161,17 +161,6 @@ def test_launch(moveit_config, launch_package_path=None):
                 plugin="robot_state_publisher::RobotStatePublisher",
                 name="robot_state_publisher",
                 parameters=[moveit_config.robot_description],
-            ),
-            ComposableNode(
-                package="tf2_ros",
-                plugin="tf2_ros::StaticTransformBroadcasterNode",
-                name="static_tf2_broadcaster",
-                parameters=[{"child_frame_id": "/Link_7", "frame_id": "/Link_1"}],
-            ),
-            ComposableNode(
-                package="joy",
-                plugin="joy::Joy",
-                name="joy_node",
             ),
         ],
         output="screen",
