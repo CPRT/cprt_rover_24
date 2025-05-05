@@ -9,6 +9,8 @@ find_package(nav_msgs REQUIRED)
 find_package(joy REQUIRED)
 find_package(ros_phoenix REQUIRED)
 find_package(interfaces REQUIRED)
+find_package(control_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
@@ -17,7 +19,12 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(include/${PROJECT_NAME})
 
 # Declare the executables for the nodes
-add_executable(flightstick_control src/FlightstickControl.cpp src/DriveMode.cpp src/ArmManualMode.cpp)
+add_executable(flightstick_control 
+  src/FlightstickControl.cpp 
+  src/DriveMode.cpp 
+  src/ArmManualMode.cpp 
+  src/ArmIKMode.cpp
+  src/ArmHelpers.cpp)
 
 # Link the dependencies to the executable
 ament_target_dependencies(flightstick_control
@@ -27,6 +34,8 @@ ament_target_dependencies(flightstick_control
   joy
   ros_phoenix
   interfaces
+  control_msgs
+  std_srvs
 )
 
 # Install the executable

@@ -37,11 +37,13 @@ void TalonSRXNode::configure_current_limit(TalonSRXConfiguration &config) {
       this->get_parameter("max_current").as_double();
   config.peakCurrentLimit = this->get_parameter("max_current").as_double();
   config.peakCurrentDuration = 100;  // ms
-
   this->controller_->EnableCurrentLimit(true);
 }
 
 void TalonSRXNode::configure_sensor() {
+  if (this->get_parameter("non_continuous").as_bool()) {
+    this->controller_->ConfigFeedbackNotContinuous(true);
+  }
   if (this->get_parameter("input_type").as_int() == ANALOG)
     this->controller_->ConfigSelectedFeedbackSensor(
         TalonSRXFeedbackDevice::Analog);

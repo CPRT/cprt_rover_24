@@ -2,10 +2,11 @@
 #define JOYSTICK_CONTROL__ARMMANUAL_MODE_HPP_
 
 #include "Mode.hpp"
+#include "control_msgs/msg/joint_jog.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "interfaces/srv/move_servo.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "ros_phoenix/msg/motor_control.hpp"
+#include "sensor_msgs/msg/joy.hpp"
 
 /**
  * @class ArmManualMode
@@ -60,7 +61,7 @@ class ArmManualMode : public Mode {
    *
    * @param joystickMsg A shared pointer to the sensor_msgs::msg::Joy message.
    */
-  void handleTwist(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  void handleTwist(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
 
   /**
    * @brief Gets the throttle value from the joystick input.
@@ -95,26 +96,14 @@ class ArmManualMode : public Mode {
   int8_t kSimpleBackward;  ///< Button to move the end effector backward
 
   // Publishers
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr base_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr act1_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr act2_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr elbow_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr wristTilt_pub_;
-  rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr wristTurn_pub_;
+  rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr
+      joint_pub_;  ///< Publisher for joint jog messages.
 
-  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
-      twist_pub_;  ///< Publisher for Twist messages.
-
-  // MotorControl Messages
-  mutable ros_phoenix::msg::MotorControl base_;
-  mutable ros_phoenix::msg::MotorControl act1_;
-  mutable ros_phoenix::msg::MotorControl act2_;
-  mutable ros_phoenix::msg::MotorControl elbow_;
-  mutable ros_phoenix::msg::MotorControl wristTilt_;
-  mutable ros_phoenix::msg::MotorControl wristTurn_;
+  // Message Messages
+  control_msgs::msg::JointJog joint_msg_;
 
   // Servo Members
-  mutable rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr servo_client_;
+  rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr servo_client_;
 
   // Servo Constants
   int8_t kServoPort;
@@ -122,10 +111,10 @@ class ArmManualMode : public Mode {
   int8_t kServoMax;
   int8_t kClawMax;
   int8_t kClawMin;
-  mutable double act1Scaler;
-  mutable double act2Scaler;
-  mutable int8_t servoPos;
-  mutable bool buttonPressed;
+  double act1Scaler_;
+  double act2Scaler_;
+  int8_t servoPos_;
+  bool buttonPressed_;
 };
 
 #endif  // JOYSTICK_CONTROL__ARMMANUAL_MODE_HPP_

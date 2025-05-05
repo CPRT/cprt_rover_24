@@ -4,6 +4,12 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="arm_urdf">
+  <link name="arm_base_link"/>
+  <joint name="arm_base_joint" type="fixed">
+    <parent link="arm_base_link"/>
+    <child link="Link_1"/>
+    <origin xyz="0.0 0.0 0.0 " rpy="0 0 0"/>
+  </joint>
   <link
     name="Link_1">
     <inertial>
@@ -150,7 +156,7 @@
       link="Link_3" />
     <axis
       xyz="0 -1 0" />
-    <limit effort="100.0" velocity="0.0234" lower="-0.55" upper="0.3236"/>
+    <limit effort="100.0" velocity="0.08" lower="-0.488692" upper="0.279253"/>
   </joint>
   <link
     name="Link_4">
@@ -204,7 +210,7 @@
       link="Link_4" />
     <axis
       xyz="0 -1 0" />
-    <limit effort="100.0" velocity="0.03688" lower="-0.9032" upper="0.054"/>
+    <limit effort="100.0" velocity="0.08" lower="-1.2" upper="0.15"/>
   </joint>
   <link
     name="Link_5">
@@ -258,7 +264,7 @@
       link="Link_5" />
     <axis
       xyz="-0.99059 0 0.1369" />
-    <limit effort="100.0" velocity="0.03688" lower="-3.14" upper="3.14"/>
+    <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"/>
   </joint>
   <link
     name="Link_6">
@@ -356,7 +362,7 @@
   </link>
   <joint
     name="Joint_6"
-    type="revolute">
+    type="continuous">
     <origin
       xyz="0.071675 -0.02785 0"
       rpy="0 0 0" />
@@ -366,6 +372,12 @@
       link="Link_7" />
     <axis
       xyz="-1 0 0" />
-    <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"/>
+    <limit effort="100.0" velocity="1.5"/>
+  </joint>
+  <link name="eef_link"/>
+  <joint name="eef_joint" type="fixed">
+    <parent link="Link_7"/>
+    <child link="eef_link"/>
+    <origin xyz="0.2 0.0 0.0 " rpy="0 0 0"/>
   </joint>
 </robot>
