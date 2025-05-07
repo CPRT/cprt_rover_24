@@ -6,8 +6,8 @@
   <description>TODO: Package description</description>
   <maintainer email="ejb0529@gmail.com">kali</maintainer>
   <license>Apache-2.0</license>
-
-  <exec_depend>interfaces</exec_depend>
+  <depend>interfaces</depend>
+  <depend>rclpy</depend>
   <exec_depend>example_interfaces</exec_depend>
 
   <test_depend>ament_copyright</test_depend>

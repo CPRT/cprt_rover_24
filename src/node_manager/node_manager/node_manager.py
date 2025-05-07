@@ -10,7 +10,6 @@ from interfaces.srv import StopNode
 from interfaces.msg import LaunchInfo
 
 from .node_info import NodeInfo
-from .node_monitor import NodeMonitor
 from . import node_launcher, node_terminator
 
 import os
@@ -21,6 +20,7 @@ import threading
 import time
 import traceback
 import psutil
+import subprocess
 
 node_logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -67,56 +67,98 @@ class NodeManager(Node):
         )
 
         self.launch_files: dict[str, LaunchInfo] = {}
-        for key in self.get_parameter("launch_keys").value:
-            self.declare_parameter(key + ".display_name", "")
-            self.declare_parameter(key + ".package", "")
-            self.declare_parameter(key + ".launch_file", "")
 
-            self.launch_files[key] = LaunchInfo()
-            self.launch_files[key].display_name = self.get_parameter(
-                key + ".display_name"
-            ).value
-            self.launch_files[key].package = self.get_parameter(key + ".package").value
-            self.launch_files[key].launch_file = self.get_parameter(
-                key + ".launch_file"
-            ).value
-            self.launch_files[key].internal_name = key
+        launch_keys_param = self.get_parameter("launch_keys")
+        if launch_keys_param.type_ == rclpy.parameter.Parameter.Type.NOT_SET:
+            self.get_logger().warn("'launch_keys' parameter not set. No nodes will be configurable.")
+            launch_keys_value = []
+        else:
+            launch_keys_value = launch_keys_param.value
+        
+        for key in launch_keys_value: 
+            self.declare_parameter(f"{key}.display_name", "")
+            self.declare_parameter(f"{key}.package", "")
+            self.declare_parameter(f"{key}.executable", rclpy.Parameter.Type.STRING, descriptor=rclpy.node.ParameterDescriptor(dynamic_typing=True))
+            self.declare_parameter(f"{key}.launch_file", rclpy.Parameter.Type.STRING, descriptor=rclpy.node.ParameterDescriptor(dynamic_typing=True))
+            self.declare_parameter(f"{key}.respawn", True) # Default to True
+            self.declare_parameter(f"{key}.ros_args", rclpy.Parameter.Type.STRING_ARRAY, descriptor=rclpy.node.ParameterDescriptor(dynamic_typing=True)) # Declare as string array
 
-        node_logger.info("node manager is set up")
-        node_logger.info(str(self.launch_files))
+
+            launch_info_msg = LaunchInfo()
+            launch_info_msg.internal_name = key
+            launch_info_msg.display_name = self.get_parameter(f"{key}.display_name").value
+            launch_info_msg.package = self.get_parameter(f"{key}.package").value
+            
+            launch_file_param = self.get_parameter(f"{key}.launch_file").value
+            if launch_file_param: 
+                 launch_info_msg.launch_file = launch_file_param
+            else:
+                 executable_param = self.get_parameter(f"{key}.executable").value
+                 if executable_param:
+                     launch_info_msg.launch_file = f"(run: {executable_param})" # Indicate it's a run type
+                 else:
+                     launch_info_msg.launch_file = "(config error)"
+
+
+            self.launch_files[key] = launch_info_msg
 
     def launch_node(
         self,
         name: str,
+        # dynamic_ros_args: Optional[List[str]] = None # For future service call with args
     ) -> bool:
         """
-        Launch a node group.
+        Launch a node or group by its configured name.
 
         Parameters
         ----------
         name : str
-            Internal name of the node group. Corresponds to a `LaunchInfo`.
+            Internal name of the node/group as defined in launch_keys and params.
 
         Returns
         -------
         bool
             True if the node was launched successfully, False otherwise.
         """
-
-        try:
-            launch_info = self.launch_files[name]
-            node_info = NodeInfo(
-                name,
-                launch_info.package,
-                None,
-                launch_info.launch_file,
-                # TODO: respawn control
-                True,
-            )
-        except ValueError as error:
-            node_logger.error(str(error))
+        if name not in self.get_parameter("launch_keys").value: # Check if key is valid
+            node_logger.error(f"Launch requested for unknown configuration key: '{name}'")
             return False
 
+
+        try:
+            package = self.get_parameter(f"{name}.package").value
+            executable_param = self.get_parameter(f"{name}.executable")
+            launch_file_param = self.get_parameter(f"{name}.launch_file")
+            
+            executable = executable_param.value if executable_param.type_ != rclpy.parameter.Parameter.Type.NOT_SET else None
+            launch_file = launch_file_param.value if launch_file_param.type_ != rclpy.parameter.Parameter.Type.NOT_SET else None
+
+            respawn = self.get_parameter(f"{name}.respawn").value
+            ros_args_param = self.get_parameter(f"{name}.ros_args")
+            ros_args = ros_args_param.value if ros_args_param.type_ != rclpy.parameter.Parameter.Type.NOT_SET else []
+
+
+            if not package:
+                node_logger.error(f"Configuration for '{name}' is missing 'package'. Cannot launch.")
+                return False
+
+
+            node_info = NodeInfo(
+                name=name,
+                package=package,
+                executable=executable,
+                launch_file=launch_file,
+                ros_args=ros_args, 
+                respawn=respawn,
+            )
+        except rclpy.exceptions.ParameterNotDeclaredException as e:
+            node_logger.error(f"Failed to get parameters for '{name}': {e}. Ensure configuration is complete in YAML and launch_keys.")
+            return False
+        except ValueError as error: 
+            node_logger.error(f"Configuration error for '{name}': {str(error)}")
+            return False
+
+       
         with self._mutex:
             if (
                 name in self._nodes
@@ -127,17 +169,20 @@ class NodeManager(Node):
                 return False
 
             try:
-                proc = node_launcher.launch_node(node_info)
+                node_logger.info(f"Attempting to launch '{name}' (Package: {node_info.package}, Mode: {node_info.mode}, Exec/Launch: {node_info.executable or node_info.launch_file}, Args: {node_info.ros_args})")
+                proc = node_launcher.launch_node(node_info) # node_launcher will use the args
                 node_info.process = proc
                 node_info.start_time = time.time()
                 self._nodes[name] = node_info
-                node_logger.info(f"Started {node_info.mode} '{name}' (PID {proc.pid}).")
+                node_logger.info(f"Successfully started {node_info.mode} '{name}' (PID {proc.pid}).")
+                self._save_state() 
 
-                self._save_state()
-
-            except Exception as e:
+            except RuntimeError as e:
                 node_logger.error(f"Error launching node '{name}': {e}")
-                self._nodes.pop(name, None)
+                return False
+            except Exception as e: 
+                node_logger.error(f"Unexpected error launching node '{name}': {e}")
+                traceback.print_exc()
                 return False
 
         if node_info.mode == "launch":
@@ -267,62 +312,95 @@ class NodeManager(Node):
         Background thread that monitors nodes for unexpected shutdowns
         and schedules respawns if needed.
         """
-        while True:
+        while rclpy.ok():
+            nodes_to_check = {}
             with self._mutex:
-                nodes_copy = self._nodes.copy()
-            for name, node_info in list(nodes_copy.items()):
+                nodes_to_check = list(self._nodes.items())
+            should_save_state_this_iteration = False 
+
+            for name, node_info in nodes_to_check:
                 proc = node_info.process
                 if proc is None:
+
+                    node_logger.warning(f"Monitor: Node '{name}' listed but has no process. Removing from active tracking.")
+                    with self._mutex:
+                        self._nodes.pop(name, None)
+                    should_save_state_this_iteration = True
                     continue
-                if proc.poll() is not None:
+
+                return_code = proc.poll()
+                
+                if return_code is not None:
+                    stdout_output = ""
+                    stderr_output = ""
+
+                    try:
+                        stdout_output, stderr_output = proc.communicate(timeout=0.1)
+                    except subprocess.TimeoutExpired:
+                        node_logger.warning(f"Timeout reading stdout/stderr for terminated node '{name}'.")
+                    except ValueError: # Pipes might be closed
+                        node_logger.debug(f"Pipes closed for terminated node '{name}'.")
+                    except Exception as e:
+                        node_logger.error(f"Error reading stdout/stderr for terminated node '{name}': {e}")
+                    finally:
+                        if proc.stdout and not proc.stdout.closed:
+                            proc.stdout.close()
+                        if proc.stderr and not proc.stderr.closed:
+                            proc.stderr.close()
+
                     node_logger.warning(
-                        f"Node '{name}' terminated unexpectedly with code {proc.poll()}."
+                        f"Node '{name}' (PID {proc.pid}) terminated unexpectedly with code {return_code}.\n"
+                        f"  STDOUT:\n{stdout_output.strip()}\n"
+                        f"  STDERR:\n{stderr_output.strip()}"
                     )
-                    if node_info.respawn:
+                   
+                    with self._mutex:
+                        self._nodes.pop(name, None) 
+                    should_save_state_this_iteration = True 
+
+                    if node_info.respawn: # TODO: Add max_retries logic
                         node_info.retries += 1
-                        delay = min(5, 2 * node_info.retries)
+                        delay = min(5, 2 * node_info.retries) 
                         node_logger.info(
                             f"Respawning '{name}' in {delay} seconds (attempt {node_info.retries})."
                         )
-                        with self._mutex:
-                            _ = self._nodes.pop(name, None)
                         threading.Timer(
                             delay,
-                            lambda ni=node_info: self.launch_node(
-                                ni.name,
+                            lambda node_name_to_respawn=name: self.launch_node(
+                                node_name_to_respawn,
                             ),
                         ).start()
                     else:
                         node_logger.info(f"Not respawning '{name}' (respawn disabled).")
-                        with self._mutex:
-                            self._nodes.pop(name, None)
-                        should_save_state = True
-                    if should_save_state:
-                        self._save_state()
+                
                 else:
-                    if node_info.mode == "launch":
+                    if node_info.mode == "launch" and node_info.children:
                         try:
-                            parent = psutil.Process(proc.pid)
-                            current_children = parent.children(recursive=True)
-                            current_pids = {child.pid for child in current_children}
+                            parent_ps = psutil.Process(proc.pid) 
+                            current_children_pids = {child.pid for child in parent_ps.children(recursive=True)}
                             recorded_pids = {child.pid for child in node_info.children}
-                            if recorded_pids and (recorded_pids - current_pids):
+
+                            if recorded_pids and (recorded_pids - current_children_pids):
+                                lost_pids = recorded_pids - current_children_pids
                                 node_logger.warning(
-                                    f"One or more child processes of '{name}' have died. Restarting group."
+                                    f"One or more critical child processes (PIDs: {lost_pids}) of launch group '{name}' (Parent PID {proc.pid}) have died. Terminating and potentially restarting group."
                                 )
-                                with self._mutex:
-                                    self._nodes.pop(name, None)
-                                threading.Timer(
-                                    2.0,
-                                    lambda ni=node_info: self.launch_node(
-                                        ni.name,
-                                    ),
-                                ).start()
+                              
+                                node_terminator.terminate(node_info)
+
+                        
+                        except psutil.NoSuchProcess:
+                            node_logger.warning(f"Main process for launch group '{name}' (PID {proc.pid}) disappeared while checking children. It will be handled as an unexpected termination.")
                         except Exception as e:
                             node_logger.error(
                                 f"Error monitoring children for '{name}': {e}"
                             )
-            time.sleep(1.0)
+            
+
+            if should_save_state_this_iteration:
+                self._save_state()
+
+            time.sleep(1.0) 
 
     @staticmethod
     def _discover_children(node_info: NodeInfo) -> None:

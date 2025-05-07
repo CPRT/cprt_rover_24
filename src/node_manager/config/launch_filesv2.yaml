@@ -1,0 +1,13 @@
+# node_manager/config/launch_files.yaml
+node_manager:
+  ros__parameters:
+    launch_keys:
+      - "drive_with_args"
+    drive_with_args:
+      display_name: "Drive With Arguments"
+      package: "drive" 
+      launch_file: "talon.launch.py" 
+      respawn: true,
+      ros_args:
+        - "example_arg:=example_value"
+        - "another_arg:=another_value"
