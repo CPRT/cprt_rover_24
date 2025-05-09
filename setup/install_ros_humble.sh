@@ -29,7 +29,6 @@ python3-pip \
 clang-format \
 clang-tidy \
 ninja-build \
-ros-humble-rmw-cyclonedds-cpp \
 ros-humble-rosbridge-server 
 
 source /opt/ros/humble/setup.bash
@@ -37,11 +36,6 @@ source /opt/ros/humble/setup.bash
 if ! grep -q "source /opt/ros/humble/setup.bash" ~/.bashrc; then
   echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
   echo "ROS 2 sourced in bashrc"
-fi
-
-if ! grep -q "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" ~/.bashrc; then
-  echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
-  echo "cyclone dds exported in bashrc"
 fi
 
 pip3 install black
