@@ -24,7 +24,8 @@ add_executable(flightstick_control
   src/DriveMode.cpp 
   src/ArmManualMode.cpp 
   src/ArmIKMode.cpp
-  src/ArmHelpers.cpp)
+  src/ArmHelpers.cpp
+  src/ScienceMode.cpp)
 
 # Link the dependencies to the executable
 ament_target_dependencies(flightstick_control
