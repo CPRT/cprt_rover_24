@@ -29,7 +29,9 @@ python3-pip \
 clang-format \
 clang-tidy \
 ninja-build \
-ros-humble-rosbridge-server 
+ros-humble-rmw-cyclonedds-cpp \
+ros-humble-rosbridge-server \
+python3-usb
 
 source /opt/ros/humble/setup.bash
 
@@ -50,6 +52,8 @@ pip3 install adafruit-circuitpython-ens160
 pip3 install adafruit-circuitpython-busdevice
 pip3 install adafruit-circuitpython-register
 pip3 install pyubx2
+pip3 install numpy
+pip3 install pyusb==1.2.1
 
 sudo rosdep init
 rosdep update
