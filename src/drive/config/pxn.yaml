@@ -23,6 +23,8 @@ flightstick_control:
       max_angular: 1.0
       max_increment: 0.1
       min_speed: 0.001
+      cam_tilt_port: 11
+      cam_pan_port: 10
       
     arm_manual_mode:
       throttle:

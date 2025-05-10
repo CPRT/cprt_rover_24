@@ -58,16 +58,17 @@ void DriveMode::handleTwist(
 
 void DriveMode::handleCam(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
+  static const int multiplier = 2;
   static double tilt_pos = 0;
   static double pan_pos = 0;
   double tilt = joystickMsg->axes[kCamTiltAxis];
   double pan = joystickMsg->axes[kCamPanAxis];
   if (tilt != 0) {
-    tilt_pos += tilt;
+    tilt_pos += tilt * multiplier;
     setServoPosition(kCamTiltPort, tilt_pos);
   }
   if (pan != 0) {
-    pan_pos += pan;
+    pan_pos += pan * multiplier;
     setServoPosition(kCamPanPort, pan_pos);
   }
   if (joystickMsg->buttons[kCamReset] == 1) {
