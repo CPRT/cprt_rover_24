@@ -12,10 +12,10 @@ def generate_launch_description():
     except:
         print("enablecan.sh not found")
     container = ComposableNodeContainer(
-        name="PhoenixContainer",
+        name="PhoenixContainerScience",
         namespace="",
         package="ros_phoenix",
-        executable="phoenix_container_science",
+        executable="phoenix_container",
         parameters=[{"interface": "can0"}],
         composable_node_descriptions=[
             ComposableNode(
