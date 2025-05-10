@@ -68,7 +68,7 @@ elevation_mapping:
           # input_layer: elevation_inpainted
           input_layer: elevation_smooth
           output_layers_prefix: normal_vectors_
-          radius: 0.3 # 1.5 times the map resolution is good
+          radius: 0.35 # 1.5 times the map resolution is good
           normal_vector_positive_axis: z
 
       # Add a color layer for visualization based on the surface normal.
@@ -113,7 +113,7 @@ elevation_mapping:
         type: gridMapFilters/MathExpressionFilter
         params:
           output_layer: traversability
-          expression: 0.5 * (slope / 0.6) + 0.5 * (roughness / 0.1)
+          expression: 0.1 * (slope / 0.6) + 0.25 * (roughness / 0.1) # roughness: 0.3
 
       # Set lower threshold on traversability.
       filter9:
