@@ -6,7 +6,9 @@ from RPi import GPIO
 
 
 class Servo:
-    def __init__(self, pin: int, min_pos: float, max_pos: float, frequency: int, rom: int):
+    def __init__(
+        self, pin: int, min_pos: float, max_pos: float, frequency: int, rom: int
+    ):
         self.pin = pin
         self.min_pos = min_pos
         self.max_pos = max_pos
