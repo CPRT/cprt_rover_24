@@ -43,8 +43,7 @@ class ArmManualMode : public Mode {
    * @param max The maximum position limit of the servo
    * @return The service response
    */
-  interfaces::srv::MoveServo::Response sendRequest(int port, int pos, int min,
-                                                   int max) const;
+  interfaces::srv::MoveServo::Response sendRequest(int port, int pos) const;
 
   /**
    * @brief Wrapper for servo control
@@ -53,7 +52,7 @@ class ArmManualMode : public Mode {
    * @param req_min The minimum position limit
    * @param req_max The maximum position limit
    */
-  void servoRequest(int req_port, int req_pos, int req_min, int req_max) const;
+  void servoRequest(int req_port, int req_pos) const;
 
  private:
   /**

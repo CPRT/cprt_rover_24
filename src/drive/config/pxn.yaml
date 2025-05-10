@@ -50,7 +50,7 @@ flightstick_control:
       rotate_around_y: 5
       rotate_around_x: 4
       rotate_around_z: 3
-      open_claw: 0
-      close_claw: 1
+      open_claw: 1
+      close_claw: 0
       base_frame: 4
       eef_frame: 2
