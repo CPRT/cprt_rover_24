@@ -61,19 +61,20 @@ WORKDIR ${DIR}
 # Copy workspace into container
 COPY . ${DIR}
 
-# Set up rosdep and install dependencies
-# TODO: Fix rosdep dependancies so we don't need to use || true
+ARG PACKAGES="camera_controller interfaces science_sensors servo_pkg"
+
 RUN apt-get update && \
     rosdep init && \
     rosdep update && \
-    rosdep install --from-paths src -i -r -y || true
+    rosdep install \
+        --from-paths $(for pkg in $PACKAGES; do echo src/$pkg; done) \
+        -i -r -y
 
 RUN ldconfig
 
-ARG SKIP_PACKAGES="zed_components camera_streaming kindr_ros elevation_mapping zed_wrapper zed_ros2"
 
 # Build the workspace
-RUN bash -c "source /opt/ros/humble/setup.bash && ldconfig && colcon build --symlink-install --continue-on-error --packages-skip ${SKIP_PACKAGES} --cmake-args -DCMAKE_BUILD_TYPE=Release"
+RUN bash -c "source /opt/ros/humble/setup.bash && ldconfig && colcon build --symlink-install --continue-on-error --packages-select ${PACKAGES} --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 
 # Create entrypoint script
