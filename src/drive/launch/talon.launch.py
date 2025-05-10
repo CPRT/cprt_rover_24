@@ -27,7 +27,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="frontLeft",
                 parameters=[
-                    {"id": 1},
+                    {"id": 3},
                     {"P": P},
                     {"I": I},
                     {"D": D},
@@ -41,7 +41,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="backLeft",
                 parameters=[
-                    {"id": 2},
+                    {"id": 4},
                     {"P": P},
                     {"I": I},
                     {"D": D},
@@ -55,7 +55,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="frontRight",
                 parameters=[
-                    {"id": 3},
+                    {"id": 1},
                     {"P": P},
                     {"I": I},
                     {"D": D},
@@ -69,7 +69,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="backRight",
                 parameters=[
-                    {"id": 4},
+                    {"id": 2},
                     {"P": P},
                     {"I": I},
                     {"D": D},
@@ -95,7 +95,8 @@ def generate_launch_description():
                     {"pub_odom": True},
                     {"pub_elec": True},
                     {"wheel_rad": 0.10},
-                    {"angular_slip_ratio": 0.8},
+                    {"angular_slip_ratio": 0.6},
+                    {"low_latency_mode_": True},
                 ],
             ),
         ]
