@@ -10,7 +10,7 @@ ENV ROS_LOCALHOST_ONLY=0
 ENV ROS_DOMAIN_ID=0
 
 # Install base packages and ROS keys
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     lsb-release \
@@ -29,7 +29,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 
 # Install ROS 2 and development tools
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     ros-humble-base \
     ros-dev-tools \
     python3-dev \
@@ -61,7 +61,10 @@ WORKDIR ${DIR}
 ARG PACKAGES="camera_controller interfaces science_sensors servo_pkg"
 
 # Copy workspace into container
-COPY . ${DIR}/
+COPY src/camera_controller ${DIR}/src/camera_controller
+COPY src/interfaces ${DIR}/src/interfaces
+COPY src/science_sensors ${DIR}/src/science_sensors
+COPY src/servo_pkg ${DIR}/src/servo_pkg
 
 RUN apt-get update && \
     rosdep init && \
@@ -74,7 +77,7 @@ RUN ldconfig
 
 
 # Build the workspace
-RUN bash -c "source /opt/ros/humble/setup.bash && ldconfig && colcon build --symlink-install --continue-on-error --packages-select ${PACKAGES} --cmake-args -DCMAKE_BUILD_TYPE=Release"
+RUN bash -c "source /opt/ros/humble/setup.bash && ldconfig && colcon build --packages-select ${PACKAGES} --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 
 # Create entrypoint script
