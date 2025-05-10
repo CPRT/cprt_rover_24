@@ -84,10 +84,7 @@ class pi_Servo(Node):
             if outpin < 0:
                 self.get_logger().error(f"Invalid pin number for port {i}")
                 raise ValueError(f"Invalid pin number for port {i}")
-            for servo in self.servos.values():
-                if servo.pin == outpin:
-                    self.get_logger().error(f"Pin {outpin} already in use for port {i}")
-                    raise ValueError(f"Pin {outpin} already in use for port {i}")
+
             self.servos[i] = Servo(
                 channel=to_channel(outpin),
                 min_pos=min_pos,
