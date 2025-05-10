@@ -113,7 +113,8 @@ void ArmIKMode::loadParameters() {
   node_->get_parameter("arm_ik_mode.eef_frame", kEEF);
 }
 
-interfaces::srv::MoveServo::Response ArmIKMode::sendRequest(int port, int pos) const {
+interfaces::srv::MoveServo::Response ArmIKMode::sendRequest(int port,
+                                                            int pos) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = port;
   request->pos = pos;

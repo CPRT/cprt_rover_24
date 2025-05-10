@@ -61,11 +61,11 @@ void ArmManualMode::handleTwist(
   } else {
     // act1
     if (joystickMsg->axes[kAct1Axis] > 0.1 ||
-        joystickMsg->axes[kAct1Axis] < -0.1){
-          joint_msg_.velocities[1] = -joystickMsg->axes[kAct1Axis] * throttle;
-        } else{
-          joint_msg_.velocities[1] = 0;
-        }
+        joystickMsg->axes[kAct1Axis] < -0.1) {
+      joint_msg_.velocities[1] = -joystickMsg->axes[kAct1Axis] * throttle;
+    } else {
+      joint_msg_.velocities[1] = 0;
+    }
 
     // act2
     joint_msg_.velocities[2] = joystickMsg->axes[kAct2Axis] * throttle;
