@@ -96,7 +96,7 @@ def generate_launch_description():
                     {"pub_elec": True},
                     {"wheel_rad": 0.10},
                     {"angular_slip_ratio": 0.6},
-                    {"low_latency_mode_": True},
+                    {"low_latency_mode": True},
                 ],
             ),
         ]
