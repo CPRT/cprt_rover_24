@@ -19,7 +19,10 @@ namespace grid_map {
 
 template <typename T>
 PreserveCostInflationFilter<T>::PreserveCostInflationFilter()
-    : method_(Method::RadialInflationSerial), inflationRadius_(0.0) {
+    : method_(Method::RadialInflationSerial),
+      coreInflationRadius_(0.0),
+      decayInflationRadius_(0.0),
+      decayRate_(0.0) {
   ///
 }
 
@@ -47,11 +50,37 @@ bool PreserveCostInflationFilter<T>::configure() {
     return false;
   }
 
-  if (!param_reader.get(std::string("inflation_radius"),
-                        this->inflationRadius_)) {
+  if (!param_reader.get(std::string("core_inflation_radius"),
+                        this->coreInflationRadius_)) {
     RCLCPP_ERROR(this->logging_interface_->get_logger(),
                  "PreserveCostInflationFilter did not find parameter "
-                 "'inflation_radius'.");
+                 "'core_inflation_radius'.");
+    return false;
+  }
+
+  if (!param_reader.get(std::string("decay_inflation_radius"),
+                        this->decayInflationRadius_)) {
+    RCLCPP_ERROR(this->logging_interface_->get_logger(),
+                 "PreserveCostInflationFilter did not find parameter "
+                 "'decay_inflation_radius'.");
+    return false;
+  } else if (this->decayInflationRadius_ < this->coreInflationRadius_) {
+    RCLCPP_ERROR(this->logging_interface_->get_logger(),
+                 "PreserveCostInflationFilter parameter "
+                 "'decay_inflation_radius' must be "
+                 ">= core_inflation_radius.");
+    return false;
+  }
+
+  if (!param_reader.get(std::string("decay_rate"), this->decayRate_)) {
+    RCLCPP_ERROR(this->logging_interface_->get_logger(),
+                 "PreserveCostInflationFilter did not find parameter "
+                 "'decay_rate'.");
+    return false;
+  } else if (this->decayRate_ < 0.0) {
+    RCLCPP_ERROR(
+        this->logging_interface_->get_logger(),
+        "PreserveCostInflationFilter parameter 'decay_rate' must be >= 0.0.");
     return false;
   }
 
@@ -97,8 +126,12 @@ void PreserveCostInflationFilter<T>::computeWithSimpleSerialMethod(
     mapIn.getPosition(
         index, position);  // Get position of cell from grid_map::Index of cell
 
-    this->radialInflateSerial(mapOut, position,
-                              layerIn.coeff(index(0), index(1)));
+    const float value = layerIn.coeff(index(0), index(1));
+    if (!std::isfinite(value)) {
+      continue;
+    }
+
+    this->radialInflateSerial(mapOut, position, value);
   }
 
   const double end = clock.now().seconds();
@@ -111,14 +144,26 @@ void PreserveCostInflationFilter<T>::radialInflateSerial(
     grid_map::GridMap &mapOut, const grid_map::Position &position,
     const float value) {
   for (grid_map::CircleIterator iterator(mapOut, position,
-                                         this->inflationRadius_);
+                                         this->decayInflationRadius_);
        !iterator.isPastEnd(); ++iterator) {
     auto &cellValue = mapOut.at(this->outputLayer_, *iterator);
 
     if (!std::isfinite(cellValue)) {
-      cellValue = value;
+      cellValue = 0.0;
     }
-    cellValue = std::max(cellValue, value);
+
+    grid_map::Position cellPosition;
+    mapOut.getPosition(*iterator, cellPosition);
+    const double distance = (cellPosition - position).norm();
+    if (distance <= this->coreInflationRadius_) {
+      cellValue = std::max(cellValue, value);
+    } else if (distance <= this->decayInflationRadius_) {
+      const double decayedValue =
+          value *
+          std::exp(-this->decayRate_ * (distance - this->coreInflationRadius_));
+
+      cellValue = std::max(cellValue, static_cast<float>(decayedValue));
+    }
   }
 }
 
