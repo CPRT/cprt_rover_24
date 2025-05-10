@@ -82,6 +82,7 @@ void FlightstickControl::declareParameters() {
   DriveMode::declareParameters(this);
   ArmManualMode::declareParameters(this);
   ArmIKMode::declareParameters(this);
+  ScienceMode::declareParameters(this);
 }
 
 void FlightstickControl::loadParameters() {

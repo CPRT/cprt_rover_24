@@ -6,7 +6,7 @@ from RPi import GPIO
 
 
 class Servo:
-    def __init__(self, pin: int, min_pos: int, max_pos: int, frequency: int, rom: int):
+    def __init__(self, pin: int, min_pos: float, max_pos: float, frequency: int, rom: int):
         self.pin = pin
         self.min_pos = min_pos
         self.max_pos = max_pos
@@ -50,8 +50,8 @@ class pi_Servo(Node):
 
         for i in range(num_servos):
             self.declare_parameter(f"servo{i}.frequency", 50)
-            self.declare_parameter(f"servo{i}.min", 0)
-            self.declare_parameter(f"servo{i}.max", 100)
+            self.declare_parameter(f"servo{i}.min", 0.0)
+            self.declare_parameter(f"servo{i}.max", 100.0)
             self.declare_parameter(f"servo{i}.rom", 180)
             self.declare_parameter(f"servo{i}.out_pin", 0)
             frequency = (
@@ -60,10 +60,10 @@ class pi_Servo(Node):
                 .integer_value
             )
             min_pos = (
-                self.get_parameter(f"servo{i}.min").get_parameter_value().integer_value
+                self.get_parameter(f"servo{i}.min").get_parameter_value().double_value
             )
             max_pos = (
-                self.get_parameter(f"servo{i}.max").get_parameter_value().integer_value
+                self.get_parameter(f"servo{i}.max").get_parameter_value().double_value
             )
             rom = (
                 self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
