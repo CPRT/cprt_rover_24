@@ -143,5 +143,5 @@ elevation_mapping:
           input_layer: traversability
           output_layer: inflated_traversability
           core_inflation_radius: 0.5 # in m
-          decay_inflation_radius: 1.5 # in m
+          decay_inflation_radius: 1.1 # in m
           decay_rate: 2.3 # See script at /src/cprt_grid_map_filters/scripts/calculate_decay_rate.py to help calculate.
