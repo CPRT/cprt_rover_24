@@ -18,7 +18,9 @@ RUN apt-get update && apt-get install -y \
     locales \
     libc6-dev \
     software-properties-common && \
-    locale-gen en_US.UTF-8
+    locale-gen en_US.UTF-8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set up ROS 2 repository
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
@@ -28,20 +30,18 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 # Install ROS 2 and development tools
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
-    ros-humble-desktop \
+    ros-humble-base \
     ros-dev-tools \
     python3-dev \
     python3-pip \
-    clang-format \
-    clang-tidy \
     ninja-build \
-    ros-humble-rosbridge-server \
-    ros-humble-rclcpp 
+    python3-rosdep \
+    ros-humble-rclcpp && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Python packages
 RUN pip3 install --no-cache-dir \
-    black \
-    pylint \
     pyserial \
     adafruit-circuitpython-lis3dh \
     adafruit-circuitpython-pca9685 \
@@ -58,10 +58,10 @@ RUN pip3 install --no-cache-dir \
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
-# Copy workspace into container
-COPY . ${DIR}
-
 ARG PACKAGES="camera_controller interfaces science_sensors servo_pkg"
+
+# Copy workspace into container
+COPY . ${DIR}/
 
 RUN apt-get update && \
     rosdep init && \
