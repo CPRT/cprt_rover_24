@@ -4,9 +4,11 @@
 #include "ArmIKMode.hpp"
 #include "ArmManualMode.hpp"
 #include "DriveMode.hpp"
+#include "ScienceMode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
+#include "std_msgs/msg/string.hpp"
 
 /**
  * @class FlightstickControl
@@ -90,6 +92,8 @@ class FlightstickControl : public rclcpp::Node {
 
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr
       joy_sub_;  ///< Subscription to joystick messages.
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr
+      status_pub_;  ///< Publisher for status messages.
 
   std::unique_ptr<Mode> mode_;  ///< Pointer to the current mode object.
 };

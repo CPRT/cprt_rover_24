@@ -22,8 +22,8 @@ class microscope_control(Node):
     def load_params(self):
         self.declare_parameter("pin", 32)
         self.declare_parameter("min_servo", 0)
-        self.declare_parameter("max_servo", 180)
-        self.declare_parameter("default_pos", 90)
+        self.declare_parameter("max_servo", 90)
+        self.declare_parameter("default_pos", 45)
         self.declare_parameter("step_size", 1.0)
         self.pin = self.get_parameter("pin").get_parameter_value().integer_value
         self.min_servo = (

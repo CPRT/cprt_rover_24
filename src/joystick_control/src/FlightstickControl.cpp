@@ -11,6 +11,9 @@ FlightstickControl::FlightstickControl()
       "/joy", 10,
       std::bind(&FlightstickControl::processJoystick, this,
                 std::placeholders::_1));
+
+  status_pub_ = this->create_publisher<std_msgs::msg::String>(
+      "/flightstick/status", rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
 }
 
 void FlightstickControl::processJoystick(
@@ -44,27 +47,44 @@ bool FlightstickControl::changeMode(ModeType mode) {
     return false;
   }
   currentMode_ = mode;
+  auto message = std_msgs::msg::String();
   switch (mode) {
     case ModeType::NONE:
       mode_ = nullptr;
+      message.data = "Idle";
+      status_pub_->publish(message);
       return true;
     case ModeType::DRIVE:
       RCLCPP_INFO(this->get_logger(), "Entering Drive Mode");
       mode_ = std::make_unique<DriveMode>(this);
+      message.data = "Drive";
+      status_pub_->publish(message);
       return true;
     case ModeType::ARM_MANUAL:
       RCLCPP_INFO(this->get_logger(), "Entering Manual Mode");
       mode_ = std::make_unique<ArmManualMode>(this);
+      message.data = "Manual";
+      status_pub_->publish(message);
+      return true;
+    case ModeType::SCIENCE:
+      RCLCPP_INFO(this->get_logger(), "Entering Science Mode");
+      mode_ = std::make_unique<ScienceMode>(this);
+      message.data = "Science";
+      status_pub_->publish(message);
       return true;
     case ModeType::ARM_IK:
       RCLCPP_INFO(this->get_logger(), "Entering IK Mode");
       mode_ = std::make_unique<ArmIKMode>(this);
+      message.data = "IK";
+      status_pub_->publish(message);
       return true;
     default:
       RCLCPP_WARN(this->get_logger(),
                   "Mode not implemented, returning to NONE");
       currentMode_ = ModeType::NONE;
       mode_ = nullptr;
+      message.data = "Idle";
+      status_pub_->publish(message);
       return false;
   }
   return false;
@@ -79,6 +99,7 @@ void FlightstickControl::declareParameters() {
   DriveMode::declareParameters(this);
   ArmManualMode::declareParameters(this);
   ArmIKMode::declareParameters(this);
+  ScienceMode::declareParameters(this);
 }
 
 void FlightstickControl::loadParameters() {
