@@ -10,8 +10,8 @@ ScienceMode::ScienceMode(rclcpp::Node* node) : Mode("Science", node) {
   platform_sub_ = node_->create_subscription<ros_phoenix::msg::MotorStatus>(
       "/platform/status", 10,
       std::bind(&ScienceMode::platform_callback, this, std::placeholders::_1));
-  servo_client_ =
-      node_->create_client<interfaces::srv::MoveServo>("science_servo_service");
+  servo_client_ = node_->create_client<interfaces::srv::MoveServo>(
+      "/science_servo_service");
   this->autoDrill = false;
   this->drillHeight = 0;
   // TODO:
@@ -26,7 +26,6 @@ void ScienceMode::auto_drill_callback() {
       } else {
         setServoPosition(kCollectionServo, kCollectionOpen);
       }
-      this->autoDrill = false;
       ros_phoenix::msg::MotorControl drill_control;
       drill_control.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
       drill_control.value = 1.0;
@@ -123,6 +122,9 @@ void ScienceMode::handleSoilCollection(
     autoDrillTimer_ = node_->create_wall_timer(
         std::chrono::milliseconds(100),
         std::bind(&ScienceMode::auto_drill_callback, this));
+  } else if (joystickMsg->buttons[kCancelCollectionButton] && this->autoDrill) {
+    this->autoDrill = false;
+    autoDrillTimer_.reset();
   }
 }
 

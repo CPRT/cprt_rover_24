@@ -48,6 +48,10 @@ flightstick_control
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
 )
+# Install launch files
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_export_include_directories("include/${PROJECT_NAME}")
 

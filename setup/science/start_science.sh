@@ -22,11 +22,8 @@ docker run -d --rm --name servo_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
     ros2 launch servo_pkg pi_servo_launch.launch.py
 
 docker run -d --rm --name sensor_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
-    ros2 run science_sensors microscope_control
-
-docker run -d --rm --name sensor_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
     ros2 launch science_sensors gas_sensor.launch.py
 
-gst-launch-1.0 libcamerasrc ! jpegenc ! jpegparse ! rtpjpegpay ! udpsink host=${JETSON_IP} port=${PORT} 
+gst-launch-1.0 libcamerasrc ! queue ! jpegenc ! jpegparse ! rtpjpegpay ! queue ! udpsink host=${JETSON_IP} port=${PORT} 
 
 wait

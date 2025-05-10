@@ -64,6 +64,6 @@ flightstick_control:
       microscope_servo: 0
       collection_servo: 1
       panoramic_button: 4
-      collection_open: 90
-      collection_close: 0
+      collection_open: 0
+      collection_close: 120
 
