@@ -8,7 +8,6 @@ ENV ROS_VERSION=2
 ENV ROS_PYTHON_VERSION=3
 ENV ROS_LOCALHOST_ONLY=0
 ENV ROS_DOMAIN_ID=0
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Install base packages and ROS keys
 RUN apt-get update && apt-get install -y \
@@ -36,8 +35,7 @@ RUN apt-get update && apt-get upgrade -y && \
     clang-format \
     clang-tidy \
     ninja-build \
-    ros-humble-rmw-cyclonedds-cpp \
-    ros-humble-rosbridge-server && \
+    ros-humble-rosbridge-server \
     ros-humble-rclcpp 
 
 # Install Python packages
