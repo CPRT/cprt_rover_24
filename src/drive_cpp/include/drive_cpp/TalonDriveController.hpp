@@ -105,6 +105,8 @@ class TalonDriveController : public rclcpp::Node {
    */
   std::vector<WheelControl> wheels_;
 
+  bool low_latency_mode_;
+
   /**
    * @brief The list of motor status subscriptions, one for each wheel.
    */

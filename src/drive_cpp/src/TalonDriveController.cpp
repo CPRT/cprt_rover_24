@@ -34,6 +34,8 @@ TalonDriveController::TalonDriveController() : Node("talonDrive") {
         "Angular slip ratio should be in range (0.0, 1.0], setting to 1.0");
     angularSlipRatio_ = 1.0;
   }
+  this->declare_parameter("low_latency_mode", true);
+  low_latency_mode_ = this->get_parameter("low_latency_mode").as_bool();
 
   this->declare_parameter(
       "wheels", std::vector<std::string>{"frontRight", "frontLeft", "backRight",
@@ -130,6 +132,9 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
       wheel.setVelocity(vl / wheelCircumference_);
     } else {
       wheel.setVelocity(-vr / wheelCircumference_);
+    }
+    if (low_latency_mode_) {
+      wheel.send();
     }
   }
 }
