@@ -15,7 +15,7 @@ def generate_launch_description():
         name="PhoenixContainer",
         namespace="",
         package="ros_phoenix",
-        executable="phoenix_container",
+        executable="phoenix_container_arm",
         parameters=[{"interface": "can0"}],
         composable_node_descriptions=[
             ComposableNode(
