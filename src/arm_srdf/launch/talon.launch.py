@@ -12,7 +12,7 @@ def generate_launch_description():
     """Generate launch description with multiple components."""
 
     container = ComposableNodeContainer(
-        name="PhoenixContainer",
+        name="PhoenixContainerArm",
         namespace="",
         package="ros_phoenix",
         executable="phoenix_container",

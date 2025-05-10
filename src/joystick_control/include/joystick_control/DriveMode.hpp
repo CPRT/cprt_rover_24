@@ -3,6 +3,7 @@
 
 #include "Mode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "interfaces/srv/move_servo.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 /**
@@ -67,6 +68,13 @@ class DriveMode : public Mode {
    */
   double getThrottleValue(
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
+  /**
+   * @brief Sets the position of the servo.
+   *
+   * @param port The servo port number.
+   * @param position The target position for the servo.
+   */
+  void setServoPosition(int port, int position) const;
 
   void loadParameters();
 
@@ -80,16 +88,22 @@ class DriveMode : public Mode {
   int8_t kCamPrev;        ///< Button for switching to the previous camera.
   int8_t kCruiseControl;  ///< Button for enabling cruise control.
   int8_t kThrottleAxis;   ///< Axis for throttle control.
+  int8_t kCamTiltPort;    ///< Port for camera tilt servo.
+  int8_t kCamPanPort;     ///< Port for camera pan servo.
 
-  double kThrottleMax;   ///< Maximum throttle value from joystick.
-  double kThrottleMin;   ///< Minimum throttle value from joystick.
-  double kMaxLinear;     ///< Maximum linear velocity.
-  double kMaxAngular;    ///< Maximum angular velocity.
-  double kMaxIncrement;  ///< Maximum increment for speed changes.
-  double kMinSpeed;      ///< Minimum speed value.
+  double kThrottleMax;            ///< Maximum throttle value from joystick.
+  double kThrottleMin;            ///< Minimum throttle value from joystick.
+  double kMaxLinear;              ///< Maximum linear velocity.
+  double kMaxAngular;             ///< Maximum angular velocity.
+  double kMaxIncrement;           ///< Maximum increment for speed changes.
+  double kMinSpeed;               ///< Minimum speed value.
+  double kDefaultCamPan = 90.0;   ///< Default camera pan position.
+  double kDefaultCamTilt = 90.0;  ///< Default camera tilt position.
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
       twist_pub_;  ///< Publisher for Twist messages.
+  rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr
+      servo_client_;  ///< Client for servo control.
 };
 
 #endif  // JOYSTICK_CONTROL__DRIVEMODE_HPP_
