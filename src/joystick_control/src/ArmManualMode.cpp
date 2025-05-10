@@ -16,10 +16,10 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
 
   kServoMin = 0;
   kServoMax = 180;
-  kClawMax = 62;
+  kClawMax = 110;
   kClawMin = 8;
   servoPos_ = kClawMax;
-  servoRequest(kServoPort, servoPos_, kServoMin, kServoMax);
+  servoRequest(kServoPort, servoPos_);
   buttonPressed_ = false;
   joint_msg_ = control_msgs::msg::JointJog();
   joint_msg_.joint_names = {"Joint_1", "Joint_2", "Joint_3",
@@ -60,10 +60,15 @@ void ArmManualMode::handleTwist(
     // TODO: reimplement this
   } else {
     // act1
-    joint_msg_.velocities[1] = -joystickMsg->axes[kAct1Axis] * throttle;
+    if (joystickMsg->axes[kAct1Axis] > 0.1 ||
+        joystickMsg->axes[kAct1Axis] < -0.1){
+          joint_msg_.velocities[1] = -joystickMsg->axes[kAct1Axis] * throttle;
+        } else{
+          joint_msg_.velocities[1] = 0;
+        }
 
     // act2
-    joint_msg_.velocities[2] = -joystickMsg->axes[kAct2Axis] * throttle;
+    joint_msg_.velocities[2] = joystickMsg->axes[kAct2Axis] * throttle;
   }
 
   // Elbow
@@ -81,14 +86,14 @@ void ArmManualMode::handleTwist(
                              throttle;
 
   // Wrist Turn
-  joint_msg_.velocities[5] = -joystickMsg->axes[kWristRoll] * throttle;
+  joint_msg_.velocities[5] = joystickMsg->axes[kWristRoll] * throttle;
 
   // Gripper. Will cycle between open, half open, and close on button release.
   if (joystickMsg->buttons[kClawOpen] == 1 && !buttonPressed_) {
     if (servoPos_ + ((kClawMax - kClawMin) / 2) < kClawMax + 1) {
       buttonPressed_ = true;
       servoPos_ = servoPos_ + ((kClawMax - kClawMin) / 2);
-      servoRequest(kServoPort, servoPos_, kClawMin, kClawMax);
+      servoRequest(kServoPort, servoPos_);
     } else {
       buttonPressed_ = true;
       RCLCPP_INFO(node_->get_logger(), "Max Open");
@@ -98,7 +103,7 @@ void ArmManualMode::handleTwist(
     if (servoPos_ - ((kClawMax - kClawMin) / 2) > kClawMin - 1) {
       buttonPressed_ = true;
       servoPos_ = servoPos_ - ((kClawMax - kClawMin) / 2);
-      servoRequest(kServoPort, servoPos_, kClawMin, kClawMax);
+      servoRequest(kServoPort, servoPos_);
     } else {
       buttonPressed_ = true;
       RCLCPP_INFO(node_->get_logger(), "Max Close");
@@ -148,13 +153,10 @@ void ArmManualMode::loadParameters() {
   node_->get_parameter("arm_manual_mode.throttle.min", kThrottleMin);
 }
 
-void ArmManualMode::servoRequest(int req_port, int req_pos, int req_min,
-                                 int req_max) const {
+void ArmManualMode::servoRequest(int req_port, int req_pos) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = req_port;
   request->pos = req_pos;
-  request->min = req_min;
-  request->max = req_max;
 
   if (!servo_client_->wait_for_service(std::chrono::seconds(1))) {
     RCLCPP_WARN(node_->get_logger(), "Service not available");

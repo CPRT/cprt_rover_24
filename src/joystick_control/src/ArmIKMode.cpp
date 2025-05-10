@@ -16,10 +16,10 @@ ArmIKMode::ArmIKMode(rclcpp::Node* node) : Mode("IK Arm", node) {
   frame_to_publish_ = CAM_FRAME_ID;
   kServoMin = 0;
   kServoMax = 180;
-  kClawMax = 62;
+  kClawMax = 110;
   kClawMin = 8;
   servoPos_ = kClawMax;
-  servoRequest(kServoPort, servoPos_, kServoMin, kServoMax);
+  servoRequest(kServoPort, servoPos_);
   buttonPressed_ = false;
   swapButton_ = false;
 }
@@ -27,6 +27,7 @@ ArmIKMode::ArmIKMode(rclcpp::Node* node) : Mode("IK Arm", node) {
 void ArmIKMode::processJoystickInput(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
   handleTwist(joystickMsg);
+  handleGripper(joystickMsg);
 }
 
 void ArmIKMode::handleTwist(
@@ -62,7 +63,7 @@ void ArmIKMode::handleGripper(
     if (servoPos_ + ((kClawMax - kClawMin) / 2) < kClawMax + 1) {
       buttonPressed_ = true;
       servoPos_ = servoPos_ + ((kClawMax - kClawMin) / 2);
-      servoRequest(kServoPort, servoPos_, kClawMin, kClawMax);
+      servoRequest(kServoPort, servoPos_);
     } else {
       buttonPressed_ = true;
       RCLCPP_INFO(node_->get_logger(), "Max Open");
@@ -72,7 +73,7 @@ void ArmIKMode::handleGripper(
     if (servoPos_ - ((kClawMax - kClawMin) / 2) > kClawMin - 1) {
       buttonPressed_ = true;
       servoPos_ = servoPos_ - ((kClawMax - kClawMin) / 2);
-      servoRequest(kServoPort, servoPos_, kClawMin, kClawMax);
+      servoRequest(kServoPort, servoPos_);
     } else {
       buttonPressed_ = true;
       RCLCPP_INFO(node_->get_logger(), "Max Close");
@@ -112,14 +113,10 @@ void ArmIKMode::loadParameters() {
   node_->get_parameter("arm_ik_mode.eef_frame", kEEF);
 }
 
-interfaces::srv::MoveServo::Response ArmIKMode::sendRequest(int port, int pos,
-                                                            int min,
-                                                            int max) const {
+interfaces::srv::MoveServo::Response ArmIKMode::sendRequest(int port, int pos) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = port;
   request->pos = pos;
-  request->min = min;
-  request->max = max;
 
   // Wait for the service to be available
   if (!servo_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -140,13 +137,10 @@ interfaces::srv::MoveServo::Response ArmIKMode::sendRequest(int port, int pos,
   return *future.get();
 }
 
-void ArmIKMode::servoRequest(int req_port, int req_pos, int req_min,
-                             int req_max) const {
+void ArmIKMode::servoRequest(int req_port, int req_pos) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = req_port;
   request->pos = req_pos;
-  request->min = req_min;
-  request->max = req_max;
 
   if (!servo_client_->wait_for_service(std::chrono::seconds(1))) {
     RCLCPP_WARN(node_->get_logger(), "Service not available");

@@ -28,21 +28,16 @@ class ArmIKMode : public Mode {
    * @brief Sends a request to move a servo
    * @param port The servo port number
    * @param pos The target position
-   * @param min The minimum position limit of the servo
-   * @param max The maximum position limit of the servo
    * @return The service response
    */
-  interfaces::srv::MoveServo::Response sendRequest(int port, int pos, int min,
-                                                   int max) const;
+  interfaces::srv::MoveServo::Response sendRequest(int port, int pos) const;
 
   /**
    * @brief Wrapper for servo control
    * @param req_port The servo port number
    * @param req_pos The target position
-   * @param req_min The minimum position limit
-   * @param req_max The maximum position limit
    */
-  void servoRequest(int req_port, int req_pos, int req_min, int req_max) const;
+  void servoRequest(int req_port, int req_pos) const;
 
  private:
   // Servo Members
