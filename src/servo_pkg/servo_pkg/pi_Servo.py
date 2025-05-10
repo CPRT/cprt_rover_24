@@ -2,21 +2,28 @@ import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
 
-from RPi import GPIO
+from rpi_hardware_pwm import HardwarePWM
+
+
+def to_channel(pin: int) -> int:
+    if pin == 18:
+        return 0
+    elif pin == 19:
+        return 1
+    raise ValueError(f"Entered non PWM pin: {pin}")
 
 
 class Servo:
     def __init__(
-        self, pin: int, min_pos: float, max_pos: float, frequency: int, rom: int
+        self, channel: int, min_pos: float, max_pos: float, frequency: int, rom: int
     ):
-        self.pin = pin
+        self.channel = channel
         self.min_pos = min_pos
         self.max_pos = max_pos
         self.frequency = frequency
         self.rom = rom
 
-        GPIO.setup(self.pin, GPIO.OUT)
-        self.pwm_pin = GPIO.PWM(self.pin, self.frequency)
+        self.pwm_pin = HardwarePWM(pwm_channel=self.channel, hz=self.frequency, chip=0)
         self.pwm_pin.start(0)
 
     def set_position(self, degree: int):
@@ -24,7 +31,7 @@ class Servo:
             raise ValueError(f"Degree out of range: {degree}")
 
         duty_cycle = self.convert_to_pwm(degree)
-        self.pwm_pin.ChangeDutyCycle(duty_cycle)
+        self.pwm_pin.change_duty_cycle(duty_cycle)
 
     def convert_to_pwm(self, degree: int) -> float:
         return float(degree / (self.rom / (self.max_pos - self.min_pos)) + self.min_pos)
@@ -37,7 +44,6 @@ class pi_Servo(Node):
     def __init__(self):
         super().__init__("pi_servo")
         self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
-        GPIO.setmode(GPIO.BOARD)
         self.servos = {}
         self.load_params()
 
@@ -78,11 +84,12 @@ class pi_Servo(Node):
             if outpin < 0:
                 self.get_logger().error(f"Invalid pin number for port {i}")
                 raise ValueError(f"Invalid pin number for port {i}")
-            if outpin in self.servos:
-                self.get_logger().error(f"Pin {outpin} already in use for port {i}")
-                raise ValueError(f"Pin {outpin} already in use for port {i}")
-            self.servos[outpin] = Servo(
-                pin=outpin,
+            for servo in self.servos.values():
+                if servo.pin == outpin:
+                    self.get_logger().error(f"Pin {outpin} already in use for port {i}")
+                    raise ValueError(f"Pin {outpin} already in use for port {i}")
+            self.servos[i] = Servo(
+                channel=to_channel(outpin),
                 min_pos=min_pos,
                 max_pos=max_pos,
                 frequency=frequency,
@@ -114,7 +121,6 @@ class pi_Servo(Node):
     def destroy_node(self):
         for servo in self.servos.values():
             servo.stop()
-        GPIO.cleanup()
         super().destroy_node()
 
 

@@ -31,6 +31,8 @@ sudo apt-get install -y \
         libjpeg-dev \
         gstreamer1.0-libcamera
 
+sudo bash -c 'echo "dtoverlay=pwm-2chan" >> /boot/firmware/config.txt'
+
 # Install Docker
 if ! command -v docker &> /dev/null; then
     echo "Docker not found, installing Docker..."

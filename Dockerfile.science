@@ -54,7 +54,8 @@ RUN pip3 install --no-cache-dir \
     adafruit-circuitpython-busdevice \
     adafruit-circuitpython-register \
     pyubx2 \
-    RPi.GPIO
+    RPi.GPIO \
+    rpi-hardware-pwm
 
 # Set project directory
 ARG DIR=/cprt_rover_24
