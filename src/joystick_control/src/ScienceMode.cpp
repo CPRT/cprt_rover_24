@@ -101,7 +101,12 @@ void ScienceMode::handleDrill(
 void ScienceMode::handleMicroscope(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   // Process input and output linear component
+  static double position;
   double value = joystickMsg->axes[kMicroscopeAxis];
+  if (value != 0) {
+    position += value;
+    setServoPosition(kMicroscopeServo, position);
+  }
 }
 
 void ScienceMode::handlePanoramic(
@@ -121,7 +126,7 @@ void ScienceMode::handleSoilCollection(
   }
 }
 
-void ScienceMode::setServoPosition(int port, int position) {
+void ScienceMode::setServoPosition(int port, int position) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = port;
   request->pos = position;

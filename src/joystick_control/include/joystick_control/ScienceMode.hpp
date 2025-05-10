@@ -28,7 +28,7 @@ class ScienceMode : public Mode {
 
   void drill_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
   void platform_callback(const ros_phoenix::msg::MotorStatus::SharedPtr msg);
-  void setServoPosition(int port, int position);
+  void setServoPosition(int port, int position) const;
 
   void auto_drill_callback();
   void loadParameters();
