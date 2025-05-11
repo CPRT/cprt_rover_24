@@ -37,6 +37,7 @@ class ScienceMode : public Mode {
   int8_t kCollectionButton;
   int8_t kCancelCollectionButton;
   int8_t kPanoramicButton;
+  int8_t kMicroscopeLightButton;
   int8_t kCollectionServo;
   int8_t kMicroscopeServo;
   int16_t kCollectionOpen;
@@ -45,7 +46,7 @@ class ScienceMode : public Mode {
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr platform_pub_;
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr drill_pub_;
   rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr servo_client_;
-
+  rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr light_client_;
 };
 
 #endif

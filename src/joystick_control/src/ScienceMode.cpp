@@ -9,6 +9,8 @@ ScienceMode::ScienceMode(rclcpp::Node* node) : Mode("Science", node) {
       node_->create_publisher<ros_phoenix::msg::MotorControl>("/drill/set", 10);
   servo_client_ = node_->create_client<interfaces::srv::MoveServo>(
       "/science_servo_service");
+  led_client_ =
+      node_->create_client<std_srvs::srv::SetBool>("/microscope_light");
   // TODO:
   // panoramic_pub_ = node_->create_publisher<Bool?>("/science_panoramic", ?);
 }
@@ -68,6 +70,9 @@ void ScienceMode::handleSoilCollection(
   } else if (joystickMsg->buttons[kCancelCollectionButton]) {
     setServoPosition(kCollectionServo, kCollectionClose);
   }
+  if (joystickMsg->buttons[kMicroscopeLightButton]) {
+    toggleLights();
+  }
 }
 
 void ScienceMode::setServoPosition(int port, int position) const {
@@ -83,6 +88,17 @@ void ScienceMode::setServoPosition(int port, int position) const {
 
   servo_client_->async_send_request(request);
 }
+void ScienceMode::toggleLights() const {
+  static bool light_on = false;
+  auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+  request->data = !light_on;
+  light_on = !light_on;
+  if (!led_client_->wait_for_service(std::chrono::seconds(1))) {
+    RCLCPP_WARN(node_->get_logger(), "Service not available after waiting");
+    return;
+  }
+  led_client_->async_send_request(request);
+}
 
 void ScienceMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("science_mode.platform_axis", 1);
@@ -91,6 +107,7 @@ void ScienceMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("science_mode.soil_collection_button", 4);
   node->declare_parameter("science_mode.cancel_collection_button", 5);
   node->declare_parameter("science_mode.panoramic_button", 6);
+  node->declare_parameter("science_mode.microscope_light_button", 7);
   node->declare_parameter("science_mode.collection_servo", 0);
   node->declare_parameter("science_mode.microscope_servo", 1);
   node->declare_parameter("science_mode.collection_open", 0);
@@ -106,6 +123,8 @@ void ScienceMode::loadParameters() {
   node_->get_parameter("science_mode.cancel_collection_button",
                        kCancelCollectionButton);
   node_->get_parameter("science_mode.panoramic_button", kPanoramicButton);
+  node_->get_parameter("science_mode.microscope_light_button",
+                       kMicroscopeLightButton);
   node_->get_parameter("science_mode.collection_servo", kCollectionServo);
   node_->get_parameter("science_mode.microscope_servo", kMicroscopeServo);
   node_->get_parameter("science_mode.collection_open", kCollectionOpen);
