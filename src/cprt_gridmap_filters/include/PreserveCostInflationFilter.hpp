@@ -76,8 +76,14 @@ class PreserveCostInflationFilter : public filters::FilterBase<T> {
   // Inflation method
   Method method_;
 
-  // Inflation radius
-  double inflationRadius_;
+  // Core Inflation radius
+  double coreInflationRadius_;
+
+  // Decay inflation radius
+  double decayInflationRadius_;
+
+  // Decay rate
+  double decayRate_;
 
 };  // class PreserveCostInflationFilter
 
