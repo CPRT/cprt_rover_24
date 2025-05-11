@@ -14,7 +14,7 @@
   <joint name="zed_camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="zed_camera_link"/>
-    <origin xyz="0.49 0.0 0.0 " rpy="0 0.26 0"/>
+    <origin xyz="0.49 0.0 0.0 " rpy="0.01902409 0.29915 0.0"/>
   </joint>
 
   <joint name="gps_joint" type="fixed">
