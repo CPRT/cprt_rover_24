@@ -24,7 +24,8 @@ add_executable(flightstick_control
   src/DriveMode.cpp 
   src/ArmManualMode.cpp 
   src/ArmIKMode.cpp
-  src/ArmHelpers.cpp)
+  src/ArmHelpers.cpp
+  src/ScienceMode.cpp)
 
 # Link the dependencies to the executable
 ament_target_dependencies(flightstick_control
@@ -46,6 +47,10 @@ flightstick_control
 # Install header files
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
+)
+# Install launch files
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_include_directories("include/${PROJECT_NAME}")
