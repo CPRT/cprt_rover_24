@@ -7,6 +7,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ros_phoenix/msg/motor_control.hpp"
 #include "ros_phoenix/msg/motor_status.hpp"
+#include "std_srvs/srv/set_bool.hpp"
 
 class ScienceMode : public Mode {
  public:
@@ -28,12 +29,14 @@ class ScienceMode : public Mode {
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const;
 
   void setServoPosition(int port, int position) const;
+  void toggleLights() const;
 
   void loadParameters();
 
   int8_t kPlatformAxis;
   int8_t kDrillButton;
   int8_t kMicroscopeAxis;
+  int8_t kThrottleAxis;
   int8_t kCollectionButton;
   int8_t kCancelCollectionButton;
   int8_t kPanoramicButton;
@@ -46,7 +49,7 @@ class ScienceMode : public Mode {
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr platform_pub_;
   rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr drill_pub_;
   rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr servo_client_;
-  rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr light_client_;
+  rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr led_client_;
 };
 
 #endif

@@ -37,14 +37,11 @@ void ScienceMode::handlePlatform(
 void ScienceMode::handleDrill(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   // Turn it on and off
-  bool drill_value = joystickMsg->buttons[kDrillButton];
+  double drill_value =
+      joystickMsg->buttons[kDrillButton] * joystickMsg->axes[kThrottleAxis];
   ros_phoenix::msg::MotorControl drill_control;
   drill_control.mode = ros_phoenix::msg::MotorControl::PERCENT_OUTPUT;
-  if (drill_value) {
-    drill_control.value = 1.0;
-  } else {
-    drill_control.value = 0.0;
-  }
+  drill_control.value = drill_value;
   drill_pub_->publish(drill_control);
 }
 
@@ -56,6 +53,9 @@ void ScienceMode::handleMicroscope(
   if (value != 0) {
     position += value;
     setServoPosition(kMicroscopeServo, position);
+  }
+  if (joystickMsg->buttons[kMicroscopeLightButton]) {
+    toggleLights();
   }
 }
 
@@ -69,9 +69,6 @@ void ScienceMode::handleSoilCollection(
     setServoPosition(kCollectionServo, kCollectionOpen);
   } else if (joystickMsg->buttons[kCancelCollectionButton]) {
     setServoPosition(kCollectionServo, kCollectionClose);
-  }
-  if (joystickMsg->buttons[kMicroscopeLightButton]) {
-    toggleLights();
   }
 }
 
@@ -104,6 +101,7 @@ void ScienceMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("science_mode.platform_axis", 1);
   node->declare_parameter("science_mode.drill_button", 2);
   node->declare_parameter("science_mode.microscope_axis", 3);
+  node->declare_parameter("science_mode.throttle_axis", 3);
   node->declare_parameter("science_mode.soil_collection_button", 4);
   node->declare_parameter("science_mode.cancel_collection_button", 5);
   node->declare_parameter("science_mode.panoramic_button", 6);
@@ -118,6 +116,7 @@ void ScienceMode::loadParameters() {
   node_->get_parameter("science_mode.platform_axis", kPlatformAxis);
   node_->get_parameter("science_mode.drill_button", kDrillButton);
   node_->get_parameter("science_mode.microscope_axis", kMicroscopeAxis);
+  node_->get_parameter("science_mode.throttle_axis", kThrottleAxis);
   node_->get_parameter("science_mode.soil_collection_button",
                        kCollectionButton);
   node_->get_parameter("science_mode.cancel_collection_button",
