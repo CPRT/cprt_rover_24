@@ -53,10 +53,7 @@ def generate_launch_description():
     zed_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(str(zed_launch_file_path)),
         condition=IfCondition(launch_zed),
-        launch_arguments={
-            "use_sim_time": use_sim_time,
-            "svo_path": svo_path
-        }.items(),
+        launch_arguments={"use_sim_time": use_sim_time, "svo_path": svo_path}.items(),
     )
 
     nav2_cmd = IncludeLaunchDescription(
