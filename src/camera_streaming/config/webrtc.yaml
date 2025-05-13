@@ -4,12 +4,16 @@ webrtc_node:
   ros__parameters:
     camera_name:
     - "Drive"
-    - "Secondary"
+    - "EndEffector"
+    - "Bottom"
     - "Microscope"
     Drive:
       path: "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
       type: 0
-    Secondary:
+    EndEffector:
+      path: "/dev/v4l/by-id/usb-EMEET_HD_Webcam_eMeet_C950_SN0001-video-index0"
+      type: 0
+    Bottom:
       path: "/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
       type: 0
       encoded: true
