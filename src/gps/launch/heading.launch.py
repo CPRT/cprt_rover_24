@@ -11,7 +11,7 @@ def generate_launch_description():
     heading = (
         "ubxload --port /dev/ttyUSB0 --baudrate 115200 --infile " + Heading_config_file
     )
-    os.system(heading)
+    # os.system(heading)
 
     return launch.LaunchDescription(
         [

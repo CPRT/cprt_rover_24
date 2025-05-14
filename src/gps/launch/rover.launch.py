@@ -18,7 +18,7 @@ def generate_launch_description():
     Rover_heading = (
         "ubxload --port /dev/ttyACM0 --baudrate 9600 --infile " + Rover_config_file
     )
-    os.system(Rover_heading)
+    # os.system(Rover_heading)
 
     ublox_remappings = [
         ("ublox_gps_node/fix", "gps/fix"),
