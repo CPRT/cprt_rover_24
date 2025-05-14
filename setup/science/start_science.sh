@@ -24,7 +24,7 @@ docker run -d --rm --name servo_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
 docker run -d --rm --name sensor_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
     ros2 launch science_sensors gas_sensor.launch.py
 
-docker run -d --rm --name sensor_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
+docker run -d --rm --name gpio_container ${DOCKER_ARGS} ${IMAGE}:${TAG} \
     ros2 launch science_sensors gpio.launch.py
 
 gst-launch-1.0 libcamerasrc ! queue ! jpegenc ! jpegparse ! rtpjpegpay ! queue ! udpsink host=${JETSON_IP} port=${PORT} 

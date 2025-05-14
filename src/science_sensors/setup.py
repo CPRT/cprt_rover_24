@@ -34,8 +34,8 @@ setup(
             "gas_sensor = science_sensors.gas_sensor:main",
             "microscope_control = science_sensors.microscope_control:main",
             "raman = science_sensors.raman:main",
-            "pi_gpio_controller = pi_gpio_controller.raman:main",
-            "pi_gpio_reader = pi_gpio_reader.raman:main",
+            "pi_gpio_controller = science_sensors.pi_gpio_controller:main",
+            "pi_gpio_reader = science_sensors.pi_gpio_reader:main",
         ],
     },
 )
