@@ -110,7 +110,7 @@ global_ekf:
         # lineal vel 
         false, false, false,
         # angular vel
-        false, false, false,
+        false, false, true,
         # lineal acc
         false, false, false,
       ]
@@ -121,25 +121,25 @@ global_ekf:
     imu1_pose_rejection_threshold: 5.0 # Mahalanobis Distance
     # imu1_twist_rejection_threshold: 1.0
 
-    imu2: /zed/zed_node/imu/data
-    imu2_config: [
-        # position
-        false, false, false,
-        # orientation
-        false, false, true,
-        # lineal vel 
-        false, false, false,
-        # angular vel
-        false, false, false,
-        # lineal acc
-        false, false, false,
-      ]
-    # imu2_queue_size: 2
-    # imu2_nodelay: false
-    imu2_differential: false
-    imu2_relative: true
-    imu2_pose_rejection_threshold: 5.0 # Mahalanobis Distance
-    # imu2_twist_rejection_threshold: 1.0
+    # imu2: /zed/zed_node/imu/data
+    # imu2_config: [
+    #     # position
+    #     false, false, false,
+    #     # orientation
+    #     false, false, false,
+    #     # lineal vel 
+    #     false, false, false,
+    #     # angular vel
+    #     false, false, false,
+    #     # lineal acc
+    #     false, false, false,
+    #   ]
+    # # imu2_queue_size: 2
+    # # imu2_nodelay: false
+    # imu2_differential: false
+    # imu2_relative: true
+    # imu2_pose_rejection_threshold: 5.0 # Mahalanobis Distance
+    # # imu2_twist_rejection_threshold: 1.0
 
     # use_control: false
     # stamped_control: false
