@@ -1,8 +1,13 @@
 USB_Servo_node:
   ros__parameters:
     serial_port: "/dev/serial/by-id/usb-Pololu_Corporation_Pololu_Mini_Maestro_12-Channel_USB_Servo_Controller_00460938-if00"
+    # Tilt
     port0:
-      # these value are for the MS24 servo
-      min: 500
+      min: 350
+      max: 2500
+      rom: 360
+    # PAN
+    port1:
+      min: 350
       max: 2500
       rom: 360

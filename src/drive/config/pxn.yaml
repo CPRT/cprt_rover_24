@@ -18,11 +18,14 @@ flightstick_control:
       cam_reset: 1
       cam_next: 3
       cam_prev: 2
+      camera_speed: 3.0
       cruise_control: 0
       max_linear: 2.0
       max_angular: 1.0
       max_increment: 0.1
       min_speed: 0.001
+      default_pan: 120.0
+      default_tilt: 190.0
       
     arm_manual_mode:
       throttle:
@@ -61,9 +64,11 @@ flightstick_control:
       microscope_axis: 5
       soil_collection_button: 5
       cancel_collection_button: 3
+      microscope_light_button: 4
       microscope_servo: 0
       collection_servo: 1
-      panoramic_button: 4
+      panoramic_button: 2
       collection_open: 0
       collection_close: 120
+      throttle_axis: 2
 

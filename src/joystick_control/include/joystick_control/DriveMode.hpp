@@ -99,6 +99,7 @@ class DriveMode : public Mode {
   double kMinSpeed;               ///< Minimum speed value.
   double kDefaultCamPan = 90.0;   ///< Default camera pan position.
   double kDefaultCamTilt = 90.0;  ///< Default camera tilt position.
+  double kCameraSpeed = 1.0;      ///< Speed for camera movement.
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
       twist_pub_;  ///< Publisher for Twist messages.

@@ -1,5 +1,7 @@
 #include "DriveMode.hpp"
 
+#include <algorithm>
+
 DriveMode::DriveMode(rclcpp::Node* node) : Mode("Drive", node) {
   RCLCPP_INFO(node_->get_logger(), "Drive Mode");
   loadParameters();
@@ -58,21 +60,24 @@ void DriveMode::handleTwist(
 
 void DriveMode::handleCam(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
-  static double tilt_pos = 0;
-  static double pan_pos = 0;
+  static double tilt_pos = kDefaultCamTilt;
+  static double pan_pos = kDefaultCamPan;
+  static double timestamp = 0;
   double tilt = joystickMsg->axes[kCamTiltAxis];
   double pan = joystickMsg->axes[kCamPanAxis];
-  if (tilt != 0) {
-    tilt_pos += tilt;
-    setServoPosition(kCamTiltPort, tilt_pos);
-  }
-  if (pan != 0) {
-    pan_pos += pan;
-    setServoPosition(kCamPanPort, pan_pos);
-  }
+  tilt_pos += tilt * kCameraSpeed;
+  pan_pos += pan * kCameraSpeed;
   if (joystickMsg->buttons[kCamReset] == 1) {
     tilt_pos = kDefaultCamTilt;
     pan_pos = kDefaultCamPan;
+    // return to only send once button is released
+    return;
+  }
+  double current_time = node_->now().seconds();
+  if (current_time - timestamp > 0.2) {
+    pan_pos = std::max(0.0, std::min(360.0, pan_pos));
+    tilt_pos = std::max(0.0, std::min(360.0, tilt_pos));
+    timestamp = current_time;
     setServoPosition(kCamTiltPort, tilt_pos);
     setServoPosition(kCamPanPort, pan_pos);
   }
@@ -117,6 +122,7 @@ void DriveMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("drive_mode.cam_pan_port", 1);
   node->declare_parameter("drive_mode.default_pan", 90.0);
   node->declare_parameter("drive_mode.default_tilt", 90.0);
+  node->declare_parameter("drive_mode.camera_speed", 1.0);
 }
 
 void DriveMode::loadParameters() {
@@ -139,4 +145,5 @@ void DriveMode::loadParameters() {
   node_->get_parameter("drive_mode.cam_pan_port", kCamPanPort);
   node_->get_parameter("drive_mode.default_pan", kDefaultCamPan);
   node_->get_parameter("drive_mode.default_tilt", kDefaultCamTilt);
+  node_->get_parameter("drive_mode.camera_speed", kCameraSpeed);
 }
