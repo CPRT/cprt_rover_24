@@ -47,7 +47,12 @@ class GasSensor(Node):
         self.sensor_reading_pub = self.create_publisher(
             GasSensorReading, "gas_sensor", 10
         )
-        self.create_timer(self.get_parameter("gas_sensor_update_interval_s"), self.loop)
+        self.create_timer(
+            self.get_parameter("gas_sensor_update_interval_s")
+            .get_parameter_value()
+            .double_value,
+            self.loop,
+        )
 
     def loop(self):
         """
