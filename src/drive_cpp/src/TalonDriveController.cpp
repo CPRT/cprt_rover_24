@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <cmath>
 
-TalonDriveController::TalonDriveController() : Node("talonDrive") {
+TalonDriveController::TalonDriveController(const rclcpp::NodeOptions &options)
+    : rclcpp::Node("talon_drive_controller", options) {
   lastTimestamp_ = 0;
   this->declare_parameter("max_speed", 2.0);
   maxSpeed_ = this->get_parameter("max_speed").as_double();
@@ -139,9 +140,6 @@ void TalonDriveController::twist_callback(const Twist::SharedPtr msg) {
   }
 }
 
-int main(int argc, char **argv) {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<TalonDriveController>());
-  rclcpp::shutdown();
-  return 0;
-}
+#include "rclcpp_components/register_node_macro.hpp"
+
+RCLCPP_COMPONENTS_REGISTER_NODE(TalonDriveController)
