@@ -45,7 +45,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "use_sim_time": use_sim_time,
-            "use_composition": "True",  # Make nav2 composable to attach to drive node if drive is launching
+            "use_composition": launch_drive,  # Make nav2 composable to attach to drive node if drive is launching
             "container_name": nav2_container_name,
         }.items(),
     )
