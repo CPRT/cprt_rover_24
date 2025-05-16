@@ -20,7 +20,7 @@ class TalonDriveController : public rclcpp::Node {
   /**
    * @brief Construct a new TalonDriveController object.
    */
-  TalonDriveController();
+  explicit TalonDriveController(const rclcpp::NodeOptions& options);
 
  private:
   /**
