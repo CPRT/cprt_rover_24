@@ -45,7 +45,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "use_sim_time": use_sim_time,
-            "use_composition": "True",
+            "use_composition": "True",  # Make nav2 composable to attach to drive node if drive is launching
             "container_name": nav2_container_name,
         }.items(),
     )
@@ -70,12 +70,11 @@ def generate_launch_description():
     # Include Talon drive nodes into nav2_container
     drive_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_drive, "launch", "composable_talon.launch.py")
+            os.path.join(pkg_drive, "launch", "talon.launch.py")
         ),
         condition=IfCondition(launch_drive),
         launch_arguments={
-            "target_container": nav2_container_name,
-            "config_path": os.path.join(pkg_drive, "config", "talon_drive.yaml"),
+            "container_name": nav2_container_name,  # Launch drive under the nav2 container name, nav2 will attach to it
         }.items(),
     )
 
