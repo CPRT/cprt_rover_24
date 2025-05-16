@@ -229,7 +229,7 @@ def generate_launch_description():
                 name="controller_server",
                 parameters=[configured_params],
                 remappings=remappings,
-                extra_arguments=[{"use_intra_process_comms": True}],
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="nav2_smoother",
@@ -269,7 +269,7 @@ def generate_launch_description():
                 name="waypoint_follower",
                 parameters=[configured_params],
                 remappings=remappings,
-                extra_arguments=[{"use_intra_process_comms": True}],
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="nav2_lifecycle_manager",
@@ -282,14 +282,14 @@ def generate_launch_description():
                         "node_names": lifecycle_nodes,
                     }
                 ],
-                extra_arguments=[{"use_intra_process_comms": True}],
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="nav2_velocity_smoother",
                 plugin="nav2_velocity_smoother::VelocitySmoother",
                 name="velocity_smoother",
                 parameters=[configured_params],
-                extra_arguments=[{"use_intra_process_comms": True}],
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
         ],
     )
