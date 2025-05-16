@@ -1,68 +1,88 @@
 import os
+from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
-from pathlib import Path
 
 
 def generate_launch_description():
-
-    # Get package directory
+    # Get package directories
     pkg_navigation = get_package_share_directory("navigation")
+    pkg_drive = get_package_share_directory("drive")
+
+    # Launch configurations
+    use_sim_time = LaunchConfiguration("use_sim_time")
+    launch_transversability = LaunchConfiguration("launch_transversability")
+    launch_zed = LaunchConfiguration("launch_zed")
+    launch_drive = LaunchConfiguration("launch_drive")
+    nav2_container_name = LaunchConfiguration("nav2_container_name")
 
     # Declare launch arguments
-    use_sim_time = LaunchConfiguration("use_sim_time", default="false")
-    launch_transversability = LaunchConfiguration(
-        "launch_transversability", default="True"
+    declare_use_sim_time = DeclareLaunchArgument("use_sim_time", default_value="false")
+    declare_transversability = DeclareLaunchArgument(
+        "launch_transversability", default_value="True"
     )
-    launch_zed = LaunchConfiguration("launch_zed", default="True")
-
-    launch_transversability_cmd = DeclareLaunchArgument(
-        "launch_transversability",
-        description="Launch elevation mapping pkg if True",
-        default_value="True",
-    )
-    launch_zed_cmd = DeclareLaunchArgument(
-        "launch_zed", description="Launch description if True", default_value="True"
-    )
-    use_sim_time_cmd = DeclareLaunchArgument(
-        "use_sim_time",
-        description="Use simulation (Gazebo) clock if True",
-        default_value="false",
+    declare_zed = DeclareLaunchArgument("launch_zed", default_value="True")
+    declare_drive = DeclareLaunchArgument("launch_drive", default_value="True")
+    declare_container_name = DeclareLaunchArgument(
+        "nav2_container_name", default_value="nav2_container"
     )
 
-    transversability_launch_file_path = (
-        Path(pkg_navigation) / "launch" / "traversability_gridmap.launch.py"
-    )
-    transversability_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(str(transversability_launch_file_path)),
-        condition=IfCondition(launch_transversability),
-    )
-
-    zed_launch_file_path = Path(pkg_navigation) / "launch" / "zed.launch.py"
-    zed_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(str(zed_launch_file_path)),
-        condition=IfCondition(launch_zed),
-        launch_arguments={"use_sim_time": use_sim_time}.items(),
-    )
-
+    # Include nav2 (with composition and container name)
     nav2_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_navigation, "launch", "nav2.launch.py")
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time,
+            "use_composition": "True",
+            "container_name": nav2_container_name,
+        }.items(),
+    )
+
+    # Include traversability mapping if enabled
+    transversability_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_navigation, "launch", "traversability_gridmap.launch.py")
+        ),
+        condition=IfCondition(launch_transversability),
+    )
+
+    # Include ZED launch if enabled
+    zed_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_navigation, "launch", "zed.launch.py")
+        ),
+        condition=IfCondition(launch_zed),
         launch_arguments={"use_sim_time": use_sim_time}.items(),
+    )
+
+    # Include Talon drive nodes into nav2_container
+    drive_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_drive, "launch", "composable_talon.launch.py")
+        ),
+        condition=IfCondition(launch_drive),
+        launch_arguments={
+            "target_container": nav2_container_name,
+            "config_path": os.path.join(pkg_drive, "config", "talon_drive.yaml"),
+        }.items(),
     )
 
     return LaunchDescription(
         [
-            use_sim_time_cmd,
-            launch_transversability_cmd,
-            launch_zed_cmd,
-            transversability_cmd,
+            declare_use_sim_time,
+            declare_transversability,
+            declare_zed,
+            declare_drive,
+            declare_container_name,
             nav2_cmd,
+            transversability_cmd,
             zed_cmd,
+            drive_cmd,
         ]
     )
