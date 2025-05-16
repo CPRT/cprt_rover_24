@@ -48,29 +48,29 @@ def generate_launch_description():
         parameters=[config_path],
     )
 
-    return launch.LaunchDescription([
-        DeclareLaunchArgument(
-            "target_container",
-            default_value="/random_invalid_container",
-            description="Name of the target container to load Talon nodes into",
-        ),
-        DeclareLaunchArgument(
-            "config_path",
-            default_value=os.path.join(
-                get_package_share_directory("drive"),
-                "config",
-                "talon_drive.yaml"
+    return launch.LaunchDescription(
+        [
+            DeclareLaunchArgument(
+                "target_container",
+                default_value="/random_invalid_container",
+                description="Name of the target container to load Talon nodes into",
             ),
-            description="Path to parameter YAML file",
-        ),
-        LoadComposableNodes(
-            composable_node_descriptions=[
-                front_left,
-                back_left,
-                front_right,
-                back_right,
-                drive_controller,
-            ],
-            target_container=target_container,
-        ),
-    ])
+            DeclareLaunchArgument(
+                "config_path",
+                default_value=os.path.join(
+                    get_package_share_directory("drive"), "config", "talon_drive.yaml"
+                ),
+                description="Path to parameter YAML file",
+            ),
+            LoadComposableNodes(
+                composable_node_descriptions=[
+                    front_left,
+                    back_left,
+                    front_right,
+                    back_right,
+                    drive_controller,
+                ],
+                target_container=target_container,
+            ),
+        ]
+    )
