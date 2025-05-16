@@ -78,16 +78,10 @@ def generate_launch_description():
                     {"sensor_multiplier": 1 / 2760.0},
                 ],
             ),
-        ],
-    )
-
-    return launch.LaunchDescription(
-        [
-            container,
-            launch_ros.actions.Node(
+            ComposableNode(
                 package="drive_cpp",
-                executable="drive_cpp",
-                name="talon_control_node",
+                plugin="TalonDriveController",
+                name="talon_drive_controller",
                 parameters=[
                     {"wheels": ["frontRight", "frontLeft", "backRight", "backLeft"]},
                     {"max_speed": 2.0},
@@ -99,5 +93,11 @@ def generate_launch_description():
                     {"low_latency_mode": True},
                 ],
             ),
+        ],
+    )
+
+    return launch.LaunchDescription(
+        [
+            container,
         ]
     )
