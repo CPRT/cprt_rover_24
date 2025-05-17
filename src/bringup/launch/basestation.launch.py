@@ -1,6 +1,10 @@
+import os
+
 import launch
 import launch_ros.actions
-
+from launch.actions import IncludeLaunchDescription
+from ament_index_python.packages import get_package_share_directory
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     return launch.LaunchDescription(
@@ -21,5 +25,13 @@ def generate_launch_description():
                     {"Device": "/dev/ttyACM0"},
                 ],
             ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(
+                        get_package_share_directory("arm_srdf"), "launch", "moveit_rviz.launch.py"
+                    )
+                )
+            )
+
         ]
     )
