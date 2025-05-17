@@ -72,6 +72,9 @@ class WebRTCStreamer : public rclcpp::Node {
     std::string path;
     CameraType type;
     bool encoded;
+    int contrast;
+    int brightness;
+    int saturation;
   };
 
  private:

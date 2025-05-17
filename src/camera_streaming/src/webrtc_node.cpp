@@ -51,11 +51,19 @@ WebRTCStreamer::WebRTCStreamer()
     this->declare_parameter(name + ".encoded", false);
     bool encoded;
     this->get_parameter(name + ".encoded", encoded);
+    this->declare_parameter(name + ".contrast", 0);
+    this->declare_parameter(name + ".brightness", 0);
+    this->declare_parameter(name + ".saturation", 0);
+
     CameraSource source;
     source.name = name;
     source.path = camera_path;
     source.type = static_cast<CameraType>(camera_type);
     source.encoded = encoded;
+    this->get_parameter(name + ".contrast", source.contrast);
+    this->get_parameter(name + ".brightness", source.brightness);
+    this->get_parameter(name + ".saturation", source.saturation);
+
     if (source.type != CameraType::TestSrc && camera_path.empty()) {
       RCLCPP_ERROR(this->get_logger(), "Camera path not set for %s",
                    name.c_str());
@@ -328,6 +336,11 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
     g_object_set(G_OBJECT(source_element), "is-live", TRUE, nullptr);
   } else if (src.type == CameraType::V4l2Src) {
     g_object_set(G_OBJECT(source_element), "device", src.path.c_str(), nullptr);
+    g_object_set(G_OBJECT(source_element), "saturation", src.saturation,
+                 nullptr);
+    g_object_set(G_OBJECT(source_element), "brightness", src.brightness,
+                 nullptr);
+    g_object_set(G_OBJECT(source_element), "contrast", src.contrast, nullptr);
   } else if (src.type == CameraType::NetworkSrc) {
     g_object_set(G_OBJECT(source_element), "uri", src.path.c_str(), nullptr);
     auto caps = GstUniquePtr<GstCaps>(gst_caps_from_string(
