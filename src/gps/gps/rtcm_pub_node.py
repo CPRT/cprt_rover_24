@@ -135,7 +135,7 @@ class RtcmNode(Node):
             msg = Rtcm()
             msg.message = list(raw)
             self.rtcm_pub.publish(msg)
-            self.get_logger().info(
+            self.get_logger().debug(
                 f"Published RTCM message of length {len(raw)}. Parsed message: {parsed_data}"
             )
 
