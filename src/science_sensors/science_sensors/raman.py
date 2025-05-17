@@ -9,6 +9,7 @@ from rclpy.node import Node
 from science_sensors.stellarnet_driverLibs import stellarnet_driver3 as sn
 from interfaces.srv import Raman
 from pathlib import Path
+from std_srvs.srv import SetBool
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
 
@@ -23,7 +24,7 @@ sudo -E bash -c '
   source /opt/ros/humble/setup.bash
   source ~/cprt_rover_24/install/setup.bash
   ros2 service call /get_raman_spectrum interfaces/srv/Raman \
-    "{inittime: 500, scansavg: 1, smoothing: 1}"
+    "{inittime: 500, scansavg: 1, smoothing: 1, laser: true}"
 '
 
 """
@@ -39,6 +40,7 @@ class RamanServ(Node):
         self.spectrometer, self.wav = sn.array_get_spec(0)
         self.get_logger().info(f"Device ID: {sn.getDeviceId(self.spectrometer)}")
         sn.ext_trig(self.spectrometer, True)
+        self.laser_client = self.create_client(SetBool, "/raman_light")
 
         self.srv = self.create_service(
             Raman,
@@ -54,9 +56,9 @@ class RamanServ(Node):
             f"Request  int={request.inittime} ms  "
             f"avg={request.scansavg}  smooth={request.smoothing}"
         )
-        if request.laser:
-            # turn on or off the laser using the GPIO relay/send ros message to do so. Maybe put a wait if its swapping states before getting spect
-            pass
+        self._set_laser(request.laser)
+        time.sleep(0.5)  # Allow time for the laser to turn on
+        self.get_logger().info("Capturing spectrum...")
 
         data = self._get_spectrum(request.inittime, request.scansavg, request.smoothing)
 
@@ -81,6 +83,7 @@ class RamanServ(Node):
 
         self.get_logger().info("Spectrum captured and sent")
         self.get_logger().info(f"Saved to {filename}")
+        self._set_laser(False)
         return response
 
     def _get_spectrum(self, inttime: int, scansavg: int, smooth: int):
@@ -91,6 +94,15 @@ class RamanServ(Node):
             x_smooth=smooth,
         )
         return sn.array_spectrum(self.spectrometer, self.wav)
+
+    def _set_laser(self, state: bool) -> None:
+        """Turn the laser on or off."""
+        if not self.laser_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().error("Laser service not available, exiting...")
+            return
+        request = SetBool.Request()
+        request.data = state
+        self.laser_client.call_async(request)
 
 
 def _chown_to_invoking_user(path: str) -> None:

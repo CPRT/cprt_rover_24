@@ -11,8 +11,6 @@ ScienceMode::ScienceMode(rclcpp::Node* node) : Mode("Science", node) {
       "/science_servo_service");
   led_client_ =
       node_->create_client<std_srvs::srv::SetBool>("/microscope_light");
-  // TODO:
-  // panoramic_pub_ = node_->create_publisher<Bool?>("/science_panoramic", ?);
 }
 
 void ScienceMode::processJoystickInput(
@@ -21,7 +19,6 @@ void ScienceMode::processJoystickInput(
   handleDrill(joystickMsg);
   handleMicroscope(joystickMsg);
   handleSoilCollection(joystickMsg);
-  // handlePanoramic(joystickMsg);
 }
 
 void ScienceMode::handlePlatform(
@@ -59,10 +56,6 @@ void ScienceMode::handleMicroscope(
   }
 }
 
-void ScienceMode::handlePanoramic(
-    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
-  // TODO
-}
 void ScienceMode::handleSoilCollection(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) const {
   if (joystickMsg->buttons[kCollectionButton]) {

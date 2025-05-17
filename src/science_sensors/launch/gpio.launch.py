@@ -16,6 +16,15 @@ def generate_launch_description():
             ),
             launch_ros.actions.Node(
                 package="science_sensors",
+                executable="pi_gpio_controller",
+                name="raman_light",
+                parameters=[
+                    {"service_name": "/raman_light"},
+                    {"gpio_pins": [13]},
+                ],
+            ),
+            launch_ros.actions.Node(
+                package="science_sensors",
                 executable="pi_gpio_reader",
                 name="gpio_reader_node",
                 parameters=[
