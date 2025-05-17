@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 import os
 
 
@@ -17,6 +17,7 @@ def get_included_launch_descriptions(launch_files):
 
 
 def generate_launch_description():
+    SetEnvironmentVariable('ROS_LOG_LEVEL', 'warn'),
     launch_files = [
         ("drive", "talon.launch.py"),
         ("camera_streaming", "webRTC.launch.py"),

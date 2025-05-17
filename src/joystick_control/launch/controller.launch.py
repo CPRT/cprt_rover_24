@@ -18,6 +18,7 @@ def generate_launch_description():
                 name="flightstick_control",
                 output="screen",
                 parameters=[parameters_file],
+                arguments=['--ros-args', '--log-level', 'INFO']
             ),
         ]
     )
