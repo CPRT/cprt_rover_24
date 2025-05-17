@@ -70,7 +70,7 @@ class PanoramicNode(Node):
 
     def capture_image(self) -> np.ndarray:
         if not self.video_cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().error("Servo service not available, exiting...")
+            self.get_logger().error("Video capture service not available, exiting...")
             return
         request = VideoCapture.Request()
         request.source = self.camera_name
