@@ -70,7 +70,7 @@ class GpsCommander(Node):
 
         self.get_logger().info(f"Calling nav_sat service to transform geopose to map")
         self.future = self.localizer.call_async(self.req)
-        rclpy.spin_until_future_complete(self, self.future)
+        self.localizer_callback_group.spin_until_future_complete(self, self.future)
         self.get_logger().info(f"Got pose in map frame")
 
         self.target_pose = PoseStamped()

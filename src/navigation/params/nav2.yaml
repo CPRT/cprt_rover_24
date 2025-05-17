@@ -117,7 +117,7 @@ controller_server:
 
       allow_reversing: false
 
-      # use_rotate_to_heading: false
+      use_rotate_to_heading: false
       # rotate_to_heading_min_angle: 0.8
       # rotate_to_heading_angular_vel: 1.0
       max_angular_accel: 0.5
