@@ -87,13 +87,6 @@ void DriveMode::setServoPosition(int port, int position) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = port;
   request->pos = position;
-
-  // Wait for the service to be available
-  if (!servo_client_->wait_for_service(std::chrono::seconds(1))) {
-    RCLCPP_WARN(node_->get_logger(), "Service not available after waiting");
-    return;
-  }
-
   servo_client_->async_send_request(request);
 }
 
