@@ -8,6 +8,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
+#include "std_msgs/msg/int8.hpp"
 #include "std_msgs/msg/string.hpp"
 
 /**
@@ -67,6 +68,8 @@ class FlightstickControl : public rclcpp::Node {
   uint8_t kNavModeButton;        ///< Button index for navigation mode.
   uint8_t kScienceModeButton;    ///< Button index for science mode.
 
+  uint8_t kTeleopLightMode;  ///< Button index for teleoperation light mode.
+
   ModeType currentMode_;  ///< The current control mode of the rover.
 
   /**
@@ -94,6 +97,8 @@ class FlightstickControl : public rclcpp::Node {
       joy_sub_;  ///< Subscription to joystick messages.
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr
       status_pub_;  ///< Publisher for status messages.
+  rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr
+      light_pub_;  ///< Publisher for light control messages.
 
   std::unique_ptr<Mode> mode_;  ///< Pointer to the current mode object.
 };

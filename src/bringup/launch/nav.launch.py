@@ -25,6 +25,5 @@ def generate_launch_description():
         ("localization", "localization.launch.py"),
         ("nav_commanders", "gps_commander.launch.py"),
         ("servo_pkg", "usb_servo_launch.launch.py"),
-        # TODO: add lights node
     ]
     return LaunchDescription(get_included_launch_descriptions(launch_files))
