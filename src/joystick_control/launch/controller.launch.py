@@ -19,5 +19,11 @@ def generate_launch_description():
                 output="screen",
                 parameters=[parameters_file],
             ),
+            launch_ros.actions.Node(
+                package="gpio_controller",
+                executable="lights",
+                name="lights",
+                output="screen",
+            ),
         ]
     )
