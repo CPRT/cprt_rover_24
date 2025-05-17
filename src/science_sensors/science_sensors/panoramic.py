@@ -18,7 +18,8 @@ class PanoramicNode(Node):
         self.callback_group = MutuallyExclusiveCallbackGroup()
         self.video_callback_group = ReentrantCallbackGroup()
         self.servo_cli = self.create_client(
-            MoveServo, "/servo_service",
+            MoveServo,
+            "/servo_service",
         )
         self.video_cli = self.create_client(
             VideoCapture, "/capture_frame", callback_group=self.video_callback_group
