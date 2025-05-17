@@ -5,6 +5,7 @@ flightstick_control:
     arm_manual_mode_button: 10
     nav_mode_button: 8
     science_mode_button: 7
+    teleop_light_mode: 2
 
     drive_mode:
       throttle:
