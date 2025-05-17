@@ -205,6 +205,7 @@ void WebRTCStreamer::capture_frame(
   std::string &filename = request->filename;
   img_vec.resize(map.size);
   std::memcpy(img_vec.data(), map.data, map.size);
+  response->image.format = "jpeg";
   if (!filename.empty()) {
     std::ofstream file(filename, std::ios::binary);
     if (!file) {
