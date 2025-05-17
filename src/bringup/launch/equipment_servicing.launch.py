@@ -17,7 +17,7 @@ def get_included_launch_descriptions(launch_files):
 
 
 def generate_launch_description():
-    SetEnvironmentVariable('ROS_LOG_LEVEL', 'warn'),
+    SetEnvironmentVariable("ROS_LOG_LEVEL", "warn"),
     launch_files = [
         ("drive", "talon.launch.py"),
         ("arm_srdf", "servo.launch.py"),
