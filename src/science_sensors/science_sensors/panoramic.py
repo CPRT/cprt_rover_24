@@ -4,9 +4,10 @@ import cv2
 import time
 from rclpy.node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from interfaces.srv import MoveServo
-from interfaces.msg import VideoCapture
+from interfaces.srv import VideoCapture
 
 
 class PanoramicNode(Node):
@@ -14,12 +15,13 @@ class PanoramicNode(Node):
         super().__init__("panoramic_node")
         self.get_logger().info("Panoramic Node has been started.")
         self.load_params()
-        self.callback_group = ReentrantCallbackGroup()
+        self.callback_group = MutuallyExclusiveCallbackGroup()
+        self.video_callback_group = ReentrantCallbackGroup()
         self.servo_cli = self.create_client(
-            MoveServo, "/servo_service", callback_group=self.callback_group
+            MoveServo, "/servo_service",
         )
         self.video_cli = self.create_client(
-            VideoCapture, "/capture_frame", callback_group=self.callback_group
+            VideoCapture, "/capture_frame", callback_group=self.video_callback_group
         )
         self.pan_srv = self.create_service(
             VideoCapture,
@@ -29,11 +31,11 @@ class PanoramicNode(Node):
         )
 
     def load_params(self):
-        self.declare_parameter("pan_port", 0)
-        self.declare_parameter("tilt_port", 1)
+        self.declare_parameter("tilt_port", 0)
+        self.declare_parameter("pan_port", 1)
         self.declare_parameter("camera_name", "Drive")
-        self.declare_parameter("images", 5)
-        self.declare_parameter("sleep", 0.5)
+        self.declare_parameter("images", 10)
+        self.declare_parameter("sleep", 2.0)
         self.pan_port = (
             self.get_parameter("pan_port").get_parameter_value().integer_value
         )
@@ -53,33 +55,29 @@ class PanoramicNode(Node):
         )
 
     def move_servo(self, port, angle):
-        self.servo_cli.wait_for_service()
+        if not self.servo_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().error("Servo service not available, exiting...")
+            return
         request = MoveServo.Request()
         request.port = port
-        request.angle = angle
-        future = self.servo_cli.call_async(request)
-
-        while not future.done():
-            rclpy.spin_once(self)
-        result = future.result()
-        if result is None or result.result != MoveServo.Response.SUCCESS:
-            self.get_logger().error(f"Failed to move servo on port {port}")
+        request.pos = angle
+        self.servo_cli.call_async(request)
 
     def move_panoramic(self, pan_angle, tilt_angle):
         self.move_servo(self.pan_port, pan_angle)
         self.move_servo(self.tilt_port, tilt_angle)
 
     def capture_image(self) -> np.ndarray:
-        self.video_cli.wait_for_service()
+        if not self.video_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().error("Servo service not available, exiting...")
+            return
         request = VideoCapture.Request()
         request.source = self.camera_name
         future = self.video_cli.call_async(request)
-
-        while not future.done():
-            rclpy.spin_once(self)
+        rclpy.spin_until_future_complete(self, future)
 
         result = future.result()
-        if result is None or result.result != VideoCapture.Response.SUCCESS:
+        if result is None:
             self.get_logger().error("Failed to capture image")
             return None
 
@@ -87,6 +85,9 @@ class PanoramicNode(Node):
         if result.image.format == "png":
             image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
         elif result.image.format == "jpeg":
+            image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        else:
+            self.get_logger().warn("Format not set. Assuming jpeg")
             image = cv2.imdecode(image, cv2.IMREAD_COLOR)
 
         if image is None or image.size == 0:
@@ -97,20 +98,25 @@ class PanoramicNode(Node):
     def construct_panoramic(self, images):
         # Assuming images is a list of numpy arrays
         if len(images) == 0:
+            self.get_logger().warn("No images found")
             return None
-        try:
-            panoramic_image = np.concatenate(images, axis=1)
-        except Exception as e:
-            self.get_logger().error(f"Failed to stitch images: {str(e)}")
+        stitcher = cv2.Stitcher_create()
+        self.get_logger().info("Stitching started.")
+        status, panoramic_image = stitcher.stitch(images)
+        self.get_logger().info("Stitching finished.")
+        if status == cv2.Stitcher_OK:
+            self.get_logger().info("Stitching successful.")
+        else:
+            self.get_logger().error(f"Stitching failed. Error code: {status}")
             return None
         return panoramic_image
 
     def start(self, request, response):
         self.get_logger().info("Panoramic capture started")
         images = []
+        tilt_angle = 190
         for i in range(self.num_images):
-            pan_angle = i * (360 / self.num_images)
-            tilt_angle = 0
+            pan_angle = int(i * (360 / self.num_images))
             self.move_panoramic(pan_angle, tilt_angle)
             time.sleep(self.sleep_time)
             image = self.capture_image()
@@ -147,7 +153,6 @@ def main(args=None):
     rclpy.init(args=args)
     node = PanoramicNode()
 
-    # Use a multithreaded executor
     executor = MultiThreadedExecutor()
     executor.add_node(node)
 
