@@ -75,7 +75,7 @@ class PanoramicNode(Node):
         request = VideoCapture.Request()
         request.source = self.camera_name
         future = self.video_cli.call_async(request)
-        rclpy.spin_until_future_complete(self, future)
+        self.video_callback_group.spin_until_future_complete(self, future)
 
         result = future.result()
         if result is None:
