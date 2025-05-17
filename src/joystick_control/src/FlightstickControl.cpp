@@ -14,6 +14,9 @@ FlightstickControl::FlightstickControl()
 
   status_pub_ = this->create_publisher<std_msgs::msg::String>(
       "/flightstick/status", rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
+  rclcpp::QoS qos(rclcpp::KeepLast(10));
+  qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
+  light_pub_ = this->create_publisher<std_msgs::msg::Int8>("/lights", qos);
 }
 
 void FlightstickControl::processJoystick(
@@ -53,31 +56,31 @@ bool FlightstickControl::changeMode(ModeType mode) {
       mode_ = nullptr;
       message.data = "Idle";
       status_pub_->publish(message);
-      return true;
+      break;
     case ModeType::DRIVE:
       RCLCPP_INFO(this->get_logger(), "Entering Drive Mode");
       mode_ = std::make_unique<DriveMode>(this);
       message.data = "Drive";
       status_pub_->publish(message);
-      return true;
+      break;
     case ModeType::ARM_MANUAL:
       RCLCPP_INFO(this->get_logger(), "Entering Manual Mode");
       mode_ = std::make_unique<ArmManualMode>(this);
       message.data = "Manual";
       status_pub_->publish(message);
-      return true;
+      break;
     case ModeType::SCIENCE:
       RCLCPP_INFO(this->get_logger(), "Entering Science Mode");
       mode_ = std::make_unique<ScienceMode>(this);
       message.data = "Science";
       status_pub_->publish(message);
-      return true;
+      break;
     case ModeType::ARM_IK:
       RCLCPP_INFO(this->get_logger(), "Entering IK Mode");
       mode_ = std::make_unique<ArmIKMode>(this);
       message.data = "IK";
       status_pub_->publish(message);
-      return true;
+      break;
     default:
       RCLCPP_WARN(this->get_logger(),
                   "Mode not implemented, returning to NONE");
@@ -87,7 +90,10 @@ bool FlightstickControl::changeMode(ModeType mode) {
       status_pub_->publish(message);
       return false;
   }
-  return false;
+  auto msg = std_msgs::msg::Int8();
+  msg.data = kTeleopLightMode;
+  light_pub_->publish(msg);
+  return true;
 }
 
 void FlightstickControl::declareParameters() {
@@ -96,6 +102,7 @@ void FlightstickControl::declareParameters() {
   this->declare_parameter("arm_manual_mode_button", 10);
   this->declare_parameter("nav_mode_button", 13);
   this->declare_parameter("science_mode_button", 14);
+  this->declare_parameter("teleop_light_mode", 1);
   DriveMode::declareParameters(this);
   ArmManualMode::declareParameters(this);
   ArmIKMode::declareParameters(this);
@@ -108,6 +115,7 @@ void FlightstickControl::loadParameters() {
   this->get_parameter("arm_manual_mode_button", kArmManualModeButton);
   this->get_parameter("nav_mode_button", kNavModeButton);
   this->get_parameter("science_mode_button", kScienceModeButton);
+  this->get_parameter("teleop_light_mode", kTeleopLightMode);
 }
 
 int main(int argc, char **argv) {
