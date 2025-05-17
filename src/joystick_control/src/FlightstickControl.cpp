@@ -16,7 +16,7 @@ FlightstickControl::FlightstickControl()
       "/flightstick/status", rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
   rclcpp::QoS qos(rclcpp::KeepLast(10));
   qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
-  light_pub_ = this->create_publisher<std_msgs::msg::Int8>("/lights", qos);
+  light_pub_ = this->create_publisher<std_msgs::msg::Int8>("/light", qos);
 }
 
 void FlightstickControl::processJoystick(
