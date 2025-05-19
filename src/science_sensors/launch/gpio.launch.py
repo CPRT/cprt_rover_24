@@ -20,7 +20,7 @@ def generate_launch_description():
                 name="raman_light",
                 parameters=[
                     {"service_name": "/raman_light"},
-                    {"gpio_pins": [8]},
+                    {"gpio_pins": [7]},
                 ],
             ),
             launch_ros.actions.Node(

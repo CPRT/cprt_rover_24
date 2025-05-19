@@ -11,7 +11,7 @@ class GPIO_Controller(Node):
         GPIO.setmode(GPIO.BCM)
         self.load_parameters()
         for pin in self.gpio_pins:
-            GPIO.setup(pin, GPIO.OUT)
+            GPIO.setup(pin, GPIO.OUT, GPIO.PUD_UP)
         self.srv = self.create_service(
             SetBool, self.service_name, self.set_gpio_callback
         )
