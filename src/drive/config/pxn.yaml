@@ -25,8 +25,8 @@ flightstick_control:
       max_angular: 1.0
       max_increment: 0.1
       min_speed: 0.001
-      default_pan: 120.0
-      default_tilt: 190.0
+      default_pan: 180.0
+      default_tilt: 45.0
       
     arm_manual_mode:
       throttle:

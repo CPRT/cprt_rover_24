@@ -115,7 +115,7 @@ class PanoramicNode(Node):
     def start(self, request, response):
         self.get_logger().info("Panoramic capture started")
         images = []
-        tilt_angle = 190
+        tilt_angle = 45
         for i in range(self.num_images):
             pan_angle = int(i * (360 / self.num_images))
             self.move_panoramic(pan_angle, tilt_angle)
