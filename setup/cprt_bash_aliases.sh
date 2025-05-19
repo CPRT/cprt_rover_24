@@ -52,6 +52,10 @@ create_alias_with_echo openWebUI 'chromium http://localhost:3000'
 create_alias_with_echo openRoverCode 'code $ROVER_DIR'
 create_alias_with_echo openWebCode 'code $WEB_DIR'
 
+create_alias_with_echo rvizMoveit 'rviz2 -d $ROVER_DIR/src/arm_srdf/config/moveit.rviz'
+create_alias_with_echo rvizArm 'rviz2 -d $ROVER_DIR/src/arm_srdf/config/moveit.rviz'
+
+
 
 # Launch helpers
 
