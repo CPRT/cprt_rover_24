@@ -38,7 +38,9 @@ class GPIO_Controller(Node):
         for pin in self.gpio_pins:
             GPIO.output(pin, value)
         response.success = True
-        response.message = f"GPIO pin(s) ({self.gpio_pins}) {'ON' if request.data else 'OFF'}"
+        response.message = (
+            f"GPIO pin(s) ({self.gpio_pins}) {'ON' if request.data else 'OFF'}"
+        )
         self.get_logger().info(response.message)
         return response
 
