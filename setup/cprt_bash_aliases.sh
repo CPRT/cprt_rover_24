@@ -35,16 +35,17 @@ rover_source_name=roverSource # Used below
 
 create_alias_with_echo goLatLonDir 'cd $ROVER_DIR/src/nav_commanders/known_gps_coords'
 
-alias pingBaseAntenna='echo "Pinging 192.168.0.2" && ping 192.168.0.2'
-alias pingRoverAntenna='echo "Pinging 192.168.0.3" && ping 192.168.0.3'
-alias pingJetson='echo "Pinging 192.168.0.55" && ping 192.168.0.55'
+create_alias_with_echo pingBaseAntenna 'ping 192.168.0.2'
+create_alias_with_echo pingRoverAntenna 'ping 192.168.0.3'
+create_alias_with_echo pingJetson 'ping 192.168.0.55'
+create_alias_with_echo pingJetsonWifi 'ping 192.168.1.111'
+create_alias_with_echo pingBattleStation 'ping 192.168.0.20'
+create_alias_with_echo pingBattleStationWifi 'ping 192.168.1.100'
 
-if command -v sshpass &> /dev/null; then
-    create_alias_with_echo sshJetson 'sshpass -p cprt ssh cprt@192.168.0.55'
-else
-    create_alias_with_echo sshJetson 'ssh cprt@192.168.0.55'
-fi
-
+create_alias_with_echo sshJetson 'ssh cprt@192.168.0.55'
+create_alias_with_echo sshJetsonWifi 'ssh cprt@192.168.1.111'
+create_alias_with_echo sshBattleStation 'ssh cprt@192.168.0.20'
+create_alias_with_echo sshBattleStationWifi 'ssh cprt@192.168.1.100'
 
 create_alias_with_echo lsCams 'ls /dev/v4l/by-id'
 
@@ -59,7 +60,7 @@ create_alias_with_echo rvizNav 'rviz2 -d $ROVER_DIR/src/navigation/rviz/nav2_cpr
 
 # Launch helpers
 
-create_alias_with_echo launchBasestation "$rover_source_name && ros2 launch bringup basestation.launch.py"
+create_alias_with_echo launchBasestation "$rover_source_name && ros2 launch bringup basestation.launch.py" 
 create_alias_with_echo launchEquipementServicing "$rover_source_name && ros2 launch bringup equipment_servicing.launch.py"
 create_alias_with_echo launchNav "$rover_source_name && ros2 launch bringup nav.launch.py"
 create_alias_with_echo launchScience "$rover_source_name && ros2 launch bringup science.launch.py"
