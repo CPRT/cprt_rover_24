@@ -20,12 +20,13 @@ CSV_DIR.mkdir(exist_ok=True)
 # here is how to call this stupid ass service since it runs as root
 """
 
-sudo -E bash -c '
+sudo -E bash -c '                                                                                                   
   source /opt/ros/humble/setup.bash
   source ~/cprt_rover_24/install/setup.bash
   ros2 service call /get_raman_spectrum interfaces/srv/Raman \
-    "{inittime: 500, scansavg: 1, smoothing: 1, laser: true}"
+    "{inittime: 5000, scansavg: 1, smoothing: 1}"
 '
+sudo -E bash -c 'source /opt/ros/humble/setup.bash && source ~/cprt_rover_24/install/setup.bash && ros2 run science_sensors raman'
 
 """
 
@@ -56,11 +57,21 @@ class RamanServ(Node):
             f"Request  int={request.inittime} ms  "
             f"avg={request.scansavg}  smooth={request.smoothing}"
         )
-        self._set_laser(request.laser)
-        time.sleep(0.5)  # Allow time for the laser to turn on
+        self._set_laser(False)
+        time.sleep(0.5)  # Allow time for the laser to turn off
         self.get_logger().info("Capturing spectrum...")
 
-        data = self._get_spectrum(request.inittime, request.scansavg, request.smoothing)
+        data_off = self._get_spectrum(
+            request.inittime, request.scansavg, request.smoothing
+        )
+
+        self._set_laser(True)
+        time.sleep(0.5)  # Allow time for the laser to turn on
+
+        data_on = self._get_spectrum(
+            request.inittime, request.scansavg, request.smoothing
+        )
+        data = np.column_stack((data_on[:, 0], data_on[:, 1] - data_off[:, 1]))
 
         ts = time.strftime("%Y%m%d_%H%M%S")
         runParams = (
@@ -70,8 +81,6 @@ class RamanServ(Node):
             + str(request.scansavg)
             + "_s_"
             + str(request.smoothing)
-            + "_l_"
-            + str(request.laser)
         )
         filename = f"{CSV_DIR}/raman_{ts}{runParams}.csv"
         np.savetxt(filename, data, delimiter=",", fmt="%.6f")
@@ -101,7 +110,8 @@ class RamanServ(Node):
             self.get_logger().error("Laser service not available, exiting...")
             return
         request = SetBool.Request()
-        request.data = state
+        # we use a relay of low being on
+        request.data = not state
         self.laser_client.call_async(request)
 
 

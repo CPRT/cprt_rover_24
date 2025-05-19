@@ -24,7 +24,6 @@ def generate_launch_description():
         ("gps", "rover.launch.py"),
         ("joystick_control", "controller.launch.py"),
         ("navigation", "zed.launch.py"),
-        ("localization", "description.launch.py"),
         ("science_sensors", "talon.launch.py"),
         ("servo_pkg", "usb_servo_launch.launch.py"),
         ("science_sensors", "panoramic.launch.py"),

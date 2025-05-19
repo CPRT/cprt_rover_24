@@ -16,7 +16,7 @@ class PanoramicNode(Node):
         self.get_logger().info("Panoramic Node has been started.")
         self.load_params()
         self.callback_group = MutuallyExclusiveCallbackGroup()
-        self.video_callback_group = ReentrantCallbackGroup()
+        self.video_callback_group = MutuallyExclusiveCallbackGroup()
         self.servo_cli = self.create_client(
             MoveServo,
             "/servo_service",
@@ -75,7 +75,7 @@ class PanoramicNode(Node):
         request = VideoCapture.Request()
         request.source = self.camera_name
         future = self.video_cli.call_async(request)
-        self.video_callback_group.spin_until_future_complete(self, future)
+        rclpy.spin_until_future_complete(self, future)
 
         result = future.result()
         if result is None:

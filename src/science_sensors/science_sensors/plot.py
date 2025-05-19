@@ -9,15 +9,19 @@ data = np.loadtxt("spectrum_data.csv", delimiter=",")
 wavelength = data[:, 0]
 intensity = data[:, 1]
 
+# Apply the transformation to the wavelength array
+wavelength_transformed = ((1 / 785) - (1 / wavelength)) * 1e7
+
 # Create a new figure.
 plt.figure(figsize=(10, 6))
 
-# Plot wavelength vs intensity.
-plt.plot(wavelength, intensity, marker="o", linestyle="-", label="Spectrum")
+# Plot transformed wavelength vs intensity.
+plt.plot(wavelength_transformed, intensity, marker="o", linestyle="-", label="Spectrum")
+
 
 # Add title and labels.
-plt.title("StellarNet Spectrum")
-plt.xlabel("Wavelength")
+plt.title("StellarNet Spectrum (Transformed Wavelength)")
+plt.xlabel("Transformed Wavelength")
 plt.ylabel("Intensity")
 
 # Add a grid and legend.
