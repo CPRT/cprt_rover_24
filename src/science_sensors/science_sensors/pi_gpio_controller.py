@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_srvs.srv import SetBool
 import RPi.GPIO as GPIO
+from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 
 
 class GPIO_Controller(Node):
@@ -16,7 +17,11 @@ class GPIO_Controller(Node):
         )
 
     def load_parameters(self):
-        self.declare_parameter("gpio_pins", [])
+        self.declare_parameter(
+            "gpio_pins",
+            [0],
+            ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER_ARRAY),
+        )
         self.gpio_pins = (
             self.get_parameter("gpio_pins").get_parameter_value().integer_array_value
         )

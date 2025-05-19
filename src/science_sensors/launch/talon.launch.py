@@ -23,7 +23,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="platform",
                 parameters=[
-                    {"id": 1},
+                    {"id": 7},
                     {"P": 2.0},
                     {"I": 0.0},
                     {"D": 0.0},
@@ -36,7 +36,7 @@ def generate_launch_description():
                 plugin="ros_phoenix::TalonSRX",
                 name="drill",
                 parameters=[
-                    {"id": 2},
+                    {"id": 8},
                     {"max_voltage": 24.0},
                     {"brake_mode": True},
                 ],

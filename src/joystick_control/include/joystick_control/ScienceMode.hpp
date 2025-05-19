@@ -39,9 +39,10 @@ class ScienceMode : public Mode {
   int8_t kThrottleAxis;
   int8_t kCollectionButton;
   int8_t kCancelCollectionButton;
-  int8_t kPanoramicButton;
+  int8_t kSoilTestButton;
   int8_t kMicroscopeLightButton;
   int8_t kCollectionServo;
+  int8_t kCollectionSample;
   int8_t kMicroscopeServo;
   int16_t kCollectionOpen;
   int16_t kCollectionClose;

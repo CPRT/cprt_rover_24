@@ -65,11 +65,12 @@ flightstick_control:
       microscope_axis: 5
       soil_collection_button: 5
       cancel_collection_button: 3
+      soil_test_button: 2
       microscope_light_button: 4
-      microscope_servo: 0
-      collection_servo: 1
-      panoramic_button: 2
-      collection_open: 0
-      collection_close: 120
+      microscope_servo: 1
+      collection_servo: 0
+      collection_open: 170
+      collection_close: 80
+      collection_test: 0
       throttle_axis: 2
 
