@@ -25,16 +25,30 @@ class IncrementalGpsCommander(Node):
         super().__init__("incremental_gps_commander")
         self.navigator = BasicNavigator("incremental_gps_navigator")
 
-        self.declare_parameter("incremental_distance", 50.0) # Distance in meters to the intermediate goal
-        self.incremental_distance = self.get_parameter("incremental_distance").get_parameter_value().double_value
-        self.get_logger().info(f"Incremental distance set to: {self.incremental_distance} meters")
+        self.declare_parameter(
+            "incremental_distance", 50.0
+        )  # Distance in meters to the intermediate goal
+        self.incremental_distance = (
+            self.get_parameter("incremental_distance")
+            .get_parameter_value()
+            .double_value
+        )
+        self.get_logger().info(
+            f"Incremental distance set to: {self.incremental_distance} meters"
+        )
 
         self.declare_parameter("frequency", 0.1)  # Frequency in Hz
-        self.frequency = self.get_parameter("frequency").get_parameter_value().double_value
-        self.get_logger().info(f"Frequency set to: {self.frequency} Hz or {1.0 / self.frequency} seconds")
+        self.frequency = (
+            self.get_parameter("frequency").get_parameter_value().double_value
+        )
+        self.get_logger().info(
+            f"Frequency set to: {self.frequency} Hz or {1.0 / self.frequency} seconds"
+        )
 
         self.declare_parameter("robot_pose_topic", "odometry/filtered/global")
-        self.robot_pose_topic = self.get_parameter("robot_pose_topic").get_parameter_value().string_value
+        self.robot_pose_topic = (
+            self.get_parameter("robot_pose_topic").get_parameter_value().string_value
+        )
         self.get_logger().info(f"Robot pose topic set to: {self.robot_pose_topic}")
 
         self.nav_fix_topic = "fromLL"
@@ -49,7 +63,10 @@ class IncrementalGpsCommander(Node):
             FromLL, "fromLL", callback_group=self.localizer_callback_group
         )
         self.geopose_service = self.create_service(
-            NavToGPSGeopose, self.geopose_service_name, self.geopose_server, callback_group=self.goal_callback_group
+            NavToGPSGeopose,
+            self.geopose_service_name,
+            self.geopose_server,
+            callback_group=self.goal_callback_group,
         )
         self.robot_pose_subscription = self.create_subscription(
             PoseStamped,
@@ -71,7 +88,9 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info("Nav fix service name: " + str("fromLL"))
         self.get_logger().info("Waiting for nav_sat to be active")
         while not self.localizer_client.wait_for_service(timeout_sec=2.0):
-            self.get_logger().info(f"Service on {self.nav_fix_topic} is not available, waiting again...")
+            self.get_logger().info(
+                f"Service on {self.nav_fix_topic} is not available, waiting again..."
+            )
         self.get_logger().info("nav_sat is active")
 
         self.get_logger().info("Waiting for Nav2 to be active")
@@ -132,12 +151,14 @@ class IncrementalGpsCommander(Node):
     def euclidean_distance(self, pose1: PoseStamped, pose2: PoseStamped):
         """Calculates the Euclidean distance between two poses (ignoring z)."""
         if pose1 is None or pose2 is None:
-            return float('inf')
+            return float("inf")
         dx = pose1.pose.position.x - pose2.pose.position.x
         dy = pose1.pose.position.y - pose2.pose.position.y
         return math.sqrt(dx * dx + dy * dy)
 
-    def calculate_intermediate_goal(self, current_pose: PoseStamped, final_pose: PoseStamped, distance: float):
+    def calculate_intermediate_goal(
+        self, current_pose: PoseStamped, final_pose: PoseStamped, distance: float
+    ):
         """Calculates an intermediate goal point a certain distance along the path to the final goal."""
         if current_pose is None or final_pose is None:
             return None
@@ -158,7 +179,9 @@ class IncrementalGpsCommander(Node):
         intermediate_goal.header.stamp = self.get_clock().now().to_msg()
         intermediate_goal.pose.position.x = intermediate_x
         intermediate_goal.pose.position.y = intermediate_y
-        intermediate_goal.pose.orientation = final_pose.pose.orientation  # Keep the final orientation
+        intermediate_goal.pose.orientation = (
+            final_pose.pose.orientation
+        )  # Keep the final orientation
         return intermediate_goal
 
     def timer_callback(self):
@@ -166,21 +189,29 @@ class IncrementalGpsCommander(Node):
         if self.final_lat_lon is not None and self.current_robot_pose is not None:
             final_pose = self.convert_lat_lon_to_pose(*self.final_lat_lon)
             if final_pose:
-                distance_to_final = self.euclidean_distance(self.current_robot_pose, final_pose)
+                distance_to_final = self.euclidean_distance(
+                    self.current_robot_pose, final_pose
+                )
                 if distance_to_final <= self.incremental_distance:
-                    self.get_logger().info(f"Within {self.incremental_distance:.2f} meters of the final goal. Sending final goal.")
+                    self.get_logger().info(
+                        f"Within {self.incremental_distance:.2f} meters of the final goal. Sending final goal."
+                    )
                     self.intermediate_goal_publisher.publish(final_pose)
-                    if self.goal_handle is None or not self.navigator.isTaskComplete(self.goal_handle):
+                    if self.goal_handle is None or not self.navigator.isTaskComplete(
+                        self.goal_handle
+                    ):
                         self.goal_handle = self.navigator.goToPose(final_pose)
                         self.get_logger().info("Navigating to final goal...")
-                    elif self.goal_handle is not None and self.navigator.isTaskComplete(self.goal_handle):
+                    elif self.goal_handle is not None and self.navigator.isTaskComplete(
+                        self.goal_handle
+                    ):
                         result = self.navigator.getResult(self.goal_handle)
                         if result == TaskResult.SUCCEEDED:
-                            self.get_logger().info('Final goal succeeded!')
+                            self.get_logger().info("Final goal succeeded!")
                         elif result == TaskResult.CANCELED:
-                            self.get_logger().info('Final goal was canceled!')
+                            self.get_logger().info("Final goal was canceled!")
                         elif result == TaskResult.FAILED:
-                            self.get_logger().error('Final goal failed!')
+                            self.get_logger().error("Final goal failed!")
                         self.final_lat_lon = None  # Stop sending goals
                         self.goal_handle = None
                 else:
@@ -188,7 +219,9 @@ class IncrementalGpsCommander(Node):
                         self.current_robot_pose, final_pose, self.incremental_distance
                     )
                     if intermediate_goal:
-                        self.get_logger().info(f"Publishing intermediate goal: x={intermediate_goal.pose.position.x:.2f}, y={intermediate_goal.pose.position.y:.2f}")
+                        self.get_logger().info(
+                            f"Publishing intermediate goal: x={intermediate_goal.pose.position.x:.2f}, y={intermediate_goal.pose.position.y:.2f}"
+                        )
                         self.intermediate_goal_publisher.publish(intermediate_goal)
                     else:
                         self.get_logger().warn("Could not calculate intermediate goal.")
@@ -196,15 +229,19 @@ class IncrementalGpsCommander(Node):
                 self.get_logger().warn("Could not convert final lat/lon to pose.")
         elif self.final_lat_lon is not None and self.current_robot_pose is None:
             self.get_logger().warn("Waiting for the robot's current pose...")
-        elif self.final_lat_lon is None and self.goal_handle is not None and self.navigator.isTaskComplete(self.goal_handle):
+        elif (
+            self.final_lat_lon is None
+            and self.goal_handle is not None
+            and self.navigator.isTaskComplete(self.goal_handle)
+        ):
             # Ensure we log the final result even if the timer ticks after completion
             result = self.navigator.getResult(self.goal_handle)
             if result == TaskResult.SUCCEEDED:
-                self.get_logger().info('Final goal succeeded!')
+                self.get_logger().info("Final goal succeeded!")
             elif result == TaskResult.CANCELED:
-                self.get_logger().info('Final goal was canceled!')
+                self.get_logger().info("Final goal was canceled!")
             elif result == TaskResult.FAILED:
-                self.get_logger().error('Final goal failed!')
+                self.get_logger().error("Final goal failed!")
             self.goal_handle = None
 
 
