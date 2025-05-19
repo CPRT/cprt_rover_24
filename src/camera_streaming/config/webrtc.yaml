@@ -12,8 +12,9 @@ webrtc_node:
       path: "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
       type: 0
     EndEffector:
-      path: "/dev/v4l/by-id/usb-EMEET_HD_Webcam_eMeet_C950_SN0001-video-index0"
+      path: "/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
       type: 0
+      encoded: true
     Bottom:
       path: "/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
       type: 0
