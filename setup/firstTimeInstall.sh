@@ -9,6 +9,9 @@ else
     exit 1
 fi
 
+
+echo "source $CURRENT_DIR/cprt_bash_rc.sh" >> ~/.bashrc
+
 ./install_ros_humble.sh
 source ~/.bashrc
 ./install_gstreamer.sh
