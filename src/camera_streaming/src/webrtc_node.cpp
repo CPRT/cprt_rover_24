@@ -340,7 +340,7 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   // Add jpeg decoders (if necessary)
   if (src.encoded) {
     elements.emplace_back(create_element("jpegparse"));
-    elements.emplace_back(create_element("nvjpegdec"));
+    elements.emplace_back(create_element("jpegdec"));
   }
 
   // Add small queue that drops oldest buffers
