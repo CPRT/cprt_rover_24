@@ -4,8 +4,8 @@ from interfaces.srv import MoveServo
 from servo_pkg import maestro
 
 NUM_PORTS = 12
-DEFAULT_MIN = 2048
-DEFAULT_MAX = 9600
+DEFAULT_MIN = 512
+DEFAULT_MAX = 2400
 DEFAULT_MAX_DEGREES = 180
 
 

@@ -16,10 +16,9 @@ ArmIKMode::ArmIKMode(rclcpp::Node* node) : Mode("IK Arm", node) {
   frame_to_publish_ = CAM_FRAME_ID;
   kServoMin = 0;
   kServoMax = 180;
-  kClawMax = 110;
+  kClawMax = 63;
   kClawMin = 8;
   servoPos_ = kClawMax;
-  servoRequest(kServoPort, servoPos_);
   buttonPressed_ = false;
   swapButton_ = false;
 }
@@ -97,6 +96,7 @@ void ArmIKMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("arm_ik_mode.close_claw", 8);
   node->declare_parameter("arm_ik_mode.base_frame", 9);
   node->declare_parameter("arm_ik_mode.eef_frame", 10);
+  node->declare_parameter("arm_ik_mode.servo_port", 2);
 }
 
 void ArmIKMode::loadParameters() {
@@ -111,6 +111,7 @@ void ArmIKMode::loadParameters() {
   node_->get_parameter("arm_ik_mode.close_claw", kClawClose);
   node_->get_parameter("arm_ik_mode.base_frame", kBase);
   node_->get_parameter("arm_ik_mode.eef_frame", kEEF);
+  node_->get_parameter("arm_ik_mode.servo_port", kServoPort);
 }
 
 interfaces::srv::MoveServo::Response ArmIKMode::sendRequest(int port,

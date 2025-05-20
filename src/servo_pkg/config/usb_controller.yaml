@@ -11,3 +11,8 @@ USB_Servo_node:
       min: 350
       max: 2500
       rom: 360
+    # GRIPPER
+    port3:
+      min: 500
+      max: 2500
+      rom: 180

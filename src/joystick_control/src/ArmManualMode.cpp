@@ -16,10 +16,9 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
 
   kServoMin = 0;
   kServoMax = 180;
-  kClawMax = 110;
+  kClawMax = 63;
   kClawMin = 8;
   servoPos_ = kClawMax;
-  servoRequest(kServoPort, servoPos_);
   buttonPressed_ = false;
   joint_msg_ = control_msgs::msg::JointJog();
   joint_msg_.joint_names = {"Joint_1", "Joint_2", "Joint_3",
