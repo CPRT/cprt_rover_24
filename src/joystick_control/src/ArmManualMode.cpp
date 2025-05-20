@@ -84,10 +84,11 @@ void ArmManualMode::handleTwist(
   }
 
   // Wrist Tilt
-  if (joystickMsg->buttons[kSimpleForward] == 0 && joystickMsg->buttons[kSimpleForward] == 0){
+  if (joystickMsg->buttons[kSimpleForward] == 0 &&
+      joystickMsg->buttons[kSimpleForward] == 0) {
     joint_msg_.velocities[4] = (joystickMsg->buttons[kWristYawPositive] -
-                              joystickMsg->buttons[kWristYawNegative]) *
-                             throttle;
+                                joystickMsg->buttons[kWristYawNegative]) *
+                               throttle;
   }
 
   // Wrist Turn
