@@ -105,7 +105,7 @@ class USB_Servo(Node):
             response.status = False
             response.status_msg = f"Servo {port} input out of range.\nCurrent position: {current_position}"
         else:
-            self.get_logger().info(
+            self.get_logger().debug(
                 f"Received request for port {port}: {request.pos} degrees -> {target_value}"
             )
             self.servo.setTarget(port, target_value)
