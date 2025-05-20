@@ -43,7 +43,7 @@ flightstick_control:
       claw_open: 1
       claw_close: 0
       simple_forward: 2
-      simple_backward: 3
+      simple_backward: 4
       servo_port: 3
   
     arm_ik_mode:

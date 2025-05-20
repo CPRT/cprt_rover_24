@@ -50,7 +50,7 @@ void ArmIKMode::handleTwist(
     frame_to_publish_ = CAM_FRAME_ID;
     swapButton_ = true;
   } else if (!joystickMsg->buttons[kEEF] == 1 &&
-             joystickMsg->buttons[kBase] == 1) {
+             !joystickMsg->buttons[kBase] == 1) {
     swapButton_ = false;
   }
   twist_pub_->publish(twist_msg);
