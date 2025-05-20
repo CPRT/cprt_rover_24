@@ -16,10 +16,9 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
 
   kServoMin = 0;
   kServoMax = 180;
-  kClawMax = 110;
+  kClawMax = 63;
   kClawMin = 8;
   servoPos_ = kClawMax;
-  servoRequest(kServoPort, servoPos_);
   buttonPressed_ = false;
   joint_msg_ = control_msgs::msg::JointJog();
   joint_msg_.joint_names = {"Joint_1", "Joint_2", "Joint_3",
@@ -55,9 +54,13 @@ void ArmManualMode::handleTwist(
   // Simple straight movement (NOT inverse kin)
   // some scaling to move in a straight line
   if (joystickMsg->buttons[kSimpleForward] == 1) {
-    // TODO: reimplement this
+    joint_msg_.velocities[1] = -0.78 * throttle;
+    joint_msg_.velocities[2] = 0.92 * throttle;
+    joint_msg_.velocities[4] = -1.0 * throttle;
   } else if (joystickMsg->buttons[kSimpleBackward] == 1) {
-    // TODO: reimplement this
+    joint_msg_.velocities[1] = 0.90 * throttle;
+    joint_msg_.velocities[2] = -0.80 * throttle;
+    joint_msg_.velocities[4] = 1.0 * throttle;
   } else {
     // act1
     if (joystickMsg->axes[kAct1Axis] > 0.1 ||
@@ -81,9 +84,12 @@ void ArmManualMode::handleTwist(
   }
 
   // Wrist Tilt
-  joint_msg_.velocities[4] = (joystickMsg->buttons[kWristYawPositive] -
-                              joystickMsg->buttons[kWristYawNegative]) *
-                             throttle;
+  if (joystickMsg->buttons[kSimpleForward] == 0 &&
+      joystickMsg->buttons[kSimpleForward] == 0) {
+    joint_msg_.velocities[4] = (joystickMsg->buttons[kWristYawPositive] -
+                                joystickMsg->buttons[kWristYawNegative]) *
+                               throttle;
+  }
 
   // Wrist Turn
   joint_msg_.velocities[5] = joystickMsg->axes[kWristRoll] * throttle;

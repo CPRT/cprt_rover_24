@@ -43,8 +43,8 @@ flightstick_control:
       claw_open: 1
       claw_close: 0
       simple_forward: 2
-      simple_backward: 3
-      servo_port: 0
+      simple_backward: 4
+      servo_port: 3
   
     arm_ik_mode:
       x_axis: 1
@@ -58,6 +58,7 @@ flightstick_control:
       close_claw: 0
       base_frame: 4
       eef_frame: 2
+      servo_port: 3
 
     science_mode:
       platform_axis: 1
