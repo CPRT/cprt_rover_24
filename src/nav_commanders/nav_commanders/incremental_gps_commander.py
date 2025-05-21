@@ -10,10 +10,12 @@ import time
 from robot_localization.srv import FromLL
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from geographic_msgs.msg import GeoPose
 from interfaces.srv import NavToGPSGeopose
 from rclpy.qos import qos_profile_sensor_data
 import math
+from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 
 
 class IncrementalGpsCommander(Node):
@@ -26,7 +28,7 @@ class IncrementalGpsCommander(Node):
         self.navigator = BasicNavigator("incremental_gps_navigator")
 
         self.declare_parameter(
-            "incremental_distance", 50.0
+            "incremental_distance", 10.0
         )  # Distance in meters to the intermediate goal
         self.incremental_distance = (
             self.get_parameter("incremental_distance")
@@ -37,7 +39,7 @@ class IncrementalGpsCommander(Node):
             f"Incremental distance set to: {self.incremental_distance} meters"
         )
 
-        self.declare_parameter("frequency", 0.1)  # Frequency in Hz
+        self.declare_parameter("frequency", 0.5)  # Frequency in Hz
         self.frequency = (
             self.get_parameter("frequency").get_parameter_value().double_value
         )
@@ -51,9 +53,15 @@ class IncrementalGpsCommander(Node):
         )
         self.get_logger().info(f"Robot pose topic set to: {self.robot_pose_topic}")
 
+        # self.qos_profile = QoSProfile(
+        #     history=HistoryPolicy.KEEP_LAST,
+        #     depth=5,
+        #     reliability=ReliabilityPolicy.RELIABLE)
+        # )
+
         self.nav_fix_topic = "fromLL"
-        self.geopose_service_name = "commander/nav_to_gps_incremental"
-        self.intermediate_goal_topic = "intermediate_goal"
+        self.geopose_service_name = "commander/nav_to_gps_geopose"
+        self.intermediate_goal_topic = "goal"
 
         self.localizer_callback_group = MutuallyExclusiveCallbackGroup()
         self.pose_callback_group = ReentrantCallbackGroup()
@@ -69,14 +77,14 @@ class IncrementalGpsCommander(Node):
             callback_group=self.goal_callback_group,
         )
         self.robot_pose_subscription = self.create_subscription(
-            PoseStamped,
+            Odometry,
             self.robot_pose_topic,
             self.robot_pose_callback,
             qos_profile_sensor_data,
             callback_group=self.pose_callback_group,
         )
         self.intermediate_goal_publisher = self.create_publisher(
-            PoseStamped, self.intermediate_goal_topic, 10
+            PoseStamped, self.intermediate_goal_topic, 5
         )
 
         self.final_lat_lon = None
@@ -97,15 +105,15 @@ class IncrementalGpsCommander(Node):
         self.navigator.waitUntilNav2Active(localizer="controller_server")
         self.get_logger().info("Nav2 is active")
 
-    def robot_pose_callback(self, msg: PoseStamped):
+    def robot_pose_callback(self, msg: Odometry):
         """Callback to update the current robot pose."""
-        self.current_robot_pose = msg
+        self.current_robot_pose = msg.pose
 
     def geopose_server(
         self, msg: NavToGPSGeopose, response: NavToGPSGeopose
     ) -> NavToGPSGeopose:
         """Service server to receive the initial GPS goal."""
-        self.get_logger().info("Received a new GPS goal:")
+        self.get_logger().info(f"Received a new GPS goal: {msg}")
         self.final_lat_lon = (
             msg.goal.position.latitude,
             msg.goal.position.longitude,
@@ -113,6 +121,7 @@ class IncrementalGpsCommander(Node):
             msg.goal.orientation,
         )
         self.goal_handle = None  # Reset goal handle for a new goal
+        self.intermediate_goal_handle = None
         response.success = True  # Acknowledge receipt of the goal
         return response
 
@@ -223,6 +232,15 @@ class IncrementalGpsCommander(Node):
                             f"Publishing intermediate goal: x={intermediate_goal.pose.position.x:.2f}, y={intermediate_goal.pose.position.y:.2f}"
                         )
                         self.intermediate_goal_publisher.publish(intermediate_goal)
+
+                        if self.intermediate_goal_handle is None:
+                            self.intermediate_goal_handle = self.navigator.goToPose(
+                                intermediate_goal
+                            )
+                            self.get_logger().info(
+                                "Navigating to first intermediate_goal"
+                            )
+
                     else:
                         self.get_logger().warn("Could not calculate intermediate goal.")
             else:
@@ -243,6 +261,7 @@ class IncrementalGpsCommander(Node):
             elif result == TaskResult.FAILED:
                 self.get_logger().error("Final goal failed!")
             self.goal_handle = None
+            self.intermediate_goal_handle = None
 
 
 def main(args=None):

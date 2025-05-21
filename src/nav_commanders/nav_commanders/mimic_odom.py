@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from rclpy.duration import Duration
+import time
 
 
 class OdometryRepublisher(Node):
@@ -11,6 +12,7 @@ class OdometryRepublisher(Node):
         # Set the frequency for republishing (Hz)
         self.frequency = frequency
         self.last_odometry = None
+        self.time = None
 
         # Subscriber to the original odometry topic
         self.odometry_subscriber = self.create_subscription(
@@ -33,12 +35,21 @@ class OdometryRepublisher(Node):
         self.get_logger().info(f"Received new Odometry message: {msg.header.stamp}")
         msg.header.stamp = self.get_clock().now().to_msg()
         self.last_odometry = msg
+        self.time = time.time()
 
     def republish_odometry(self):
-        if self.last_odometry is not None:
+        if self.time is not None and ((time.time() - self.time) > 2):
+            self.last_odometry = None
+            self.time = None
             self.get_logger().info(
-                f"Republishing Odometry message: {self.last_odometry.header.stamp}"
+                "No message recieved for 2 seconds. Stopping republishing"
             )
+
+        if self.last_odometry is not None:
+            # self.get_logger().info(
+            #     f"Republishing Odometry message: {self.last_odometry.header.stamp}"
+            # )
+
             self.odometry_publisher.publish(self.last_odometry)
         else:
             self.get_logger().warn(
