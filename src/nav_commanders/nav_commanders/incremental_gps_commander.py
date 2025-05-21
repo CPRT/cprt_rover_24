@@ -14,8 +14,16 @@ from nav_msgs.msg import Odometry
 from geographic_msgs.msg import GeoPose
 from interfaces.srv import NavToGPSGeopose
 from rclpy.qos import qos_profile_sensor_data
-import math
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
+import math
+from enum import Enum, auto
+
+
+class MissionState(Enum):
+    DO_NOTHING = auto()
+    NAV_TO_INTERMEDIATE_GOAL = auto()
+    NAV_TO_FINAL_GOAL = auto()
+    NAV_TO_ARUCO_MARKER = auto()
 
 
 class IncrementalGpsCommander(Node):
@@ -26,6 +34,13 @@ class IncrementalGpsCommander(Node):
     def __init__(self):
         super().__init__("incremental_gps_commander")
         self.navigator = BasicNavigator("incremental_gps_navigator")
+        self.mission_state = MissionState.DO_NOTHING
+
+        self.declare_parameter("look_for_aruco", False)
+        self.lookForAruco = (
+            self.get_parameter("look_for_aruco").get_parameter_value().bool_value
+        )
+        self.get_logger().info(f"Look for aruco: {self.lookForAruco}")
 
         self.declare_parameter(
             "incremental_distance", 10.0
@@ -66,6 +81,7 @@ class IncrementalGpsCommander(Node):
         self.localizer_callback_group = MutuallyExclusiveCallbackGroup()
         self.pose_callback_group = ReentrantCallbackGroup()
         self.goal_callback_group = MutuallyExclusiveCallbackGroup()
+        self.timer_group = MutuallyExclusiveCallbackGroup()
 
         self.localizer_client = self.create_client(
             FromLL, "fromLL", callback_group=self.localizer_callback_group
@@ -90,8 +106,10 @@ class IncrementalGpsCommander(Node):
         self.final_lat_lon = None
         self.current_robot_pose = None
         self.goal_handle = None  # To store the navigation goal handle
+        self.intermediate_goal_handle = None
 
-        self.timer = self.create_timer(1.0 / self.frequency, self.timer_callback)
+
+        self.timer = self.create_timer(1.0 / self.frequency, self.timer_callback, callback_group=self.timer_group)
 
         self.get_logger().info("Nav fix service name: " + str("fromLL"))
         self.get_logger().info("Waiting for nav_sat to be active")
@@ -108,6 +126,7 @@ class IncrementalGpsCommander(Node):
     def robot_pose_callback(self, msg: Odometry):
         """Callback to update the current robot pose."""
         self.current_robot_pose = msg.pose
+        self.get_logger().info("Got new robot pose")
 
     def geopose_server(
         self, msg: NavToGPSGeopose, response: NavToGPSGeopose
@@ -120,8 +139,8 @@ class IncrementalGpsCommander(Node):
             msg.goal.position.altitude,
             msg.goal.orientation,
         )
-        self.goal_handle = None  # Reset goal handle for a new goal
-        self.intermediate_goal_handle = None
+        self.reset()
+        self.mission_state = MissionState.NAV_TO_INTERMEDIATE_GOAL
         response.success = True  # Acknowledge receipt of the goal
         return response
 
@@ -149,6 +168,12 @@ class IncrementalGpsCommander(Node):
                 self.get_logger().info(
                     f"Converted to map frame: x={target_pose.pose.position.x:.2f}, y={target_pose.pose.position.y:.2f}"
                 )
+
+                # hack for indoor testing
+                target_pose.pose.position.x = 50.0
+                target_pose.pose.position.y = 0.0
+                target_pose.pose.position.z = 0.0
+
                 return target_pose
             else:
                 self.get_logger().error("Failed to convert lat/lon to map pose")
@@ -193,75 +218,105 @@ class IncrementalGpsCommander(Node):
         )  # Keep the final orientation
         return intermediate_goal
 
+    def reset(self):
+        self.goal_handle = None
+        self.intermediate_goal_handle = None
+        self.mission_state = MissionState.DO_NOTHING
+
     def timer_callback(self):
-        """Timer routine to calculate and publish intermediate goals and handle final goal completion."""
-        if self.final_lat_lon is not None and self.current_robot_pose is not None:
-            final_pose = self.convert_lat_lon_to_pose(*self.final_lat_lon)
-            if final_pose:
-                distance_to_final = self.euclidean_distance(
-                    self.current_robot_pose, final_pose
+        """
+        Timer callback handles all logic, state changes, intermediate goals, aruco naving
+        """
+        self.get_logger().info("TIMER")
+        if self.mission_state == MissionState.DO_NOTHING:
+            return
+
+        elif self.mission_state == MissionState.NAV_TO_INTERMEDIATE_GOAL:
+            if self.final_lat_lon is None:
+                self.get_logger().warn(
+                    "Error in NAV_TO_INTERMEDIATE_GOAL: lat lon is None"
                 )
-                if distance_to_final <= self.incremental_distance:
-                    self.get_logger().info(
-                        f"Within {self.incremental_distance:.2f} meters of the final goal. Sending final goal."
-                    )
-                    self.intermediate_goal_publisher.publish(final_pose)
-                    if self.goal_handle is None or not self.navigator.isTaskComplete(
-                        self.goal_handle
-                    ):
-                        self.goal_handle = self.navigator.goToPose(final_pose)
-                        self.get_logger().info("Navigating to final goal...")
-                    elif self.goal_handle is not None and self.navigator.isTaskComplete(
-                        self.goal_handle
-                    ):
-                        result = self.navigator.getResult(self.goal_handle)
-                        if result == TaskResult.SUCCEEDED:
-                            self.get_logger().info("Final goal succeeded!")
-                        elif result == TaskResult.CANCELED:
-                            self.get_logger().info("Final goal was canceled!")
-                        elif result == TaskResult.FAILED:
-                            self.get_logger().error("Final goal failed!")
-                        self.final_lat_lon = None  # Stop sending goals
-                        self.goal_handle = None
-                else:
-                    intermediate_goal = self.calculate_intermediate_goal(
-                        self.current_robot_pose, final_pose, self.incremental_distance
-                    )
-                    if intermediate_goal:
-                        self.get_logger().info(
-                            f"Publishing intermediate goal: x={intermediate_goal.pose.position.x:.2f}, y={intermediate_goal.pose.position.y:.2f}"
-                        )
-                        self.intermediate_goal_publisher.publish(intermediate_goal)
+                return
+            elif self.current_robot_pose is None:
+                self.get_logger().warn(
+                    "Error in NAV_TO_INTERMEDIATE_GOAL: current robot pose is not available"
+                )
+                return
 
-                        if self.intermediate_goal_handle is None:
-                            self.intermediate_goal_handle = self.navigator.goToPose(
-                                intermediate_goal
-                            )
-                            self.get_logger().info(
-                                "Navigating to first intermediate_goal"
-                            )
+            # Calculate the final pose
+            final_pose = self.convert_lat_lon_to_pose(*self.final_lat_lon)
+            if final_pose is None:
+                self.get_logger().warn(
+                    "Error in NAV_TO_INTERMEDIATE_GOAL: Failed to convert lat lon to pose"
+                )
+                return
 
-                    else:
-                        self.get_logger().warn("Could not calculate intermediate goal.")
-            else:
-                self.get_logger().warn("Could not convert final lat/lon to pose.")
-        elif self.final_lat_lon is not None and self.current_robot_pose is None:
-            self.get_logger().warn("Waiting for the robot's current pose...")
-        elif (
-            self.final_lat_lon is None
-            and self.goal_handle is not None
-            and self.navigator.isTaskComplete(self.goal_handle)
-        ):
-            # Ensure we log the final result even if the timer ticks after completion
-            result = self.navigator.getResult(self.goal_handle)
-            if result == TaskResult.SUCCEEDED:
-                self.get_logger().info("Final goal succeeded!")
-            elif result == TaskResult.CANCELED:
-                self.get_logger().info("Final goal was canceled!")
-            elif result == TaskResult.FAILED:
-                self.get_logger().error("Final goal failed!")
-            self.goal_handle = None
-            self.intermediate_goal_handle = None
+            distance_to_final = self.euclidean_distance(
+                self.current_robot_pose, final_pose
+            )
+            if distance_to_final < self.incremental_distance:
+                # Final pose is close, go to final pose
+                self.mission_state = MissionState.NAV_TO_FINAL_GOAL
+
+                self.get_logger().info(f"Going to final goal: {final_pose.position}")
+                self.intermediate_goal_publisher.publish(final_pose)
+                self.goal_handle = self.navigator.goToPose(final_pose)
+                self.get_logger().info(
+                    f"Called goToPose for final pose with {final_pose.position}"
+                )
+                self.get_logger().info(
+                    f"~~~NAV_TO_INTERMEDIATE_GOAL -> NAV_TO_FINAL_GOAL. ({distance_to_final} meters to lat lon)"
+                )
+                return
+
+            # Final pose is too far away, plan an intermediate goal closer
+            intermediate_goal = self.calculate_intermediate_goal(
+                self.current_robot_pose, final_pose, self.incremental_distance
+            )
+
+            if intermediate_goal is None:
+                self.get_logger().info(
+                    "Error in NAV_TO_INTERMEDIATE_GOAL: Failed to calculate intermediate goal"
+                )
+                return
+
+            self.intermediate_goal_publisher.publish(intermediate_goal)
+            self.get_logger().info(
+                f"Publishing intermediate goal: x={intermediate_goal.pose.position.x:.2f}, y={intermediate_goal.pose.position.y:.2f}"
+            )
+
+            if self.intermediate_goal_handle is None:
+                self.get_logger().info(f"Calling goToPose for intermediate goal {intermediate_goal}")
+                self.intermediate_goal_handle = self.navigator.goToPose(intermediate_goal)
+                self.get_logger().info(f"Called goToPose for intermediate goal. GoalHandle: {self.intermediate_goal_handle}")
+
+            self.get_logger().info("Calling self.navigator.isTaskComplete()")
+            if self.navigator.isTaskComplete():
+                self.get_logger().warn(
+                    "Error in NAV_TO_INTERMEDIATE_GOAL: Nav reported it completed going to intermediate goal"
+                )
+            self.get_logger().info("Finishing isTaskComplete")
+            return
+
+        # elif self.mission_state == MissionState.NAV_TO_FINAL_GOAL:
+        #     if not self.lookForAruco:
+        #         if self.goal_handle is None:
+        #             self.get_logger().warn(
+        #                 "Error in NAV_TO_FINAL_GOAL: No goal handle available"
+        #             )
+        #             return
+
+        #         if self.navigator.isTaskComplete():
+        #             self.get_logger().info("Final goal complete!")
+        #             result = self.navigator.getResult()
+        #             if result == TaskResult.SUCCEEDED:
+        #                 self.get_logger().info("Final goal succeeded!")
+        #             elif result == TaskResult.CANCELED:
+        #                 self.get_logger().info("Final goal was canceled!")
+        #             elif result == TaskResult.FAILED:
+        #                 self.get_logger().error("Final goal failed!")
+
+        #             self.reset()
 
 
 def main(args=None):
