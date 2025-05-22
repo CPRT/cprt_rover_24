@@ -52,7 +52,7 @@ def generate_launch_description():
             "Grid/FlatObstacleDetected": "false",
             "Grid/MapFrameProjection": "true",
             "GridGlobal/UpdateError": "0.01",
-            "GridGlobal/MinSize": "200",
+            "GridGlobal/MinSize": "500",
             "GridGlobal/OccupancyThr": "0.5",
             "Reg/Strategy": "1",
         }

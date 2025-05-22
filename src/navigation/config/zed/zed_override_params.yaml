@@ -15,6 +15,10 @@
             depth_mode: "NEURAL" # Matches the ZED SDK setting: 'NONE', 'PERFORMANCE', 'QUALITY', 'ULTRA', 'NEURAL', 'NEURAL_PLUS' - Note: if 'NONE' all the modules that requires depth extraction are disabled by default (Pos. Tracking, Obj. Detection, Mapping, ...)
             min_depth: 0.3 # Min: 0.3, Max: 3.0
             max_depth: 9.0 # Max: 40.0
+            depth_stabilization: 1 # Forces positional tracking to start if major than 0 - Range: [0,100]
+            depth_confidence: 50 # [DYNAMIC]
+            depth_texture_conf: 99 # [DYNAMIC]
+            remove_saturated_areas: true # [DYNAMIC]
 
         svo:
             svo_loop: true # Enable loop mode when using an SVO as input source
@@ -34,7 +38,7 @@
             whitebalance_temperature: 42 # [DYNAMIC] - [28,65] x100 - works only if `auto_whitebalance` is false
 
         pos_tracking: # Only stereo cameras
-            reset_odom_with_loop_closure: true # Re-initialize odometry to the last valid pose when loop closure happens (reset camera odometry drift)
+            reset_odom_with_loop_closure: false # Re-initialize odometry to the last valid pose when loop closure happens (reset camera odometry drift)
             set_gravity_as_origin: false # If 'true' align the positional tracking world to imu gravity measurement. Keep the yaw from the user initial pose.
             initial_base_pose: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # Initial position of the `camera_link` frame in the map -> [X, Y, Z, R, P, Y]
         

@@ -101,6 +101,8 @@ class DriveMode : public Mode {
   double kDefaultCamTilt = 90.0;  ///< Default camera tilt position.
   double kCameraSpeed = 1.0;      ///< Speed for camera movement.
 
+  bool camera_service_available_;
+
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr
       twist_pub_;  ///< Publisher for Twist messages.
   rclcpp::Client<interfaces::srv::MoveServo>::SharedPtr

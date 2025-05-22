@@ -130,6 +130,7 @@ def generate_launch_description():
     default_bt_xml_filename_cmd = DeclareLaunchArgument(
         "default_nav_to_pose_bt_xml",
         default_value=os.path.join(pkg_dir, "behavior_trees", "behaviorTree.xml"),
+        # default_value=os.path.join(pkg_dir, "behavior_trees", "behaviorTree_NavPathingTestTree.xml"),
         description="Full path to the behavior tree xml file to use",
     )
 
@@ -228,6 +229,7 @@ def generate_launch_description():
                 name="controller_server",
                 parameters=[configured_params],
                 remappings=remappings,
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="nav2_smoother",
@@ -235,6 +237,7 @@ def generate_launch_description():
                 name="smoother_server",
                 parameters=[configured_params],
                 remappings=remappings,
+                # extra_arguments=[{"use_intra_process_comms": True}], # Got error:  intraprocess communication allowed only with volatile durability
             ),
             ComposableNode(
                 package="nav2_planner",
@@ -242,6 +245,7 @@ def generate_launch_description():
                 name="planner_server",
                 parameters=[configured_params],
                 remappings=remappings,
+                # extra_arguments=[{"use_intra_process_comms": True}], # Got error:  intraprocess communication allowed only with volatile durability
             ),
             ComposableNode(
                 package="nav2_behaviors",
@@ -249,6 +253,7 @@ def generate_launch_description():
                 name="behavior_server",
                 parameters=[configured_params],
                 remappings=remappings,
+                # extra_arguments=[{"use_intra_process_comms": True}], # Got error:  intraprocess communication allowed only with volatile durability
             ),
             ComposableNode(
                 package="nav2_bt_navigator",
@@ -256,6 +261,7 @@ def generate_launch_description():
                 name="bt_navigator",
                 parameters=[configured_params],
                 remappings=remappings,
+                # extra_arguments=[{"use_intra_process_comms": True}], # Got error:  intraprocess communication allowed only with volatile durability
             ),
             ComposableNode(
                 package="nav2_waypoint_follower",
@@ -263,6 +269,7 @@ def generate_launch_description():
                 name="waypoint_follower",
                 parameters=[configured_params],
                 remappings=remappings,
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="nav2_lifecycle_manager",
@@ -275,12 +282,14 @@ def generate_launch_description():
                         "node_names": lifecycle_nodes,
                     }
                 ],
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="nav2_velocity_smoother",
                 plugin="nav2_velocity_smoother::VelocitySmoother",
                 name="velocity_smoother",
                 parameters=[configured_params],
+                # extra_arguments=[{"use_intra_process_comms": True}],
             ),
         ],
     )

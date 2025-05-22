@@ -13,9 +13,12 @@ else
     # echo "Setting ROVER_DIR to OVERRIDE_ROVER_DIR, so ROVER_DIR set to $ROVER_DIR"
 fi
 
+
 if [[ -z "${OVERRIDE_WEB_DIR}" ]]; then
-    export WEB_DIR=$(cd ~/cprt_web_ui_24 && pwd)
-    # echo "Set WEB_DIR env variable to $WEB_DIR"
+    if [ -d "$HOME/cprt_web_ui_24" ]; then
+        export WEB_DIR=$(cd "$HOME/cprt_web_ui_24" && pwd)
+        # echo "Set WEB_DIR env variable to $WEB_DIR"
+    fi
 else 
     export WEB_DIR=$(cd $OVERRIDE_WEB_DIR && pwd)
     # echo "Setting WEB_DIR to OVERRIDE_WEB_DIR, so WEB_DIR set to $WEB_DIR"
