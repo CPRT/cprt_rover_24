@@ -15,8 +15,8 @@ fi
 
 
 if [[ -z "${OVERRIDE_WEB_DIR}" ]]; then
-    if [ -d "~/cprt_web_ui_24" ]; then
-        export WEB_DIR=$(cd ~/cprt_web_ui_24 && pwd)
+    if [ -d "$HOME/cprt_web_ui_24" ]; then
+        export WEB_DIR=$(cd "$HOME/cprt_web_ui_24" && pwd)
         # echo "Set WEB_DIR env variable to $WEB_DIR"
     fi
 else 
