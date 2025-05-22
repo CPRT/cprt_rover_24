@@ -17,6 +17,7 @@ from rclpy.qos import qos_profile_sensor_data
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 import math
 from enum import Enum, auto
+from threading import Event
 
 
 class MissionState(Enum):
@@ -43,7 +44,7 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info(f"Look for aruco: {self.lookForAruco}")
 
         self.declare_parameter(
-            "incremental_distance", 10.0
+            "incremental_distance", 40.0
         )  # Distance in meters to the intermediate goal
         self.incremental_distance = (
             self.get_parameter("incremental_distance")
@@ -54,7 +55,7 @@ class IncrementalGpsCommander(Node):
             f"Incremental distance set to: {self.incremental_distance} meters"
         )
 
-        self.declare_parameter("frequency", 0.5)  # Frequency in Hz
+        self.declare_parameter("frequency", 0.05)  # Frequency in Hz
         self.frequency = (
             self.get_parameter("frequency").get_parameter_value().double_value
         )
@@ -73,10 +74,11 @@ class IncrementalGpsCommander(Node):
         #     depth=5,
         #     reliability=ReliabilityPolicy.RELIABLE)
         # )
-
+        # self.i = 0
         self.nav_fix_topic = "fromLL"
         self.geopose_service_name = "commander/nav_to_gps_geopose"
         self.intermediate_goal_topic = "goal"
+        # self.nav_fromll_done_event = Event()
 
         self.localizer_callback_group = MutuallyExclusiveCallbackGroup()
         self.pose_callback_group = ReentrantCallbackGroup()
@@ -126,7 +128,29 @@ class IncrementalGpsCommander(Node):
     def robot_pose_callback(self, msg: Odometry):
         """Callback to update the current robot pose."""
         self.current_robot_pose = msg.pose
-        self.get_logger().info("Got new robot pose")
+     
+
+        # target_pose = PoseStamped()
+        # target_pose.header.frame_id = "map"
+        # target_pose.header.stamp = self.get_clock().now().to_msg()
+        # # target_pose.pose.position = result.map_point
+        # # target_pose.pose.orientation = orientation
+        # # self.get_logger().info(
+        # #     f"Converted to map frame: x={target_pose.pose.position.x:.2f}, y={target_pose.pose.position.y:.2f}"
+        # # )
+
+
+
+
+        # # hack for indoor testing
+        # target_pose.pose.position.x = 0.1 * self.i
+        # target_pose.pose.position.y = 0.0
+        # target_pose.pose.position.z = 0.0
+        # self.i += 1
+
+        # self.current_robot_pose = target_pose
+        # self.get_logger().info(f"Current pose: {self.current_robot_pose.pose.position}")
+
 
     def geopose_server(
         self, msg: NavToGPSGeopose, response: NavToGPSGeopose
@@ -142,6 +166,11 @@ class IncrementalGpsCommander(Node):
         self.reset()
         self.mission_state = MissionState.NAV_TO_INTERMEDIATE_GOAL
         response.success = True  # Acknowledge receipt of the goal
+
+        # Make the timer trigger immediately to process new goal
+        self.timer.reset()
+        self.timer_callback()
+
         return response
 
     def convert_lat_lon_to_pose(self, latitude, longitude, altitude, orientation):
@@ -154,10 +183,18 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info(
             f"Requesting map pose for: Long={req.ll_point.longitude:.8f}, Lat={req.ll_point.latitude:.8f}, Alt={req.ll_point.altitude:.8f}"
         )
+        
 
         try:
+            event = Event()
+            def done_callback(future):
+                nonlocal event
+                event.set()
+
             future = self.localizer_client.call_async(req)
-            rclpy.spin_until_future_complete(self, future)
+            future.add_done_callback(done_callback)
+            event.wait()
+
             result = future.result()
             if result:
                 target_pose = PoseStamped()
@@ -227,7 +264,7 @@ class IncrementalGpsCommander(Node):
         """
         Timer callback handles all logic, state changes, intermediate goals, aruco naving
         """
-        self.get_logger().info("TIMER")
+        # self.get_logger().info("TIMER")
         if self.mission_state == MissionState.DO_NOTHING:
             return
 
@@ -258,14 +295,14 @@ class IncrementalGpsCommander(Node):
                 # Final pose is close, go to final pose
                 self.mission_state = MissionState.NAV_TO_FINAL_GOAL
 
-                self.get_logger().info(f"Going to final goal: {final_pose.position}")
+                self.get_logger().info(f"Going to final goal: {final_pose.pose.position}")
                 self.intermediate_goal_publisher.publish(final_pose)
                 self.goal_handle = self.navigator.goToPose(final_pose)
                 self.get_logger().info(
-                    f"Called goToPose for final pose with {final_pose.position}"
+                    f"Called goToPose for final pose with {final_pose.pose.position}"
                 )
                 self.get_logger().info(
-                    f"~~~NAV_TO_INTERMEDIATE_GOAL -> NAV_TO_FINAL_GOAL. ({distance_to_final} meters to lat lon)"
+                    f"~~~NAV_TO_INTERMEDIATE_GOAL -> NAV_TO_FINAL_GOAL. ({distance_to_final:.2f} meters to lat lon)"
                 )
                 return
 
@@ -285,38 +322,38 @@ class IncrementalGpsCommander(Node):
                 f"Publishing intermediate goal: x={intermediate_goal.pose.position.x:.2f}, y={intermediate_goal.pose.position.y:.2f}"
             )
 
-            if self.intermediate_goal_handle is None:
-                self.get_logger().info(f"Calling goToPose for intermediate goal {intermediate_goal}")
-                self.intermediate_goal_handle = self.navigator.goToPose(intermediate_goal)
-                self.get_logger().info(f"Called goToPose for intermediate goal. GoalHandle: {self.intermediate_goal_handle}")
+            # if self.intermediate_goal_handle is None:
+            self.get_logger().info(f"Calling goToPose for intermediate goal {intermediate_goal}")
+            self.intermediate_goal_handle = self.navigator.goToPose(intermediate_goal)
+            self.get_logger().info(f"Called goToPose for intermediate goal. GoalHandle: {self.intermediate_goal_handle}")
 
-            self.get_logger().info("Calling self.navigator.isTaskComplete()")
+            # self.get_logger().info("Calling self.navigator.isTaskComplete()")
             if self.navigator.isTaskComplete():
                 self.get_logger().warn(
                     "Error in NAV_TO_INTERMEDIATE_GOAL: Nav reported it completed going to intermediate goal"
                 )
-            self.get_logger().info("Finishing isTaskComplete")
+            # self.get_logger().info("Finishing isTaskComplete")
             return
 
-        # elif self.mission_state == MissionState.NAV_TO_FINAL_GOAL:
-        #     if not self.lookForAruco:
-        #         if self.goal_handle is None:
-        #             self.get_logger().warn(
-        #                 "Error in NAV_TO_FINAL_GOAL: No goal handle available"
-        #             )
-        #             return
+        elif self.mission_state == MissionState.NAV_TO_FINAL_GOAL:
+            if not self.lookForAruco:
+                if self.goal_handle is None:
+                    self.get_logger().warn(
+                        "Error in NAV_TO_FINAL_GOAL: No goal handle available"
+                    )
+                    return
 
-        #         if self.navigator.isTaskComplete():
-        #             self.get_logger().info("Final goal complete!")
-        #             result = self.navigator.getResult()
-        #             if result == TaskResult.SUCCEEDED:
-        #                 self.get_logger().info("Final goal succeeded!")
-        #             elif result == TaskResult.CANCELED:
-        #                 self.get_logger().info("Final goal was canceled!")
-        #             elif result == TaskResult.FAILED:
-        #                 self.get_logger().error("Final goal failed!")
+                if self.navigator.isTaskComplete():
+                    self.get_logger().info("Final goal complete!")
+                    result = self.navigator.getResult()
+                    if result == TaskResult.SUCCEEDED:
+                        self.get_logger().info("Final goal succeeded!")
+                    elif result == TaskResult.CANCELED:
+                        self.get_logger().info("Final goal was canceled!")
+                    elif result == TaskResult.FAILED:
+                        self.get_logger().error("Final goal failed!")
 
-        #             self.reset()
+                    self.reset()
 
 
 def main(args=None):

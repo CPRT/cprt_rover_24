@@ -113,7 +113,7 @@ elevation_mapping:
         type: gridMapFilters/MathExpressionFilter
         params:
           output_layer: traversability
-          expression: 0.2 * (slope / 0.6) + 0.35 * (roughness / 0.1) # roughness: 0.3
+          expression: 0.14 * (slope / 0.6) + 0.3 * (roughness / 0.1) # roughness: 0.3
 
       # Set lower threshold on traversability.
       filter9:
