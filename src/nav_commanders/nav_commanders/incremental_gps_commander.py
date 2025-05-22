@@ -110,8 +110,9 @@ class IncrementalGpsCommander(Node):
         self.goal_handle = None  # To store the navigation goal handle
         self.intermediate_goal_handle = None
 
-
-        self.timer = self.create_timer(1.0 / self.frequency, self.timer_callback, callback_group=self.timer_group)
+        self.timer = self.create_timer(
+            1.0 / self.frequency, self.timer_callback, callback_group=self.timer_group
+        )
 
         self.get_logger().info("Nav fix service name: " + str("fromLL"))
         self.get_logger().info("Waiting for nav_sat to be active")
@@ -128,7 +129,6 @@ class IncrementalGpsCommander(Node):
     def robot_pose_callback(self, msg: Odometry):
         """Callback to update the current robot pose."""
         self.current_robot_pose = msg.pose
-     
 
         # target_pose = PoseStamped()
         # target_pose.header.frame_id = "map"
@@ -139,9 +139,6 @@ class IncrementalGpsCommander(Node):
         # #     f"Converted to map frame: x={target_pose.pose.position.x:.2f}, y={target_pose.pose.position.y:.2f}"
         # # )
 
-
-
-
         # # hack for indoor testing
         # target_pose.pose.position.x = 0.1 * self.i
         # target_pose.pose.position.y = 0.0
@@ -150,7 +147,6 @@ class IncrementalGpsCommander(Node):
 
         # self.current_robot_pose = target_pose
         # self.get_logger().info(f"Current pose: {self.current_robot_pose.pose.position}")
-
 
     def geopose_server(
         self, msg: NavToGPSGeopose, response: NavToGPSGeopose
@@ -183,10 +179,10 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info(
             f"Requesting map pose for: Long={req.ll_point.longitude:.8f}, Lat={req.ll_point.latitude:.8f}, Alt={req.ll_point.altitude:.8f}"
         )
-        
 
         try:
             event = Event()
+
             def done_callback(future):
                 nonlocal event
                 event.set()
@@ -295,7 +291,9 @@ class IncrementalGpsCommander(Node):
                 # Final pose is close, go to final pose
                 self.mission_state = MissionState.NAV_TO_FINAL_GOAL
 
-                self.get_logger().info(f"Going to final goal: {final_pose.pose.position}")
+                self.get_logger().info(
+                    f"Going to final goal: {final_pose.pose.position}"
+                )
                 self.intermediate_goal_publisher.publish(final_pose)
                 self.goal_handle = self.navigator.goToPose(final_pose)
                 self.get_logger().info(
@@ -323,9 +321,13 @@ class IncrementalGpsCommander(Node):
             )
 
             # if self.intermediate_goal_handle is None:
-            self.get_logger().info(f"Calling goToPose for intermediate goal {intermediate_goal}")
+            self.get_logger().info(
+                f"Calling goToPose for intermediate goal {intermediate_goal}"
+            )
             self.intermediate_goal_handle = self.navigator.goToPose(intermediate_goal)
-            self.get_logger().info(f"Called goToPose for intermediate goal. GoalHandle: {self.intermediate_goal_handle}")
+            self.get_logger().info(
+                f"Called goToPose for intermediate goal. GoalHandle: {self.intermediate_goal_handle}"
+            )
 
             # self.get_logger().info("Calling self.navigator.isTaskComplete()")
             if self.navigator.isTaskComplete():

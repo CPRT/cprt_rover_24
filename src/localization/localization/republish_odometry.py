@@ -13,7 +13,9 @@ class OdometryRepublisher(Node):
         self.frequency = frequency
         self.timeout_duration = timeout_duration  # Timeout duration in seconds
         self.last_odometry = None
-        self.last_received_time = None  # To track the time of the last received odometry
+        self.last_received_time = (
+            None  # To track the time of the last received odometry
+        )
 
         # Subscriber to the original odometry topic
         self.odometry_subscriber = self.create_subscription(
@@ -36,14 +38,20 @@ class OdometryRepublisher(Node):
         self.get_logger().info(f"Received new Odometry message: {msg.header.stamp}")
         msg.header.stamp = self.get_clock().now().to_msg()
         self.last_odometry = msg
-        self.last_received_time = self.get_clock().now().to_msg()  # Update the time of last received message
+        self.last_received_time = (
+            self.get_clock().now().to_msg()
+        )  # Update the time of last received message
 
     def republish_odometry(self):
         if self.last_odometry is not None:
             # Check if the last received odometry message was within the timeout duration
-            time_diff = self.get_clock().now() - rclpy.time.Time.from_msg(self.last_received_time)
+            time_diff = self.get_clock().now() - rclpy.time.Time.from_msg(
+                self.last_received_time
+            )
             if time_diff.seconds > self.timeout_duration:
-                self.get_logger().info("No new Odometry message received for 2 seconds. Stopping republishing.")
+                self.get_logger().info(
+                    "No new Odometry message received for 2 seconds. Stopping republishing."
+                )
                 self.last_odometry = None
             else:
                 # Republish the last known odometry message
