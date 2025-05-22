@@ -13,12 +13,10 @@ class OdometryRepublisher(Node):
         self.frequency = frequency
         self.timeout_duration = timeout_duration  # Timeout duration in seconds
         self.last_odometry = None
-        self.last_received_time = (
-            None  # To track the time of the last received odometry
-        )
-        self.warned_once = (
-            False  # Flag to track if we've already warned about missing odometry
-        )
+        self.last_received_time = None
+
+        # Flag to track if we've already warned about missing odometry
+        self.warned_once = False
 
         # Subscriber to the original odometry topic
         self.odometry_subscriber = self.create_subscription(
@@ -41,10 +39,12 @@ class OdometryRepublisher(Node):
         # self.get_logger().info(f"Received new Odometry message: {msg.header.stamp}")
         msg.header.stamp = self.get_clock().now().to_msg()
         self.last_odometry = msg
-        self.last_received_time = (
-            self.get_clock().now().to_msg()
-        )  # Update the time of last received message
-        self.warned_once = False  # Reset warning flag when a new message is received
+
+        # Update the time of last received message
+        self.last_received_time = self.get_clock().now().to_msg()
+
+        # Reset warning flag when a new message is received
+        self.warned_once = False
 
     def republish_odometry(self):
         if self.last_odometry is not None:
@@ -66,9 +66,9 @@ class OdometryRepublisher(Node):
                 self.get_logger().warn(
                     "No new Odometry message received yet. Republishing the last one."
                 )
-                self.warned_once = (
-                    True  # Set the flag to ensure the warning is only published once
-                )
+
+                # Set the flag to ensure the warning is only published once
+                self.warned_once = True
 
 
 def main(args=None):
