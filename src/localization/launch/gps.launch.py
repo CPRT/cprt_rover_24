@@ -39,9 +39,16 @@ def generate_launch_description():
         arguments=["--ros-args", "--log-level", "Warn"],
     )
 
+    repub_odom_node = launch_ros.actions.Node(
+        package="localization",
+        executable="repub_odom",
+        name="repub_odom"
+    )
+
     return launch.LaunchDescription(
         [
             navsat_node,
+            repub_odom_node
             ublox_cmd,
         ]
     )
