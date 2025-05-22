@@ -11,7 +11,7 @@ class OdometryRepublisher(Node):
 
         # Set the frequency for republishing (Hz)
         self.frequency = frequency
-        self.timeout_duration = timeout_duration  # Timeout duration in seconds
+        self.timeout_duration = Duration(seconds=timeout_duration, nanoseconds=0)  # Timeout duration in seconds
         self.last_odometry = None
         self.last_received_time = None
 
@@ -52,7 +52,7 @@ class OdometryRepublisher(Node):
             time_diff = self.get_clock().now() - rclpy.time.Time.from_msg(
                 self.last_received_time
             )
-            if time_diff.seconds > self.timeout_duration:
+            if time_diff > self.timeout_duration:
                 self.get_logger().info(
                     "No new Odometry message received for 2 seconds. Stopping republishing."
                 )

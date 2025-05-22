@@ -43,9 +43,8 @@ class IncrementalGpsCommander(Node):
         )
         self.get_logger().info(f"Look for aruco: {self.lookForAruco}")
 
-        self.declare_parameter(
-            "incremental_distance", 40.0
-        )  # Distance in meters to the intermediate goal
+        # Distance in meters to the intermediate goal
+        self.declare_parameter("incremental_distance", 50.0)  
         self.incremental_distance = (
             self.get_parameter("incremental_distance")
             .get_parameter_value()
@@ -203,9 +202,9 @@ class IncrementalGpsCommander(Node):
                 )
 
                 # hack for indoor testing
-                target_pose.pose.position.x = 50.0
-                target_pose.pose.position.y = 0.0
-                target_pose.pose.position.z = 0.0
+                # target_pose.pose.position.x = 50.0
+                # target_pose.pose.position.y = 0.0
+                # target_pose.pose.position.z = 0.0
 
                 return target_pose
             else:
@@ -246,9 +245,7 @@ class IncrementalGpsCommander(Node):
         intermediate_goal.header.stamp = self.get_clock().now().to_msg()
         intermediate_goal.pose.position.x = intermediate_x
         intermediate_goal.pose.position.y = intermediate_y
-        intermediate_goal.pose.orientation = (
-            final_pose.pose.orientation
-        )  # Keep the final orientation
+        intermediate_goal.pose.orientation = final_pose.pose.orientation
         return intermediate_goal
 
     def reset(self):
