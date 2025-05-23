@@ -13,6 +13,7 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from geographic_msgs.msg import GeoPose
 from interfaces.srv import NavToGPSGeopose
+from std_msgs.msg import Int8
 from rclpy.qos import qos_profile_sensor_data
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 import math
@@ -44,7 +45,7 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info(f"Look for aruco: {self.lookForAruco}")
 
         # Distance in meters to the intermediate goal
-        self.declare_parameter("incremental_distance", 50.0)  
+        self.declare_parameter("incremental_distance", 50.0)
         self.incremental_distance = (
             self.get_parameter("incremental_distance")
             .get_parameter_value()
@@ -68,21 +69,22 @@ class IncrementalGpsCommander(Node):
         )
         self.get_logger().info(f"Robot pose topic set to: {self.robot_pose_topic}")
 
-        # self.qos_profile = QoSProfile(
-        #     history=HistoryPolicy.KEEP_LAST,
-        #     depth=5,
-        #     reliability=ReliabilityPolicy.RELIABLE)
-        # )
+        self.qos_profile = QoSProfile(reliability=ReliabilityPolicy.RELIABLE, depth=10)
+
         # self.i = 0
         self.nav_fix_topic = "fromLL"
         self.geopose_service_name = "commander/nav_to_gps_geopose"
         self.intermediate_goal_topic = "goal"
+        self.lights_topic = "/light"
+        self.nav_activate_light_code = 1
+        self.nav_completed_light_code = 3
         # self.nav_fromll_done_event = Event()
 
         self.localizer_callback_group = MutuallyExclusiveCallbackGroup()
         self.pose_callback_group = ReentrantCallbackGroup()
         self.goal_callback_group = MutuallyExclusiveCallbackGroup()
         self.timer_group = MutuallyExclusiveCallbackGroup()
+        self.lights_callback_group = MutuallyExclusiveCallbackGroup()
 
         self.localizer_client = self.create_client(
             FromLL, "fromLL", callback_group=self.localizer_callback_group
@@ -102,6 +104,12 @@ class IncrementalGpsCommander(Node):
         )
         self.intermediate_goal_publisher = self.create_publisher(
             PoseStamped, self.intermediate_goal_topic, 5
+        )
+        self.lights_publisher = self.create_publisher(
+            Int8,
+            self.lights_topic,
+            qos_profile=self.qos_profile,
+            callback_group=self.lights_callback_group,
         )
 
         self.final_lat_lon = None
@@ -165,6 +173,11 @@ class IncrementalGpsCommander(Node):
         # Make the timer trigger immediately to process new goal
         self.timer.reset()
         self.timer_callback()
+
+        # Tell the lights to show nav is running
+        msg = Int8()
+        msg.data = self.nav_activate_light_code
+        self.lights_publisher.publish(msg)
 
         return response
 
@@ -344,6 +357,11 @@ class IncrementalGpsCommander(Node):
 
                 if self.navigator.isTaskComplete():
                     self.get_logger().info("Final goal complete!")
+
+                    msg = Int8()
+                    msg.data = self.nav_completed_light_code
+                    self.lights_publisher.publish(msg)
+
                     result = self.navigator.getResult()
                     if result == TaskResult.SUCCEEDED:
                         self.get_logger().info("Final goal succeeded!")

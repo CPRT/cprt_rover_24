@@ -11,7 +11,9 @@ class OdometryRepublisher(Node):
 
         # Set the frequency for republishing (Hz)
         self.frequency = frequency
-        self.timeout_duration = Duration(seconds=timeout_duration, nanoseconds=0)  # Timeout duration in seconds
+        self.timeout_duration = Duration(
+            seconds=timeout_duration, nanoseconds=0
+        )  # Timeout duration in seconds
         self.last_odometry = None
         self.last_received_time = None
 
