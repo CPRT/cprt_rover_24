@@ -115,7 +115,7 @@ local_ekf:
         # lineal vel 
         false, false, false,
         # angular vel
-        false, false, false,
+        false, false, true,
         # lineal acc
         false, false, false,
       ]

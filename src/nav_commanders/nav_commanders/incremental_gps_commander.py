@@ -45,7 +45,7 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info(f"Look for aruco: {self.lookForAruco}")
 
         # Distance in meters to the intermediate goal
-        self.declare_parameter("incremental_distance", 50.0)
+        self.declare_parameter("incremental_distance", 25.0)
         self.incremental_distance = (
             self.get_parameter("incremental_distance")
             .get_parameter_value()
@@ -55,7 +55,7 @@ class IncrementalGpsCommander(Node):
             f"Incremental distance set to: {self.incremental_distance} meters"
         )
 
-        self.declare_parameter("frequency", 0.05)  # Frequency in Hz
+        self.declare_parameter("frequency", 1 / 30.0)  # Frequency in Hz
         self.frequency = (
             self.get_parameter("frequency").get_parameter_value().double_value
         )
@@ -318,12 +318,17 @@ class IncrementalGpsCommander(Node):
             intermediate_goal = self.calculate_intermediate_goal(
                 self.current_robot_pose, final_pose, self.incremental_distance
             )
-
+            self.get_logger().info(f"Final goal is {distance_to_final:.2f} meters away")
             if intermediate_goal is None:
                 self.get_logger().info(
                     "Error in NAV_TO_INTERMEDIATE_GOAL: Failed to calculate intermediate goal"
                 )
                 return
+
+            # Cancel current task and replan
+            # self.get_logger().info(f"Cancelling task")
+            # self.navigator.cancelTask()
+            # self.get_logger().info(f"Task Cancelled")
 
             self.intermediate_goal_publisher.publish(intermediate_goal)
             self.get_logger().info(
