@@ -64,6 +64,8 @@ void ScienceMode::handleSoilCollection(
     setServoPosition(kCollectionServo, kCollectionClose);
   } else if (joystickMsg->buttons[kSoilTestButton]) {
     setServoPosition(kCollectionServo, kCollectionSample);
+  } else if (joystickMsg->buttons[kSoilLockButton]) {
+    setServoPosition(kCollectionServo, kCollectionLock);
   }
 }
 
@@ -104,7 +106,8 @@ void ScienceMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("science_mode.collection_servo", 0);
   node->declare_parameter("science_mode.microscope_servo", 1);
   node->declare_parameter("science_mode.collection_open", 0);
-  node->declare_parameter("science_mode.collection_close", 90);
+  node->declare_parameter("science_mode.collection_dump", 90);
+  node->declare_parameter("science_mode.collection_lock", 180);
   node->declare_parameter("science_mode.collection_test", 180);
 }
 
@@ -118,11 +121,13 @@ void ScienceMode::loadParameters() {
   node_->get_parameter("science_mode.cancel_collection_button",
                        kCancelCollectionButton);
   node_->get_parameter("science_mode.soil_test_button", kSoilTestButton);
+  node_->get_parameter("science_mode.lock_sample_button", kSoilLockButton);
   node_->get_parameter("science_mode.microscope_light_button",
                        kMicroscopeLightButton);
   node_->get_parameter("science_mode.collection_servo", kCollectionServo);
   node_->get_parameter("science_mode.microscope_servo", kMicroscopeServo);
   node_->get_parameter("science_mode.collection_open", kCollectionOpen);
-  node_->get_parameter("science_mode.collection_close", kCollectionClose);
+  node_->get_parameter("science_mode.collection_dump", kCollectionClose);
   node_->get_parameter("science_mode.collection_test", kCollectionSample);
+  node_->get_parameter("science_mode.collection_lock", kCollectionLock);
 }
