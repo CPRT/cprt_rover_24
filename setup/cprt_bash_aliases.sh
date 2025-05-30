@@ -114,7 +114,7 @@ setDriveCameraExposure() {
     fi
 } 
 
-setGimbalCameraAutoExposure() {
+setDriveCameraAutoExposure() {
     local camera_device=""
 
     # Check for the first camera device path
