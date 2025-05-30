@@ -67,7 +67,7 @@ create_alias_with_echo launchScience "$rover_source_name && ros2 launch bringup 
 create_alias_with_echo launchTraversal "$rover_source_name && ros2 launch bringup transversal.launch.py"
 
 
-setGimbalCameraExposure() {
+setDriveCameraExposure() {
     local camera_device=""
     local exposure_value="$1"
 
@@ -78,7 +78,7 @@ setGimbalCameraExposure() {
     elif [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0" ]]; then
         camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
     else
-        echo "Error: Gimbal camera device not found at expected paths."
+        echo "Error: Drive camera device not found at expected paths."
         echo "Please ensure one of the following paths exists:"
         echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
         echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
@@ -87,7 +87,7 @@ setGimbalCameraExposure() {
 
     # Check if an exposure value was provided
     if [[ -z "$exposure_value" ]]; then
-        echo "Usage: setGimbalCameraExposure <exposure_value>"
+        echo "Usage: setDriveCameraExposure <exposure_value>"
         echo "Exposure value must be an integer between 5 and 330 (inclusive)."
         return 1
     fi
@@ -103,7 +103,7 @@ setGimbalCameraExposure() {
         return 1
     fi
 
-    echo "Setting Gimbal Camera exposure to $exposure_value using device: $camera_device"
+    echo "Setting Drive Camera exposure to $exposure_value using device: $camera_device"
     # Execute the v4l2-ctl command
     v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=1 --set-ctrl=exposure_time_absolute="$exposure_value"
 
@@ -142,6 +142,53 @@ setGimbalCameraAutoExposure() {
     fi
 }
  
+setDriveCameraBrightness() {
+    local camera_device=""
+    local brightness_value="$1"
+
+    # Check for the first camera device path
+    if [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0" ]]; then
+        camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
+    # Check for the second camera device path
+    elif [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0" ]]; then
+        camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+    else
+        echo "Error: Drive camera device not found at expected paths."
+        echo "Please ensure one of the following paths exists:"
+        echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
+        echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+        return 1
+    fi
+
+    # Check if an exposure value was provided
+    if [[ -z "$brightness_value" ]]; then
+        echo "Usage: setDriveCameraBrightness <brightness_value>"
+        echo "Exposure value must be an integer between -64 and 64 (inclusive)."
+        return 1
+    fi
+
+    # Validate the exposure value
+    if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
+        echo "Error: Brightness value '$brightness_value' is not a valid integer."
+        return 1
+    fi
+
+    if (( brightness_value < -64 || brightness_value > 64 )); then
+        echo "Error: Brightness value must be between -64 and 64 (inclusive)."
+        return 1
+    fi
+
+    echo "Setting Drive Camera brightness to $brightness_value using device: $camera_device"
+    # Execute the v4l2-ctl command
+    v4l2-ctl -d "$camera_device" --set-ctrl=brightness="$brightness_value"
+
+    if [[ $? -eq 0 ]]; then
+        echo "Brightness set successfully."
+    else
+        echo "Failed to set exposure. Check permissions or camera status."
+    fi
+} 
+
 setBellyCameraExposure() {
     local camera_device="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
     local exposure_value="$1"
@@ -202,5 +249,48 @@ setBellyCameraAutoExposure() {
         echo "Auto exposure turned on successfully."
     else
         echo "Failed to turn on auto exposure. Check permissions or camera status."
+    fi
+}
+
+
+setBellyCameraBrightness() {
+    local camera_device="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
+    local brightness_value="$1"
+
+    # Check if the camera device path exists
+    if [[ ! -e "$camera_device" ]]; then
+        echo "Error: Belly camera not found at: $camera_device"
+        echo "Please ensure the camera is connected and the device path is correct."
+        return 1
+    fi
+
+    # Check if an exposure value was provided
+    if [[ -z "$brightness_value" ]]; then
+        echo "Usage: setBellyCameraBrightness <value>"
+        echo "Exposure value must be an integer between -64 and 64 (inclusive)."
+        return 1
+    fi
+
+    # Validate the exposure value
+    if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
+        echo "Error: Brightness value '$brightness_value' is not a valid integer."
+        return 1
+    fi
+
+    # Based on your list-ctrls, exposure_time_absolute min=1 max=5000
+    if (( brightness_value < -64 || brightness_value > 64 )); then
+        echo "Error: Brightness value must be between -64 and 64 (inclusive)."
+        return 1
+    fi
+
+    echo "Setting Belly Camera brightness to $brightness_value using device: $camera_device"
+    # Execute the v4l2-ctl command
+    # Set auto_exposure to 1 (Manual Mode) and then set exposure_time_absolute
+    v4l2-ctl -d "$camera_device" --set-ctrl=brightness="$brightness_value"
+
+    if [[ $? -eq 0 ]]; then
+        echo "Brightness set successfully."
+    else
+        echo "Failed to set brightness. Check permissions or camera status."
     fi
 }
