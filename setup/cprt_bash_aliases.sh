@@ -67,7 +67,140 @@ create_alias_with_echo launchScience "$rover_source_name && ros2 launch bringup 
 create_alias_with_echo launchTraversal "$rover_source_name && ros2 launch bringup transversal.launch.py"
 
 
+setGimbalCameraExposure() {
+    local camera_device=""
+    local exposure_value="$1"
+
+    # Check for the first camera device path
+    if [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0" ]]; then
+        camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
+    # Check for the second camera device path
+    elif [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0" ]]; then
+        camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+    else
+        echo "Error: Gimbal camera device not found at expected paths."
+        echo "Please ensure one of the following paths exists:"
+        echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
+        echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+        return 1
+    fi
+
+    # Check if an exposure value was provided
+    if [[ -z "$exposure_value" ]]; then
+        echo "Usage: setGimbalCameraExposure <exposure_value>"
+        echo "Exposure value must be an integer between 5 and 330 (inclusive)."
+        return 1
+    fi
+
+    # Validate the exposure value
+    if ! [[ "$exposure_value" =~ ^[0-9]+$ ]]; then
+        echo "Error: Exposure value '$exposure_value' is not a valid integer."
+        return 1
+    fi
+
+    if (( exposure_value < 5 || exposure_value > 330 )); then
+        echo "Error: Exposure value must be between 5 and 330 (inclusive)."
+        return 1
+    fi
+
+    echo "Setting Gimbal Camera exposure to $exposure_value using device: $camera_device"
+    # Execute the v4l2-ctl command
+    v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=1 --set-ctrl=exposure_time_absolute="$exposure_value"
+
+    if [[ $? -eq 0 ]]; then
+        echo "Exposure set successfully."
+    else
+        echo "Failed to set exposure. Check permissions or camera status."
+    fi
+} 
+
+setGimbalCameraAutoExposure() {
+    local camera_device=""
+
+    # Check for the first camera device path
+    if [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0" ]]; then
+        camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
+    # Check for the second camera device path
+    elif [[ -e "/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0" ]]; then
+        camera_device="/dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+    else
+        echo "Error: Gimbal camera device not found at expected paths."
+        echo "Please ensure one of the following paths exists:"
+        echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP_-video-index0"
+        echo "  /dev/v4l/by-id/usb-Arducam_Arducam_B0495__USB3_2.3MP__Arducam_20231205_0001-video-index0"
+        return 1
+    fi
+
+    echo "Turning on auto exposure for Gimbal camera using device: $camera_device"
+    # Execute the v4l2-ctl command to set auto_exposure to 0 (Auto Mode)
+    v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=0
+
+    if [[ $? -eq 0 ]]; then
+        echo "Auto exposure turned on successfully."
+    else
+        echo "Failed to turn on auto exposure. Check permissions or camera status."
+    fi
+}
  
+setBellyCameraExposure() {
+    local camera_device="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
+    local exposure_value="$1"
 
+    # Check if the camera device path exists
+    if [[ ! -e "$camera_device" ]]; then
+        echo "Error: Belly camera not found at: $camera_device"
+        echo "Please ensure the camera is connected and the device path is correct."
+        return 1
+    fi
 
+    # Check if an exposure value was provided
+    if [[ -z "$exposure_value" ]]; then
+        echo "Usage: setBellyCameraExposure <exposure_value>"
+        echo "Exposure value must be an integer between 1 and 5000 (inclusive)."
+        return 1
+    fi
 
+    # Validate the exposure value
+    if ! [[ "$exposure_value" =~ ^[0-9]+$ ]]; then
+        echo "Error: Exposure value '$exposure_value' is not a valid integer."
+        return 1
+    fi
+
+    # Based on your list-ctrls, exposure_time_absolute min=1 max=5000
+    if (( exposure_value < 1 || exposure_value > 5000 )); then
+        echo "Error: Exposure value must be between 1 and 5000 (inclusive)."
+        return 1
+    fi
+
+    echo "Setting Belly Camera exposure to $exposure_value using device: $camera_device"
+    # Execute the v4l2-ctl command
+    # Set auto_exposure to 1 (Manual Mode) and then set exposure_time_absolute
+    v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=1 --set-ctrl=exposure_time_absolute="$exposure_value"
+
+    if [[ $? -eq 0 ]]; then
+        echo "Exposure set successfully."
+    else
+        echo "Failed to set exposure. Check permissions or camera status."
+    fi
+}
+
+setBellyCameraAutoExposure() {
+    local camera_device="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0"
+
+    # Check if the camera device path exists
+    if [[ ! -e "$camera_device" ]]; then
+        echo "Error: Belly camera not found at: $camera_device"
+        echo "Please ensure the camera is connected and the device path is correct."
+        return 1
+    fi
+
+    echo "Turning on auto exposure for Belly Camera using device: $camera_device"
+    # Execute the v4l2-ctl command to set auto_exposure to 3 (Auto Mode)
+    v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=3
+
+    if [[ $? -eq 0 ]]; then
+        echo "Auto exposure turned on successfully."
+    else
+        echo "Failed to turn on auto exposure. Check permissions or camera status."
+    fi
+}
