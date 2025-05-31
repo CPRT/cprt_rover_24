@@ -5,6 +5,7 @@ from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+
 def generate_launch_description():
     """
     Launches:
@@ -16,17 +17,19 @@ def generate_launch_description():
     # This assumes 'gpio_controller' is the package name and 'lights' is the executable
     # as defined by your setup.py entry point: "lights = gpio_controller.lights:main"
     lights_node = Node(
-        package='gpio_controller',
-        executable='lights',
-        name='lights_controller_node', # Assign a unique name to the node
-        output='screen', # Show output in the console
-        emulate_tty=True, # Required for output to show in terminal when using 'screen'
+        package="gpio_controller",
+        executable="lights",
+        name="lights_controller_node",  # Assign a unique name to the node
+        output="screen",  # Show output in the console
+        emulate_tty=True,  # Required for output to show in terminal when using 'screen'
         # parameters=[{'some_param': 'some_value'}] # Uncomment and add parameters if needed
     )
 
     # 2. Find the path to the 'talon.launch.py' file in the 'drive' package
-    drive_package_share_dir = get_package_share_directory('drive')
-    talon_launch_file_path = os.path.join(drive_package_share_dir, 'launch', 'talon.launch.py')
+    drive_package_share_dir = get_package_share_directory("drive")
+    talon_launch_file_path = os.path.join(
+        drive_package_share_dir, "launch", "talon.launch.py"
+    )
 
     # Include the 'talon.launch.py' launch file
     talon_launch = IncludeLaunchDescription(
@@ -35,8 +38,9 @@ def generate_launch_description():
     )
 
     # Return the LaunchDescription with both actions
-    return LaunchDescription([
-        lights_node,
-        talon_launch,
-    ])
-
+    return LaunchDescription(
+        [
+            lights_node,
+            talon_launch,
+        ]
+    )

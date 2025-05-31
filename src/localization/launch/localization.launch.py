@@ -1,6 +1,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+import launch_ros
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -75,6 +76,26 @@ def generate_launch_description():
         launch_arguments={"use_sim_time": use_sim_time}.items(),
     )
 
+    config_dir = os.path.join(get_package_share_directory("localization"), "config")
+
+    params_file = os.path.join(config_dir, "navsat.yaml")
+
+    navsat_remappings = [
+        ("imu", "gps/heading"),
+        ("gps/fix", "gps/fix"),
+        ("odometry/filtered", "odometry/filtered/global"),
+        ("odometry/gps", "gps/odom"),
+    ]
+
+    navsat_node = launch_ros.actions.Node(
+        package="robot_localization",
+        executable="navsat_transform_node",
+        output="log",
+        parameters=[params_file],
+        remappings=navsat_remappings,
+        arguments=["--ros-args", "--log-level", "Warn"],
+    )
+
     # Assemble the LaunchDescription and return
     return LaunchDescription(
         [
@@ -83,9 +104,10 @@ def generate_launch_description():
             launch_gps_cmd,
             launch_desc_cmd,
             rviz_cmd,
-            gps_cmd,
+            # gps_cmd,
             slam_cmd,
             ekf_cmd,
             desc_cmd,
+            navsat_node,
         ]
     )
