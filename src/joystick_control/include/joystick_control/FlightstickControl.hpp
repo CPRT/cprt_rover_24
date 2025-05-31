@@ -1,6 +1,7 @@
 #ifndef FLIGHTSTICK_CONTROL_HPP
 #define FLIGHTSTICK_CONTROL_HPP
 
+#include "ArmDummyMode.hpp"
 #include "ArmIKMode.hpp"
 #include "ArmManualMode.hpp"
 #include "DriveMode.hpp"
@@ -59,7 +60,15 @@ class FlightstickControl : public rclcpp::Node {
    * This enumeration defines the different control modes that the rover can be
    * in.
    */
-  enum class ModeType { NONE, DRIVE, ARM_IK, ARM_MANUAL, NAV, SCIENCE };
+  enum class ModeType {
+    NONE = 0,
+    DRIVE,
+    ARM_IK,
+    ARM_MANUAL,
+    NAV,
+    SCIENCE,
+    ARM_DUMMY
+  };
 
   uint8_t kDriveModeButton;      ///< Button index for drive mode.
   uint8_t kArmIKModeButton;      ///< Button index for inverse kinematics arm
@@ -67,6 +76,7 @@ class FlightstickControl : public rclcpp::Node {
   uint8_t kArmManualModeButton;  ///< Button index for manual arm control mode.
   uint8_t kNavModeButton;        ///< Button index for navigation mode.
   uint8_t kScienceModeButton;    ///< Button index for science mode.
+  uint8_t kArmDummyButton;
 
   uint8_t kTeleopLightMode;  ///< Button index for teleoperation light mode.
 

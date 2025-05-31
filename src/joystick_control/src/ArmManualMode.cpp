@@ -2,6 +2,7 @@
 
 #include "ArmHelpers.hpp"
 #include "control_msgs/msg/joint_jog.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
   RCLCPP_INFO(node_->get_logger(), "Arm Manual Mode");
@@ -13,6 +14,12 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
   if (!ArmHelpers::start_moveit_servo(node_)) {
     return;
   }
+
+  auto stop_hw_interface_pub =
+      node_->create_publisher<std_msgs::msg::Bool>("/arm_active", 10);
+  auto msg = std_msgs::msg::Bool();
+  msg.data = true;
+  stop_hw_interface_pub->publish(msg);
 
   kServoMin = 0;
   kServoMax = 180;

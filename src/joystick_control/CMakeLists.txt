@@ -11,6 +11,7 @@ find_package(ros_phoenix REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(controller_manager_msgs REQUIRED)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
@@ -25,6 +26,7 @@ add_executable(flightstick_control
   src/ArmManualMode.cpp 
   src/ArmIKMode.cpp
   src/ArmHelpers.cpp
+  src/ArmDummyMode.cpp
   src/ScienceMode.cpp)
 
 # Link the dependencies to the executable
@@ -37,6 +39,7 @@ ament_target_dependencies(flightstick_control
   interfaces
   control_msgs
   std_srvs
+  controller_manager_msgs
 )
 
 # Install the executable

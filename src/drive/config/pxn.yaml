@@ -3,9 +3,10 @@ flightstick_control:
     drive_mode_button: 11
     arm_ik_mode_button: 9
     arm_manual_mode_button: 10
-    nav_mode_button: 8
+    nav_mode_button: 6
     science_mode_button: 7
     teleop_light_mode: 2
+    arm_dummy_mode_button: 8
 
     drive_mode:
       throttle:

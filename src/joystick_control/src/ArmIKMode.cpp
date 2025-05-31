@@ -1,6 +1,7 @@
 #include "ArmIKMode.hpp"
 
 #include "ArmHelpers.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 ArmIKMode::ArmIKMode(rclcpp::Node* node) : Mode("IK Arm", node) {
   RCLCPP_INFO(node_->get_logger(), "IK Arm Mode");
@@ -13,6 +14,13 @@ ArmIKMode::ArmIKMode(rclcpp::Node* node) : Mode("IK Arm", node) {
   if (!ArmHelpers::start_moveit_servo(node_)) {
     return;
   }
+
+  auto stop_hw_interface_pub =
+      node_->create_publisher<std_msgs::msg::Bool>("/arm_active", 10);
+  auto msg = std_msgs::msg::Bool();
+  msg.data = true;
+  stop_hw_interface_pub->publish(msg);
+
   frame_to_publish_ = CAM_FRAME_ID;
   kServoMin = 0;
   kServoMax = 180;

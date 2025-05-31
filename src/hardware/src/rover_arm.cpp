@@ -127,6 +127,9 @@ RoverArmHardwareInterface::export_command_interfaces() {
 hardware_interface::CallbackReturn RoverArmHardwareInterface::on_activate(
     const rclcpp_lifecycle::State & /*previous_state*/) {
   // command and state should be equal when starting
+  publish_sub_ = node_ptr_->create_subscription<std_msgs::msg::Bool>(
+      "/arm_active", 10,
+      [&](const std_msgs::msg::Bool::SharedPtr msg) { publish_ = msg->data; });
   const size_t num_joints = info_.joints.size();
   for (size_t i = 0; i < num_joints; i++) {
     hw_commands_[i] = hw_position_states_[i];
@@ -182,6 +185,9 @@ hardware_interface::return_type RoverArmHardwareInterface::read(
 
 hardware_interface::return_type RoverArmHardwareInterface::write(
     const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
+  if (!publish_) {
+    return hardware_interface::return_type::OK;
+  }
   ros_phoenix::msg::MotorControl request;
   const int num_joints = info_.joints.size();
   for (int i = 0; i < num_joints; i++) {

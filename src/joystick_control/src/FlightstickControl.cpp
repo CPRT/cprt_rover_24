@@ -37,6 +37,8 @@ bool FlightstickControl::checkForModeChange(
     return changeMode(ModeType::ARM_IK);
   } else if (joystickMsg->buttons[kArmManualModeButton]) {
     return changeMode(ModeType::ARM_MANUAL);
+  } else if (joystickMsg->buttons[kArmDummyButton]) {
+    return changeMode(ModeType::ARM_DUMMY);
   } else if (joystickMsg->buttons[kNavModeButton]) {
     return changeMode(ModeType::NAV);
   } else if (joystickMsg->buttons[kScienceModeButton]) {
@@ -81,6 +83,12 @@ bool FlightstickControl::changeMode(ModeType mode) {
       message.data = "IK";
       status_pub_->publish(message);
       break;
+    case ModeType::ARM_DUMMY:
+      RCLCPP_INFO(this->get_logger(), "Entering Arm Dumb Mode");
+      mode_ = std::make_unique<ArmDummyMode>(this);
+      message.data = "Dummy";
+      status_pub_->publish(message);
+      break;
     default:
       RCLCPP_WARN(this->get_logger(),
                   "Mode not implemented, returning to NONE");
@@ -102,6 +110,7 @@ void FlightstickControl::declareParameters() {
   this->declare_parameter("arm_manual_mode_button", 10);
   this->declare_parameter("nav_mode_button", 13);
   this->declare_parameter("science_mode_button", 14);
+  this->declare_parameter("arm_dummy_mode_button", 8);
   this->declare_parameter("teleop_light_mode", 1);
   DriveMode::declareParameters(this);
   ArmManualMode::declareParameters(this);
@@ -115,6 +124,7 @@ void FlightstickControl::loadParameters() {
   this->get_parameter("arm_manual_mode_button", kArmManualModeButton);
   this->get_parameter("nav_mode_button", kNavModeButton);
   this->get_parameter("science_mode_button", kScienceModeButton);
+  this->get_parameter("arm_dummy_mode_button", kArmDummyButton);
   this->get_parameter("teleop_light_mode", kTeleopLightMode);
 }
 

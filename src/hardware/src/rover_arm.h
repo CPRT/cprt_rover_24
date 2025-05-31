@@ -20,6 +20,7 @@
 #include "rclcpp_lifecycle/state.hpp"
 #include "ros_phoenix/msg/motor_control.hpp"
 #include "ros_phoenix/msg/motor_status.hpp"
+#include "std_msgs/msg/bool.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 
 using namespace std::chrono_literals;
@@ -75,6 +76,7 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   std::vector<int> control_type_;
 
   bool open_loop_ = false;
+  bool publish_ = true;
 
   // handling publisher and subscriber callbacks
   rclcpp::Node::SharedPtr node_ptr_;
@@ -85,6 +87,7 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
       encoder_subscribers_;
   std::vector<rclcpp::Publisher<ros_phoenix::msg::MotorControl>::SharedPtr>
       motor_publishers_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr publish_sub_;
   // Service provider for open loop
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr open_loop_service_;
 };

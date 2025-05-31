@@ -168,10 +168,10 @@ setDriveCameraBrightness() {
     fi
 
     # Validate the exposure value
-    if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
-        echo "Error: Brightness value '$brightness_value' is not a valid integer."
-        return 1
-    fi
+    # if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
+    #     echo "Error: Brightness value '$brightness_value' is not a valid integer."
+    #     return 1
+    # fi
 
     if (( brightness_value < -64 || brightness_value > 64 )); then
         echo "Error: Brightness value must be between -64 and 64 (inclusive)."
@@ -272,10 +272,10 @@ setBellyCameraBrightness() {
     fi
 
     # Validate the exposure value
-    if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
-        echo "Error: Brightness value '$brightness_value' is not a valid integer."
-        return 1
-    fi
+    # if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
+    #     echo "Error: Brightness value '$brightness_value' is not a valid integer."
+    #     return 1
+    # fi
 
     # Based on your list-ctrls, exposure_time_absolute min=1 max=5000
     if (( brightness_value < -64 || brightness_value > 64 )); then
@@ -294,3 +294,112 @@ setBellyCameraBrightness() {
         echo "Failed to set brightness. Check permissions or camera status."
     fi
 }
+
+
+setArmCameraExposure() {
+    local camera_device="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
+    local exposure_value="$1"
+
+    # Check if the camera device path exists
+    if [[ ! -e "$camera_device" ]]; then
+        echo "Error: Arm camera not found at: $camera_device"
+        echo "Please ensure the camera is connected and the device path is correct."
+        return 1
+    fi
+
+    # Check if an exposure value was provided
+    if [[ -z "$exposure_value" ]]; then
+        echo "Usage: setArmCameraExposure <exposure_value>"
+        echo "Exposure value must be an integer between 1 and 5000 (inclusive)."
+        return 1
+    fi
+
+    # Validate the exposure value
+    if ! [[ "$exposure_value" =~ ^[0-9]+$ ]]; then
+        echo "Error: Exposure value '$exposure_value' is not a valid integer."
+        return 1
+    fi
+
+    # Based on your list-ctrls, exposure_time_absolute min=1 max=5000
+    if (( exposure_value < 1 || exposure_value > 5000 )); then
+        echo "Error: Exposure value must be between 1 and 5000 (inclusive)."
+        return 1
+    fi
+
+    echo "Setting Arm Camera exposure to $exposure_value using device: $camera_device"
+    # Execute the v4l2-ctl command
+    # Set auto_exposure to 1 (Manual Mode) and then set exposure_time_absolute
+    v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=1 --set-ctrl=exposure_time_absolute="$exposure_value"
+
+    if [[ $? -eq 0 ]]; then
+        echo "Exposure set successfully."
+    else
+        echo "Failed to set exposure. Check permissions or camera status."
+    fi
+}
+
+setArmCameraAutoExposure() {
+    local camera_device="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
+
+    # Check if the camera device path exists
+    if [[ ! -e "$camera_device" ]]; then
+        echo "Error: Arm camera not found at: $camera_device"
+        echo "Please ensure the camera is connected and the device path is correct."
+        return 1
+    fi
+
+    echo "Turning on auto exposure for Arm Camera using device: $camera_device"
+    # Execute the v4l2-ctl command to set auto_exposure to 3 (Auto Mode)
+    v4l2-ctl -d "$camera_device" --set-ctrl=auto_exposure=3
+
+    if [[ $? -eq 0 ]]; then
+        echo "Auto exposure turned on successfully."
+    else
+        echo "Failed to turn on auto exposure. Check permissions or camera status."
+    fi
+}
+
+setArmCameraBrightness() {
+    local camera_device="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
+    local brightness_value="$1"
+
+    # Check if the camera device path exists
+    if [[ ! -e "$camera_device" ]]; then
+        echo "Error: Arm camera not found at: $camera_device"
+        echo "Please ensure the camera is connected and the device path is correct."
+        return 1
+    fi
+
+    # Check if an exposure value was provided
+    if [[ -z "$brightness_value" ]]; then
+        echo "Usage: setArmCameraBrightness <value>"
+        echo "Exposure value must be an integer between -64 and 64 (inclusive)."
+        return 1
+    fi
+
+    # Validate the exposure value
+    # if ! [[ "$brightness_value" =~ ^[0-9]+$ ]]; then
+    #     echo "Error: Brightness value '$brightness_value' is not a valid integer."
+    #     return 1
+    # fi
+
+    # Based on your list-ctrls, exposure_time_absolute min=1 max=5000
+    if (( brightness_value < -64 || brightness_value > 64 )); then
+        echo "Error: Brightness value must be between -64 and 64 (inclusive)."
+        return 1
+    fi
+
+    echo "Setting Arm Camera brightness to $brightness_value using device: $camera_device"
+    # Execute the v4l2-ctl command
+    # Set auto_exposure to 1 (Manual Mode) and then set exposure_time_absolute
+    v4l2-ctl -d "$camera_device" --set-ctrl=brightness="$brightness_value"
+
+    if [[ $? -eq 0 ]]; then
+        echo "Brightness set successfully."
+    else
+        echo "Failed to set brightness. Check permissions or camera status."
+    fi
+}
+
+
+create_alias_with_echo setDefaultV4l2CameraSettings 'setDriveCameraBrightness -25; setArmCameraBrightness 0; setBellyCameraBrightness -10'

@@ -14,6 +14,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   interfaces
   ros_phoenix
   std_srvs
+  std_msgs
 )
 
 # find dependencies
