@@ -1,7 +1,7 @@
 #include "ArmDummyMode.hpp"
+
 #include "controller_manager_msgs/srv/switch_controller.hpp"
 #include "std_msgs/msg/bool.hpp"
-
 
 ArmDummyMode::ArmDummyMode(rclcpp::Node* node) : Mode("Dummy Arm", node) {
   RCLCPP_INFO(node_->get_logger(), "Arm Dumb Mode");
@@ -22,7 +22,8 @@ ArmDummyMode::ArmDummyMode(rclcpp::Node* node) : Mode("Dummy Arm", node) {
       "/wristTurn/set", 10);
   servo_client_ =
       node_->create_client<interfaces::srv::MoveServo>("servo_service");
-  auto stop_hw_interface_pub = node_->create_publisher<std_msgs::msg::Bool>("/arm_active", 10);
+  auto stop_hw_interface_pub =
+      node_->create_publisher<std_msgs::msg::Bool>("/arm_active", 10);
   auto msg = std_msgs::msg::Bool();
   msg.data = false;
   stop_hw_interface_pub->publish(msg);
@@ -172,9 +173,8 @@ void ArmDummyMode::loadParameters() {
 }
 
 interfaces::srv::MoveServo::Response ArmDummyMode::sendRequest(int port,
-                                                                int pos,
-                                                                int min,
-                                                                int max) const {
+                                                               int pos, int min,
+                                                               int max) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = port;
   request->pos = pos;
@@ -201,7 +201,7 @@ interfaces::srv::MoveServo::Response ArmDummyMode::sendRequest(int port,
 }
 
 void ArmDummyMode::servoRequest(int req_port, int req_pos, int req_min,
-                                 int req_max) const {
+                                int req_max) const {
   auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
   request->port = req_port;
   request->pos = req_pos;
