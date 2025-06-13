@@ -9,3 +9,7 @@
 	path = src/ublox
 	url = https://github.com/KumarRobotics/ublox.git
 	branch = ros2
+[submodule "src/elevation_mapping_cupy"]
+	path = src/elevation_mapping_cupy
+	url = https://github.com/jwag/elevation_mapping_cupy.git
+	branch = ros2_humble
