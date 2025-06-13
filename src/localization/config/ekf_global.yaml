@@ -24,7 +24,7 @@ global_ekf:
     pose0: /zed/zed_node/pose_with_covariance
     pose0_config: [
         # position
-        true, true, true,
+        false, false, false,
         # orientation
         false, false, false,
         # lineal vel 
@@ -41,10 +41,11 @@ global_ekf:
     pose0_pose_rejection_threshold: 5.0 # Mahalanobis Distance
     # pose0_twist_rejection_threshold: 1.0
 
-    odom0: /gps/odom 
+    # odom0: /gps/odom 
+    odom0: /repub_gps_odom
     odom0_config: [
         # position
-        true, true, false,
+        true, true, true,
         # orientation
         false, false, false,
         # lineal vel
@@ -56,7 +57,9 @@ global_ekf:
       ]
     odom0_differential: false
     odom0_relative: false
-    # odom0_pose_rejection_threshold: 5.0
+    # odom0_queue_size: 10
+    # odom0_nodelay: true
+    # odom0_pose_rejection_threshold: 1000000.0
     # odom0_twist_rejection_threshold: 1.0
 
     odom1: /drive/odom
@@ -110,7 +113,7 @@ global_ekf:
         # lineal vel 
         false, false, false,
         # angular vel
-        false, false, false,
+        false, false, true,
         # lineal acc
         false, false, false,
       ]
@@ -126,7 +129,7 @@ global_ekf:
         # position
         false, false, false,
         # orientation
-        false, false, true,
+        false, false, false,
         # lineal vel 
         false, false, false,
         # angular vel
