@@ -28,6 +28,7 @@ setup(
     entry_points={
         "console_scripts": [
             "imu_filter = localization.imu_filter:main",
+            "repub_odom = localization.republish_odometry:main",
         ],
     },
 )

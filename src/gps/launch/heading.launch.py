@@ -11,7 +11,8 @@ def generate_launch_description():
     heading = (
         "ubxload --port /dev/ttyUSB0 --baudrate 115200 --infile " + Heading_config_file
     )
-    os.system(heading)
+    # TODO: Uncomment the line below to configure the rover GPS on startup
+    # os.system(heading)
 
     return launch.LaunchDescription(
         [
