@@ -112,6 +112,7 @@ class HeadingNode(Node):
             msg.orientation_covariance[4] = 1000.0
             msg.orientation_covariance[8] = 1000.0
             msg.header.frame_id = self.frame_id
+            msg.header.stamp = self.get_clock().now().to_msg()
             # When heading is reported to be valid, use accuracy reported in radiance units
             if parsed_data.relPosValid == 1:
                 msg.orientation_covariance[8] = (
