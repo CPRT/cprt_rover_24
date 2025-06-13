@@ -23,4 +23,4 @@
     scanning_duration: 0.01
     remove_penetrated_points_rate: 5.0
     visibility_cleanup_rate: 10.0
-    enable_continuous_cleanup: true
+    enable_continuous_cleanup: false
