@@ -67,6 +67,20 @@ create_alias_with_echo launchScience "$rover_source_name && ros2 launch bringup 
 create_alias_with_echo launchTraversal "$rover_source_name && ros2 launch bringup transversal.launch.py"
 
 
+create_alias_with_echo tmn 'tmux new -s'        # Start new session
+create_alias_with_echo tma 'tmux attach -t'     # Attach to session
+create_alias_with_echo tmuxls 'tmux ls'            # List sessions
+create_alias_with_echo tmks 'tmux kill-session -t' # Kill session
+
+# # create_alias_with_echo tmuxNewNav 'tmux new -s nav'
+alias tmuxNewNav='(tmux has-session -t nav 2>/dev/null && echo "Session nav exists. Running: tmux attach -t nav" && sleep 1 && tmux attach -t nav) || (echo "Starting new nav session. Running: tmux new -s nav" && sleep 1 && tmux new -s nav)'
+create_alias_with_echo tmuxAttachNav 'tmux attach -t nav'
+create_alias_with_echo tmuxKillNav 'tmux kill-session -t nav'
+create_alias_with_echo tmuxIsNavAlive 'tmux ls | grep nav || echo "Session nav not found"'
+
+create_alias_with_echo tmuxSplitHorizontal 'tmux split-window -h'
+create_alias_with_echo tmuxSplitVertical 'tmux split-window -v'
+
 setDriveCameraExposure() {
     local camera_device=""
     local exposure_value="$1"
