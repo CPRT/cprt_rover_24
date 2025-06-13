@@ -1,107 +1,82 @@
 import launch
-import launch_ros.actions
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
+from ament_index_python.packages import get_package_share_directory
 import subprocess
-
-P = 2.00
-I = 0.000002
-D = 0.0000000001
+import os
 
 
 def generate_launch_description():
     """Generate launch description with multiple components."""
     try:
         subprocess.run(["sudo", "enablecan.sh"], check=True)
-    except:
-        print("enablecan.sh not found")
+    except Exception:
+        print("enablecan.sh not found or failed to run.")
+
+    common_config_path = os.path.join(
+        get_package_share_directory("drive"), "config", "talon_drive_common.yaml"
+    )
+    unique_config_path = os.path.join(
+        get_package_share_directory("drive"), "config", "talon_drive_unique.yaml"
+    )
+    config_paths_lst = [common_config_path, unique_config_path]
+
+    container_name = LaunchConfiguration("container_name")
+    container_arg = DeclareLaunchArgument(
+        "container_name",
+        default_value="PhoenixContainer",
+        description="Name of the target container",
+    )
+
     container = ComposableNodeContainer(
-        name="PhoenixContainer",
+        name=container_name,
         namespace="",
         package="ros_phoenix",
         executable="phoenix_container",
-        parameters=[{"interface": "can0"}],
         composable_node_descriptions=[
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="frontLeft",
-                parameters=[
-                    {"id": 3},
-                    {"P": P},
-                    {"I": I},
-                    {"D": D},
-                    {"max_voltage": 24.0},
-                    {"brake_mode": True},
-                    {"sensor_multiplier": 1 / 2760.0},
-                    {"max_current": 10.0},
-                ],
+                parameters=config_paths_lst,
+                extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="backLeft",
-                parameters=[
-                    {"id": 4},
-                    {"P": P},
-                    {"I": I},
-                    {"D": D},
-                    {"max_voltage": 24.0},
-                    {"brake_mode": True},
-                    {"sensor_multiplier": 1 / 2760.0},
-                    {"max_current": 10.0},
-                ],
+                parameters=config_paths_lst,
+                extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="frontRight",
-                parameters=[
-                    {"id": 1},
-                    {"P": P},
-                    {"I": I},
-                    {"D": D},
-                    {"max_voltage": 24.0},
-                    {"brake_mode": True},
-                    {"sensor_multiplier": 1 / 2760.0},
-                    {"max_current": 10.0},
-                ],
+                parameters=config_paths_lst,
+                extra_arguments=[{"use_intra_process_comms": True}],
             ),
             ComposableNode(
                 package="ros_phoenix",
                 plugin="ros_phoenix::TalonSRX",
                 name="backRight",
-                parameters=[
-                    {"id": 2},
-                    {"P": P},
-                    {"I": I},
-                    {"D": D},
-                    {"max_voltage": 24.0},
-                    {"brake_mode": True},
-                    {"sensor_multiplier": 1 / 2760.0},
-                    {"max_current": 10.0},
-                ],
+                parameters=config_paths_lst,
+                extra_arguments=[{"use_intra_process_comms": True}],
+            ),
+            ComposableNode(
+                package="drive_cpp",
+                plugin="TalonDriveController",
+                name="talon_drive_controller",
+                parameters=config_paths_lst,
+                extra_arguments=[{"use_intra_process_comms": True}],
             ),
         ],
     )
 
     return launch.LaunchDescription(
         [
+            container_arg,
             container,
-            launch_ros.actions.Node(
-                package="drive_cpp",
-                executable="drive_cpp",
-                name="talon_control_node",
-                parameters=[
-                    {"wheels": ["frontRight", "frontLeft", "backRight", "backLeft"]},
-                    {"max_speed": 2.0},
-                    {"base_width": 0.9},
-                    {"pub_odom": True},
-                    {"pub_elec": True},
-                    {"wheel_rad": 0.10},
-                    {"angular_slip_ratio": 0.6},
-                    {"low_latency_mode": True},
-                ],
-            ),
         ]
     )
