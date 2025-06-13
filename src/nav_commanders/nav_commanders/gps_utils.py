@@ -52,3 +52,11 @@ def latLonYaw2Geopose(latitude: float, longitude: float, yaw: float = 0.0) -> Ge
     geopose.position.longitude = longitude
     geopose.orientation = quaternion_from_euler(0.0, 0.0, yaw)
     return geopose
+
+
+if __name__ == "__main__":
+    q = Quaternion()
+    q.z = -0.6904183623314276
+    q.w = -0.7234103157652574
+    roll, pitch, yaw = euler_from_quaternion(q)
+    print(f"yaw deg: {math.degrees(yaw)}")
