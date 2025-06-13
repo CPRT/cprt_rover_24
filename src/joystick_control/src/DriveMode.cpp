@@ -2,13 +2,21 @@
 
 #include <algorithm>
 
-DriveMode::DriveMode(rclcpp::Node* node) : Mode("Drive", node) {
+DriveMode::DriveMode(rclcpp::Node* node)
+    : Mode("Drive", node), camera_service_available_(false) {
   RCLCPP_INFO(node_->get_logger(), "Drive Mode");
   loadParameters();
   twist_pub_ =
       node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
   servo_client_ =
       node_->create_client<interfaces::srv::MoveServo>("servo_service");
+
+  // Wait for the service to be available
+  if (servo_client_->wait_for_service(std::chrono::seconds(1))) {
+    camera_service_available_ = true;
+  } else {
+    RCLCPP_WARN(node_->get_logger(), "Service not available after waiting");
+  }
 }
 
 void DriveMode::processJoystickInput(
@@ -84,10 +92,13 @@ void DriveMode::handleCam(
 }
 
 void DriveMode::setServoPosition(int port, int position) const {
-  auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
-  request->port = port;
-  request->pos = position;
-  servo_client_->async_send_request(request);
+  if (camera_service_available_) {
+    auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
+    request->port = port;
+    request->pos = position;
+
+    servo_client_->async_send_request(request);
+  }
 }
 
 void DriveMode::handleVideo(
