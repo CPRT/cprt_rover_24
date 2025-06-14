@@ -2,11 +2,20 @@
 
 #include <QApplication>
 
-CameraClient::CameraClient() 
-    : Node("camera_client_node") {
+#include "mainwindow.h"
 
-}
+CameraClient::CameraClient() : Node("camera_client_node") {}
 
-CameraClient::~CameraClient() {
+CameraClient::~CameraClient() {}
 
+int main(int argc, char** argv) {
+  QApplication a(argc, argv);
+  MainWindow w;
+  w.show();
+
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<CameraClient>());
+  rclcpp::shutdown();
+
+  return a.exec();
 }

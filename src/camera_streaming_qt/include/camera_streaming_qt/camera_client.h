@@ -4,9 +4,10 @@
 #include <rclcpp/rclcpp.hpp>
 
 class CameraClient : public rclcpp::Node {
-    CameraClient();
+ public:
+  CameraClient();
 
-    ~CameraClient();
+  ~CameraClient();
 };
 
 #endif

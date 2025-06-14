@@ -18,11 +18,21 @@ include_directories(
     include/${PROJECT_NAME}
 )
 
-add_executable(camera_client_node src/camera_client.cpp)
+set(SOURCES
+    src/camera_client.cpp
+    src/mainwindow.cpp
+)
+
+set(HEADERS
+    include/camera_streaming_qt/camera_client.h
+    include/camera_streaming_qt/mainwindow.h
+)
+
+add_executable(camera_client_node ${SOURCES} ${HEADERS})
 
 target_link_libraries(
     camera_client_node 
-    rclcpp:rclcpp
+    rclcpp::rclcpp
     Qt${QT_VERSION_MAJOR}::Widgets
 )
 
@@ -30,6 +40,11 @@ ament_target_dependencies(camera_client_node rclcpp std_msgs)
 
 install(DIRECTORY include/
     DESTINATION include/${PROJECT_NAME}
+)
+
+install(TARGETS 
+    camera_client_node
+    DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_include_directories("include/${PROJECT_NAME}")
