@@ -17,6 +17,7 @@
 #include <interfaces/srv/video_out.hpp>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <string>
 #include <vector>
 
@@ -76,6 +77,19 @@ class WebRTCStreamer : public rclcpp::Node {
 
  private:
   /**
+   * @brief Initializes the GStreamer pipeline and sets up services.
+   */
+  bool start();
+
+  /**
+   * @brief Declares parameters for the WebRTCStreamer node.
+   *
+   * This function declares parameters such as web server settings, camera
+   * names, and camera properties.
+   */
+  void declare_parameters();
+
+  /**
    * @brief Callback function to start video streaming.
    *
    * @param request The request object containing video output parameters.
@@ -105,6 +119,16 @@ class WebRTCStreamer : public rclcpp::Node {
   void get_cameras(
       const std::shared_ptr<interfaces::srv::GetCameras::Request> request,
       std::shared_ptr<interfaces::srv::GetCameras::Response> response);
+
+  /**
+   * @brief Callback function to restart the video pipeline.
+   *
+   * @param request The request object (not used).
+   * @param response The response object to be populated with the result.
+   */
+  void restart_pipeline(
+      const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+      std::shared_ptr<std_srvs::srv::Trigger::Response> response);
 
   /**
    * @brief Creates a GStreamer source element for the given camera source.
@@ -177,7 +201,9 @@ class WebRTCStreamer : public rclcpp::Node {
   rclcpp::Service<interfaces::srv::VideoCapture>::SharedPtr
       capture_service_; /**< ROS2 service for capturing frames */
   rclcpp::Service<interfaces::srv::GetCameras>::SharedPtr
-      get_cams_service_;     /**< ROS2 service for getting camera list */
+      get_cams_service_; /**< ROS2 service for getting camera list */
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr
+      restart_service_; /**< ROS2 service for restarting the video pipeline */
   GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
   std::map<std::string, GstUniquePtr<GstPad>>
       source_pads_; /**< Maps camera names to compositor pads*/
