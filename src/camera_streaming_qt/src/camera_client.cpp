@@ -11,11 +11,13 @@ CameraClient::~CameraClient() {}
 int main(int argc, char** argv) {
   QApplication a(argc, argv);
   MainWindow w;
+  w.resize(1280, 720);
   w.show();
+  a.exec();
 
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<CameraClient>());
   rclcpp::shutdown();
 
-  return a.exec();
+  return 0;
 }
