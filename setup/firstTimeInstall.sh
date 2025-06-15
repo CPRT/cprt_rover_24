@@ -20,11 +20,21 @@ source ~/.bashrc
 source ~/.bashrc
 ./setup_service.sh
 
+# Jetson Only setup
+if [ -f /etc/nv_tegra_release ]; then
+    echo "Jetson detected, running Jetson specific setup."
+else
+    echo "Non-Jetson system detected, skipping Jetson specific setup."
+    exit 0
+fi
 sudo cp enablecan.sh /usr/local/bin || exit 1
 echo "$USER ALL=(ALL) NOPASSWD: /usr/local/bin/enablecan.sh" | sudo tee -a /etc/sudoers > /dev/null
+
 sudo cp turnOnRaman.sh /usr/local/bin
 sudo chmod 755 /usr/local/bin/turnOnRaman.sh
 
 echo "${SUDO_USER:-$USER} ALL=(ALL) NOPASSWD: /usr/local/bin/turnOnRaman.sh" \
   | sudo tee /etc/sudoers.d/turnonraman >/dev/null
 sudo chmod 0440 /etc/sudoers.d/turnonraman
+
+./usb_service_setup.sh
