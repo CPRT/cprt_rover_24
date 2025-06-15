@@ -39,14 +39,7 @@ WebRTCStreamer::WebRTCStreamer()
                             "start_pipeline");
 }
 
-WebRTCStreamer::~WebRTCStreamer() {
-  for (auto it = source_pads_.cbegin(); it != source_pads_.end(); ++it) {
-    gst_element_release_request_pad(compositor_, it->second.get());
-  }
-  if (pipeline_) {
-    gst_element_set_state(pipeline_.get(), GST_STATE_NULL);
-  }
-}
+WebRTCStreamer::~WebRTCStreamer() { stop(); }
 
 bool WebRTCStreamer::start() {
   // Fetch camera parameters
@@ -103,6 +96,26 @@ bool WebRTCStreamer::start() {
   }
   RCLCPP_INFO(this->get_logger(), "Pipeline started successfully");
   return true;
+}
+
+void WebRTCStreamer::stop() {
+  for (auto &pair : source_pads_) {
+    gst_element_release_request_pad(compositor_, pair.second.get());
+  }
+  source_pads_.clear();
+
+  for (const auto &element : elements_) {
+    if (element) {
+      gst_element_set_state(element, GST_STATE_NULL);
+      gst_bin_remove(GST_BIN(pipeline_.get()), element);
+      gst_object_unref(element);
+    }
+  }
+  elements_.clear();
+
+  if (pipeline_) {
+    gst_element_set_state(pipeline_.get(), GST_STATE_NULL);
+  }
 }
 
 void WebRTCStreamer::declare_parameters() {
@@ -186,6 +199,7 @@ void WebRTCStreamer::capture_frame(
     response->success = false;
     for (auto element : elements) {
       gst_bin_remove(GST_BIN(pipeline_.get()), element);
+      gst_object_unref(element);
     }
     return;
   }
@@ -255,9 +269,7 @@ void WebRTCStreamer::get_cameras(
 void WebRTCStreamer::restart_pipeline(
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
-  if (pipeline_) {
-    gst_element_set_state(pipeline_.get(), GST_STATE_NULL);
-  }
+  stop();
   response->success = start();
   if (response->success) {
     response->message = "Pipeline restarted successfully";
@@ -323,11 +335,13 @@ GstElement *WebRTCStreamer::add_element_chain(
     lastElement = element;
   }
   if (success) {
+    elements_.insert(elements_.end(), chain.begin(), chain.end());
     return lastElement;
   }
   for (auto element : chain) {
     if (element) {
       gst_bin_remove(GST_BIN(pipeline_.get()), element);
+      gst_object_unref(element);
     }
     if (element == lastElement) {
       break;
@@ -380,6 +394,9 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   // Add small queue that drops oldest buffers
   elements.emplace_back(create_element("queue"));
   if (!elements.back()) {
+    for (auto element : elements) {
+      if (element) gst_object_unref(element);
+    }
     return nullptr;
   }
   g_object_set(G_OBJECT(elements.back()), "max-size-buffers", 1, nullptr);
@@ -467,8 +484,9 @@ bool WebRTCStreamer::unlink_pad(GstPad *pad) {
     } else {
       gst_pad_unlink(pad, peer.get());
     }
-    gst_element_release_request_pad(
-        GST_ELEMENT(gst_pad_get_parent_element(peer.get())), peer.get());
+    auto parent = gst_pad_get_parent_element(peer.get());
+    gst_element_release_request_pad(parent, peer.get());
+    gst_object_unref(parent);
   }
   return true;
 }

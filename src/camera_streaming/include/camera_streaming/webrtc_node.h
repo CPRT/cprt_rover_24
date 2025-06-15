@@ -77,9 +77,13 @@ class WebRTCStreamer : public rclcpp::Node {
 
  private:
   /**
-   * @brief Initializes the GStreamer pipeline and sets up services.
+   * @brief Initializes the GStreamer pipeline
    */
   bool start();
+  /**
+   * @brief Shuts down and cleans up the gstreamer pipeline resources
+   */
+  void stop();
 
   /**
    * @brief Declares parameters for the WebRTCStreamer node.
@@ -191,9 +195,8 @@ class WebRTCStreamer : public rclcpp::Node {
                              std::string element_name = "");
 
   bool web_server_; /**< Flag indicating if the web server is enabled */
-  std::string web_server_path_; /**< Path to the web server */
-  std::vector<GstElement*>
-      connected_sources_; /**< List of connected GStreamer source elements */
+  std::string web_server_path_;       /**< Path to the web server */
+  std::vector<GstElement*> elements_; /**< List of GStreamer elements */
   GstUniquePtr<GstElement> pipeline_; /**< GStreamer pipeline element */
   GstElement* compositor_;            /**< GStreamer compositor element */
   rclcpp::Service<interfaces::srv::VideoOut>::SharedPtr
