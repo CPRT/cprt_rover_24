@@ -1,7 +1,17 @@
 #!/bin/bash
 
-IMAGE=cprtsoftware/cprt_rover_24
-TAG=science-latest
+AARCH=$(uname -m)
+if [ "$AARCH" = "aarch64" ]; then
+    echo "Detected ARM architecture."
+    AARCH="arm64"
+else
+    echo "Detected AMD64 architecture."
+    AARCH="amd64"
+fi
+echo "Using architecture: $AARCH"
+
+IMAGE=cprtsoftware/cprt_rover_24-science
+TAG=$AARCH
 JETSON_IP=192.168.0.55
 PORT=9000
 
