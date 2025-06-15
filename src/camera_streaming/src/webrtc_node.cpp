@@ -12,12 +12,8 @@ WebRTCStreamer::WebRTCStreamer()
   gst_init(nullptr, nullptr);
 
   // Declare parameters
-  this->declare_parameter("web_server", true);
-  this->declare_parameter("web_server_path", ".");
-  this->declare_parameter("max_width", 1280);
-  this->declare_parameter("max_height", 720);
-  this->declare_parameter("max_framerate", 30);
-  this->declare_parameter("camera_name", std::vector<std::string>());
+  declare_parameters();
+
   this->get_parameter("web_server", web_server_);
   this->get_parameter("web_server_path", web_server_path_);
   this->get_parameter("max_width", width_);
@@ -34,21 +30,28 @@ WebRTCStreamer::WebRTCStreamer()
   get_cams_service_ = this->create_service<interfaces::srv::GetCameras>(
       "get_cameras", std::bind(&WebRTCStreamer::get_cameras, this,
                                std::placeholders::_1, std::placeholders::_2));
+  restart_service_ = this->create_service<std_srvs::srv::Trigger>(
+      "reset_video", std::bind(&WebRTCStreamer::restart_pipeline, this,
+                               std::placeholders::_1, std::placeholders::_2));
 
+  start();
+  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
+                            "start_pipeline");
+}
+
+WebRTCStreamer::~WebRTCStreamer() { stop(); }
+
+bool WebRTCStreamer::start() {
   // Fetch camera parameters
-  std::vector<std::string> camera_name;
-  this->get_parameter("camera_name", camera_name);
+  std::vector<std::string> camera_names;
+  this->get_parameter("camera_name", camera_names);
   initialize_pipeline();
 
-  for (const auto &name : camera_name) {
+  for (const auto &name : camera_names) {
     std::string camera_path;
-    this->declare_parameter(name + ".path", "");
     this->get_parameter(name + ".path", camera_path);
-    this->declare_parameter(name + ".type",
-                            static_cast<int>(CameraType::V4l2Src));
     int camera_type;
     this->get_parameter(name + ".type", camera_type);
-    this->declare_parameter(name + ".encoded", false);
     bool encoded;
     this->get_parameter(name + ".encoded", encoded);
     CameraSource source;
@@ -87,21 +90,48 @@ WebRTCStreamer::WebRTCStreamer()
     }
   }
   const auto ret = gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
-  if (ret != GST_STATE_CHANGE_FAILURE) {
-    RCLCPP_INFO(this->get_logger(), "Pipeline started successfully");
-  } else {
+  if (ret == GST_STATE_CHANGE_FAILURE) {
     RCLCPP_ERROR(this->get_logger(), "Failed to start pipeline");
+    return false;
   }
-  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
-                            "start_pipeline");
+  RCLCPP_INFO(this->get_logger(), "Pipeline started successfully");
+  return true;
 }
 
-WebRTCStreamer::~WebRTCStreamer() {
-  for (auto it = source_pads_.cbegin(); it != source_pads_.end(); ++it) {
-    gst_element_release_request_pad(compositor_, it->second.get());
+void WebRTCStreamer::stop() {
+  for (auto &pair : source_pads_) {
+    gst_element_release_request_pad(compositor_, pair.second.get());
   }
+  source_pads_.clear();
+
+  for (const auto &element : elements_) {
+    if (element) {
+      gst_element_set_state(element, GST_STATE_NULL);
+      gst_bin_remove(GST_BIN(pipeline_.get()), element);
+      gst_object_unref(element);
+    }
+  }
+  elements_.clear();
+
   if (pipeline_) {
     gst_element_set_state(pipeline_.get(), GST_STATE_NULL);
+  }
+}
+
+void WebRTCStreamer::declare_parameters() {
+  this->declare_parameter("web_server", true);
+  this->declare_parameter("web_server_path", ".");
+  this->declare_parameter("max_width", 1280);
+  this->declare_parameter("max_height", 720);
+  this->declare_parameter("max_framerate", 30);
+  this->declare_parameter("camera_name", std::vector<std::string>());
+  std::vector<std::string> camera_name;
+  this->get_parameter("camera_name", camera_name);
+  for (const auto &name : camera_name) {
+    this->declare_parameter(name + ".path", std::string());
+    this->declare_parameter(name + ".type",
+                            static_cast<int>(CameraType::V4l2Src));
+    this->declare_parameter(name + ".encoded", false);
   }
 }
 
@@ -130,7 +160,7 @@ void WebRTCStreamer::start_video_cb(
     response->success = false;
   }
   GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
-                            "pipeline");
+                            "pipeline_update");
 }
 
 void WebRTCStreamer::capture_frame(
@@ -169,6 +199,7 @@ void WebRTCStreamer::capture_frame(
     response->success = false;
     for (auto element : elements) {
       gst_bin_remove(GST_BIN(pipeline_.get()), element);
+      gst_object_unref(element);
     }
     return;
   }
@@ -235,6 +266,21 @@ void WebRTCStreamer::get_cameras(
   }
 }
 
+void WebRTCStreamer::restart_pipeline(
+    const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+    std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+  stop();
+  response->success = start();
+  if (response->success) {
+    response->message = "Pipeline restarted successfully";
+  } else {
+    response->message = "Failed to restart pipeline";
+  }
+  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
+                            "restart_pipeline");
+  RCLCPP_INFO(this->get_logger(), "%s", response->message.c_str());
+}
+
 GstElement *WebRTCStreamer::create_vid_conv() {
   GstElement *videoconvert = create_element("nvvidconv");
   if (videoconvert) {
@@ -289,11 +335,13 @@ GstElement *WebRTCStreamer::add_element_chain(
     lastElement = element;
   }
   if (success) {
+    elements_.insert(elements_.end(), chain.begin(), chain.end());
     return lastElement;
   }
   for (auto element : chain) {
     if (element) {
       gst_bin_remove(GST_BIN(pipeline_.get()), element);
+      gst_object_unref(element);
     }
     if (element == lastElement) {
       break;
@@ -346,6 +394,9 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   // Add small queue that drops oldest buffers
   elements.emplace_back(create_element("queue"));
   if (!elements.back()) {
+    for (auto element : elements) {
+      if (element) gst_object_unref(element);
+    }
     return nullptr;
   }
   g_object_set(G_OBJECT(elements.back()), "max-size-buffers", 1, nullptr);
@@ -433,8 +484,9 @@ bool WebRTCStreamer::unlink_pad(GstPad *pad) {
     } else {
       gst_pad_unlink(pad, peer.get());
     }
-    gst_element_release_request_pad(
-        GST_ELEMENT(gst_pad_get_parent_element(peer.get())), peer.get());
+    auto parent = gst_pad_get_parent_element(peer.get());
+    gst_element_release_request_pad(parent, peer.get());
+    gst_object_unref(parent);
   }
   return true;
 }
