@@ -128,13 +128,14 @@ RUN cd /tmp && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s
     cargo cinstall -p gst-plugin-rtp --prefix=/usr
 
 FROM ros2_humble-base AS base
-ARG FILE=/opt/rosdeps.sh
-COPY --from=rosdeps ${FILE} ${FILE}
+ARG ROSDEP_FILE=/opt/rosdeps.sh
+COPY --from=rosdeps ${ROSDEP_FILE} ${ROSDEP_FILE}
+COPY --from=gstreamer /tmp /tmp
 
 # Install rosdep dependencies
 RUN apt-get update && \
-    chmod +x ${FILE} && \
-    ${FILE} && \
+    chmod +x ${ROSDEP_FILE} && \
+    ${ROSDEP_FILE} && \
     rm -rf /var/lib/apt/lists/*
 
 # Create entrypoint script
