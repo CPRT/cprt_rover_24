@@ -1,5 +1,5 @@
-ARG AARCH=arm64
-FROM --platform=linux/$AARCH cprtsoftware/cprt_rover_24-dev:$AARCH
+ARG IMAGE
+FROM ${IMAGE}
 
 # Set project directory
 ARG DIR=/cprt_rover_24
