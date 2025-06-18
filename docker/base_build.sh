@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Change directory to the script's location
-cd "$(dirname "$0")"
-
+# Take in an arch argument to specify the architecture
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -a | --aarch) aarch="$2"; shift ;;
@@ -16,17 +14,22 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# Change directory to the script's location
+cd "$(dirname "$0")"
 source common.sh
 
 # Check if Docker is installed
-check_docker()
+check_docker
 
 tag=get_tag $aarch
-# Check if on a jetson device
-image=cprtsoftware/cprt_rover_24-base:$tag
+
+image=ubuntu:22.04
+if [ $tag="jetson" ]; then
+    image=nvcr.io/nvidia/l4t-jetpack:r36.4.0
+fi
 
 # Build the Docker image
-docker build -t cprtsoftware/cprt_rover_24-science:$tag \
-             -f Dockerfile.dev \
-             --build-arg BASE_IMAGE=$image \
+docker build -t cprtsoftware/cprt_rover_24-base:$tag \
+             -f Dockerfile.base \
+             --build-arg IMAGE=$image \
              ..
