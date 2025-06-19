@@ -16,13 +16,12 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-source common.sh
+source ./common.sh
 
 # Check if Docker is installed
 check_docker()
 
-tag=get_tag $aarch
-# Check if on a jetson device
+tag=$(get_tag "$aarch")
 image=cprtsoftware/cprt_rover_24-base:$tag
 
 # Build the Docker image
