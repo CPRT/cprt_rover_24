@@ -1,11 +1,13 @@
-#include "../include/camera_streaming_qt/mainwindow.h"
+#include "mainwindow.h"
 
 #include <QLabel>
-#include <QPushButton>
+
+#include "widgets/main_widget.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
-  QPushButton* button = new QPushButton("Hello world");
-  setCentralWidget(button);
+  // Setup main widget
+  MainWidget* main_widget_ = new MainWidget(this);
+  setCentralWidget(main_widget_);
 }
 
 MainWindow::~MainWindow() {}
