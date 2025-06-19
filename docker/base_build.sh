@@ -16,12 +16,12 @@ done
 
 # Change directory to the script's location
 cd "$(dirname "$0")"
-source common.sh
+source ./common.sh
 
 # Check if Docker is installed
 check_docker
 
-tag=get_tag $aarch
+tag=$(get_tag "$aarch")
 
 image=ubuntu:22.04
 if [ $tag="jetson" ]; then

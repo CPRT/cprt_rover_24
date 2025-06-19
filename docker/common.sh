@@ -9,10 +9,8 @@ check_docker() {
 
 is_jetson() {
     if grep -q "NVIDIA Jetson" /proc/device-tree/model 2>/dev/null; then
-        echo "Running on a Jetson device."
         return 0
     else
-        echo "Not running on a Jetson device."
         return 1
     fi
 }
