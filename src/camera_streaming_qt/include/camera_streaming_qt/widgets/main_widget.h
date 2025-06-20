@@ -1,3 +1,13 @@
+/**
+ * @file main_widget.h
+ * @brief Header file for the MainWidget class
+ * @author Aria Wong
+ *
+ * This file contains the declaration of the MainWidget class, which is
+ * responsible for displaying all of the widgets in the camera streaming
+ * application.
+ */
+
 #ifndef MAIN_WIDGET_H
 #define MAIN_WIDGET_H
 
@@ -6,6 +16,16 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "widgets/source_widget.h"
+
+/**
+ * @class MainWidget
+ * @brief A class for displaying all of the widgets in the camera streaming
+ * application.
+ *
+ * The MainWidget class combines all of the smaller widgets required to use the
+ * camera streaming application and displays them.
+ */
 class MainWidget : public QWidget {
   Q_OBJECT
 
@@ -14,6 +34,12 @@ class MainWidget : public QWidget {
   ~MainWidget();
 
  public slots:
+  /**
+   * @brief Slot that sets the signal server IP that gets called when the
+   * server_ip_line_edit_ gets modified.
+   *
+   * @param ip IP address for the signal server
+   */
   void set_signal_server_ip(QString ip);
 
  private:
@@ -21,6 +47,7 @@ class MainWidget : public QWidget {
 
   // Presets UI
   QHBoxLayout* preset_layout_;
+
   QPushButton* drive_preset_button_;
   QPushButton* eef_preset_button_;
   QPushButton* microscope_preset_button_;
@@ -34,6 +61,9 @@ class MainWidget : public QWidget {
   QPushButton* server_connect_button_;
 
   QString signal_server_ip_;
+
+  // Sources UI
+  SourceWidget* temp_source_;
 };
 
 #endif

@@ -38,12 +38,14 @@ set(SOURCES
     src/camera_client.cpp
     src/mainwindow.cpp
     src/widgets/main_widget.cpp
+    src/widgets/source_widget.cpp
 )
 
 set(HEADERS
     include/${PROJECT_NAME}/camera_client.h
     include/${PROJECT_NAME}/mainwindow.h
     include/${PROJECT_NAME}/widgets/main_widget.h
+    include/${PROJECT_NAME}/widgets/source_widget.h
 )
 
 add_executable(camera_client_node ${SOURCES} ${HEADERS})

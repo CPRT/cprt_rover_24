@@ -37,13 +37,16 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
   server_connect_button_ = new QPushButton("Connect");
   signal_server_layout_->addWidget(server_connect_button_);
 
-  // Make widgets start at top
-  main_layout_->setAlignment(Qt::AlignTop);
-
   connect(server_ip_line_edit_, &QLineEdit::textChanged, this,
           &MainWidget::set_signal_server_ip);
 
   main_layout_->addLayout(signal_server_layout_);
+
+  temp_source_ = new SourceWidget();
+  main_layout_->addWidget(temp_source_);
+
+  // Make widgets start at top
+  main_layout_->setAlignment(Qt::AlignTop);
 }
 
 MainWidget::~MainWidget() {}
