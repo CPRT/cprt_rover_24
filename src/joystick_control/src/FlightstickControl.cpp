@@ -31,6 +31,21 @@ void FlightstickControl::processJoystick(
 
 bool FlightstickControl::checkForModeChange(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
+  // First check if any mode change button is pressed
+  bool modeChangeRequested = joystickMsg->buttons[kDriveModeButton] ||
+                             joystickMsg->buttons[kArmIKModeButton] ||
+                             joystickMsg->buttons[kArmManualModeButton] ||
+                             joystickMsg->buttons[kArmDummyButton] ||
+                             joystickMsg->buttons[kNavModeButton] ||
+                             joystickMsg->buttons[kScienceModeButton];
+
+  if (modeChangeRequested) {
+    if (!(checkAxes(joystickMsg))) {
+      RCLCPP_WARN(this->get_logger(),
+                  "At least one axis is not 0, can't switch modes");
+      return false;
+    }
+  }
   if (joystickMsg->buttons[kDriveModeButton]) {
     return changeMode(ModeType::DRIVE);
   } else if (joystickMsg->buttons[kArmIKModeButton]) {
@@ -47,6 +62,37 @@ bool FlightstickControl::checkForModeChange(
   return false;
 }
 
+bool FlightstickControl::checkAxes(
+    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
+  // key is mode, first vector is axes, second vector is buttons
+  std::map<ModeType, std::vector<int>> modeParameters = {
+      {ModeType::DRIVE, {0, 1, 3, 4}},
+      {ModeType::ARM_IK, {0, 1, 4, 5, 6}},
+      {ModeType::ARM_MANUAL, {0, 1, 4, 5, 6, 7}},
+      {ModeType::SCIENCE, {1, 3}},
+      {ModeType::ARM_DUMMY, {0, 1, 4, 5, 6, 7}}};  // add nav?
+  auto it = modeParameters.find(currentMode_);
+  if (it != modeParameters.end()) {
+    const auto& axesIndices = it->second;
+
+    // lambda to check all values at given indices are zero
+    auto allZero = [](const auto& values, const std::vector<int>& indices) {
+      for (int index : indices) {
+        if (index < static_cast<int>(values.size())) {
+          if (values[index] != 0.0f) {
+            return false;
+          }
+        }
+      }
+      return true;
+    };
+
+    if (!allZero(joystickMsg->axes, axesIndices)) {
+      return false;
+    }
+  }
+  return true;
+}
 bool FlightstickControl::changeMode(ModeType mode) {
   if (currentMode_ == mode) {
     return false;
@@ -128,7 +174,7 @@ void FlightstickControl::loadParameters() {
   this->get_parameter("teleop_light_mode", kTeleopLightMode);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<FlightstickControl>());
   rclcpp::shutdown();
