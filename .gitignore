@@ -1,7 +1,7 @@
 # Directories
-install/
+install*/
 log/
-build/
+build*/
 *.vscode
 raman/
 

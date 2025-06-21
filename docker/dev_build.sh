@@ -8,8 +8,7 @@ source ./common.sh
 # Check if Docker is installed
 check_docker()
 
-tag=get_tag
-# Check if on a jetson device
+tag=$(get_tag "$aarch")
 image=cprtsoftware/cprt_rover_24-base:$tag
 
 # Build the Docker image
