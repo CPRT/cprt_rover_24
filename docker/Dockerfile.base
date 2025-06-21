@@ -141,7 +141,7 @@ COPY --from=gstreamer /target /
 ENV PATH=/opt/gstreamer/bin:$PATH 
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH 
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH 
-ENV GST_PLUGIN_PATH=/opt/gstreamer/lib/gstreamer-1.0
+ENV GST_PLUGIN_PATH=/opt/gstreamer/lib/gstreamer-1.0:/usr/lib/aarch64-linux-gnu/gstreamer-1.0
 
 # Install rosdep dependencies
 RUN apt-get update && \
@@ -149,12 +149,4 @@ RUN apt-get update && \
     ${ROSDEP_FILE} && \
     rm -rf /var/lib/apt/lists/*
 
-# Create entrypoint script
-RUN echo '#!/bin/bash' > /entrypoint.sh && \
-    echo 'source /opt/ros/humble/setup.bash' >> /entrypoint.sh && \
-    echo 'exec "$@"' >> /entrypoint.sh && \
-    chmod +x /entrypoint.sh
-
-# Set entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/bin/bash"]
