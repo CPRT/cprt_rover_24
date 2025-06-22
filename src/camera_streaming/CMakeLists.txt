@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Find dependencies (ROS2, GStreamer, and PkgConfig)
 find_package(rclcpp REQUIRED)
 find_package(interfaces REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # Use pkg-config to find the necessary GStreamer libraries
 find_package(PkgConfig REQUIRED)
@@ -45,7 +46,11 @@ target_link_libraries(webrtc_node
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 
 # Set up any necessary ROS2 specific configurations
-ament_target_dependencies(webrtc_node rclcpp interfaces)
+ament_target_dependencies(webrtc_node 
+  rclcpp
+  interfaces
+  std_srvs
+)
 
 # Install header files
 install(DIRECTORY include/
