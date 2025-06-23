@@ -31,7 +31,7 @@ void FlightstickControl::processJoystick(
 
 bool FlightstickControl::checkForModeChange(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
-  const std::map<int, ModeType> buttonToMode = {
+  static const std::map<int, ModeType> buttonToMode = {
       {kDriveModeButton, ModeType::DRIVE},
       {kArmIKModeButton, ModeType::ARM_IK},
       {kArmManualModeButton, ModeType::ARM_MANUAL},
@@ -55,7 +55,7 @@ bool FlightstickControl::checkForModeChange(
 bool FlightstickControl::checkAxes(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
   // key is mode, vector is axes
-  const std::map<ModeType, std::vector<int>> modeParameters = {
+  static const std::map<ModeType, std::vector<int>> modeParameters = {
       {ModeType::DRIVE, {0, 1, 3, 4}},
       {ModeType::ARM_IK, {0, 1, 4, 5, 6}},
       {ModeType::ARM_MANUAL, {0, 1, 4, 5, 6, 7}},
