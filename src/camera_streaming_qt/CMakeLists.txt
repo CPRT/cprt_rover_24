@@ -38,13 +38,16 @@ set(SOURCES
     src/camera_client.cpp
     src/mainwindow.cpp
     src/widgets/main_widget.cpp
+    src/widgets/preset_widget.cpp
     src/widgets/source_widget.cpp
 )
 
 set(HEADERS
     include/${PROJECT_NAME}/camera_client.h
     include/${PROJECT_NAME}/mainwindow.h
+    include/${PROJECT_NAME}/models/source_model.h
     include/${PROJECT_NAME}/widgets/main_widget.h
+    include/${PROJECT_NAME}/widgets/preset_widget.h
     include/${PROJECT_NAME}/widgets/source_widget.h
 )
 

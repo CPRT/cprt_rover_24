@@ -1,19 +1,26 @@
 #include "widgets/source_widget.h"
 
-SourceWidget::SourceWidget(QWidget* parent) 
-  : QWidget(parent) {
-  main_layout_ = new QVBoxLayout(this);    
+#include <QDebug>
+
+SourceWidget::SourceWidget(QWidget* parent) : QWidget(parent) {
+  source_ = new Source();
+
+  main_layout_ = new QVBoxLayout(this);
 
   source_name_label_ = new QLabel("Source");
   main_layout_->addWidget(source_name_label_);
 
   // Setup name UI
   name_layout_ = new QHBoxLayout();
-  
+
   name_label_ = new QLabel("Name: ");
   name_layout_->addWidget(name_label_);
 
   name_combo_box_ = new QComboBox();
+
+  connect(name_combo_box_, &QComboBox::currentTextChanged, this,
+          &SourceWidget::set_source_name);
+
   name_layout_->addWidget(name_combo_box_);
 
   refresh_sources_button_ = new QPushButton("Refresh");
@@ -32,6 +39,13 @@ SourceWidget::SourceWidget(QWidget* parent)
 
   width_line_edit_ = new QLineEdit(QString::number(100));
   width_line_edit_->setValidator(size_validator_);
+
+  connect(width_line_edit_, &QLineEdit::textChanged, this,
+          &SourceWidget::set_width);
+
+  // TODO: Add default value to config file
+  set_width("100");
+
   size_layout_->addWidget(width_line_edit_);
 
   height_label_ = new QLabel("Height: ");
@@ -39,6 +53,12 @@ SourceWidget::SourceWidget(QWidget* parent)
 
   height_line_edit_ = new QLineEdit(QString::number(100));
   height_line_edit_->setValidator(size_validator_);
+
+  connect(height_line_edit_, &QLineEdit::textChanged, this,
+          &SourceWidget::set_height);
+
+  set_height("100");
+
   size_layout_->addWidget(height_line_edit_);
 
   main_layout_->addLayout(size_layout_);
@@ -53,6 +73,10 @@ SourceWidget::SourceWidget(QWidget* parent)
 
   origin_x_line_edit_ = new QLineEdit(QString::number(0));
   origin_x_line_edit_->setValidator(origin_validator_);
+
+  connect(origin_x_line_edit_, &QLineEdit::textChanged, this,
+          &SourceWidget::set_origin_x);
+
   origin_layout_->addWidget(origin_x_line_edit_);
 
   origin_y_label_ = new QLabel("Origin Y: ");
@@ -60,6 +84,10 @@ SourceWidget::SourceWidget(QWidget* parent)
 
   origin_y_line_edit_ = new QLineEdit(QString::number(0));
   origin_y_line_edit_->setValidator(origin_validator_);
+
+  connect(origin_y_line_edit_, &QLineEdit::textChanged, this,
+          &SourceWidget::set_origin_y);
+
   origin_layout_->addWidget(origin_y_line_edit_);
 
   main_layout_->addLayout(origin_layout_);
@@ -69,6 +97,34 @@ SourceWidget::SourceWidget(QWidget* parent)
   main_layout_->addWidget(remove_button_);
 }
 
-SourceWidget::~SourceWidget() {
+SourceWidget::~SourceWidget() {}
 
+void SourceWidget::set_source_name(QString name) {
+  if (!source_) return;
+  source_->name = name;
+  qDebug() << "Changed source name to: " << source_->name;
+}
+
+void SourceWidget::set_width(QString width) {
+  if (!source_ || !width.toInt()) return;
+  source_->width = width.toInt();
+  qDebug() << "Changed source width to: " << source_->width;
+}
+
+void SourceWidget::set_height(QString height) {
+  if (!source_ || !height.toInt()) return;
+  source_->height = height.toInt();
+  qDebug() << "Changed source height to: " << source_->height;
+}
+
+void SourceWidget::set_origin_x(QString x) {
+  if (!source_ || !x.toInt()) return;
+  source_->x = x.toInt();
+  qDebug() << "Changed source origin x to: " << source_->x;
+}
+
+void SourceWidget::set_origin_y(QString y) {
+  if (!source_ || !y.toInt()) return;
+  source_->y = y.toInt();
+  qDebug() << "Changed source origin y to: " << source_->y;
 }

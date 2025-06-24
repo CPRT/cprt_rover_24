@@ -2,7 +2,7 @@
  * @file source_widget.h
  * @brief Header file for the SourceWidget class
  * @author Aria Wong
- * 
+ *
  * This file contains the declaration of the SourceWidget class, which is
  * responsible for containing all of the widgets that allows the user to
  * customize the properties of a source.
@@ -11,57 +11,71 @@
 #ifndef SOURCE_WIDGET_H
 #define SOURCE_WIDGET_H
 
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QLabel>
 #include <QComboBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QVBoxLayout>
+#include <QWidget>
+
+#include "models/source_model.h"
 
 /**
  * @class SourceWidget
  * @brief A class for displaying and customizing the properties of a source.
- * 
+ *
  * The SourceWidget class provides functionality for displaying and customizing
- * the properties of a source like the name, width, height, origin X and origin Y.
+ * the properties of a source like the name, width, height, origin X and origin
+ * Y.
  */
 class SourceWidget : public QWidget {
   Q_OBJECT
 
-  public:
-    SourceWidget(QWidget* parent = nullptr);
-    ~SourceWidget();
+ public:
+  SourceWidget(QWidget* parent = nullptr);
+  ~SourceWidget();
 
-  private:
-    QVBoxLayout* main_layout_; 
+  Source* get_source() const { return source_; }
 
-    QLabel* source_name_label_;
+ public slots:
+  void set_source_name(QString name);
+  void set_width(QString width);
+  void set_height(QString height);
+  void set_origin_x(QString x);
+  void set_origin_y(QString y);
 
-    // Name UI
-    QHBoxLayout* name_layout_; 
-    QLabel* name_label_;
-    QComboBox* name_combo_box_;
-    QPushButton* refresh_sources_button_;
+ private:
+  // Source model
+  Source* source_;
 
-    // Size UI
-    QHBoxLayout* size_layout_;
-    QLabel* width_label_;
-    QLineEdit* width_line_edit_;
-    QLabel* height_label_;
-    QLineEdit* height_line_edit_;
+  QVBoxLayout* main_layout_;
+  QLabel* source_name_label_;
 
-    QIntValidator* size_validator_;
+  // Name UI
+  QHBoxLayout* name_layout_;
+  QLabel* name_label_;
+  QComboBox* name_combo_box_;
+  QPushButton* refresh_sources_button_;
 
-    // Origin UI
-    QHBoxLayout* origin_layout_;
-    QLabel* origin_x_label_;
-    QLineEdit* origin_x_line_edit_;
-    QLabel* origin_y_label_;
-    QLineEdit* origin_y_line_edit_;
+  // Size UI
+  QHBoxLayout* size_layout_;
+  QLabel* width_label_;
+  QLineEdit* width_line_edit_;
+  QLabel* height_label_;
+  QLineEdit* height_line_edit_;
 
-    QIntValidator* origin_validator_;
+  QIntValidator* size_validator_;
 
-    QPushButton* remove_button_;
+  // Origin UI
+  QHBoxLayout* origin_layout_;
+  QLabel* origin_x_label_;
+  QLineEdit* origin_x_line_edit_;
+  QLabel* origin_y_label_;
+  QLineEdit* origin_y_line_edit_;
+
+  QIntValidator* origin_validator_;
+
+  QPushButton* remove_button_;
 };
 
 #endif
