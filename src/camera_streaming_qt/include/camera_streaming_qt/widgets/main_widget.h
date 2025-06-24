@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "widgets/source_widget.h"
+#include "widgets/preset_widget.h"
 
 /**
  * @class MainWidget
@@ -63,7 +63,7 @@ class MainWidget : public QWidget {
   QString signal_server_ip_;
 
   // Sources UI
-  SourceWidget* temp_source_;
+  PresetWidget* preset_widget_;
 };
 
 #endif

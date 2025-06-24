@@ -42,8 +42,9 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
 
   main_layout_->addLayout(signal_server_layout_);
 
-  temp_source_ = new SourceWidget();
-  main_layout_->addWidget(temp_source_);
+  // Setup sources UI
+  preset_widget_ = new PresetWidget();
+  main_layout_->addWidget(preset_widget_);
 
   // Make widgets start at top
   main_layout_->setAlignment(Qt::AlignTop);

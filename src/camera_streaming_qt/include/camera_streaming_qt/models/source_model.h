@@ -4,12 +4,12 @@
 #include <QString>
 
 class Source {
-  public: 
-    QString name;
-    int width;
-    int height;
-    int x;
-    int y;
+ public:
+  QString name;
+  int width;
+  int height;
+  int x;
+  int y;
 };
 
 #endif
