@@ -7,7 +7,6 @@ from geometry_msgs.msg import Twist
 
 
 class microscope_control(Node):
-
     def __init__(self):
         super().__init__("microscope_control")
         self.cli = self.create_client(MoveServo, "servo_service")

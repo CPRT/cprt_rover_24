@@ -94,6 +94,17 @@ class FlightstickControl : public rclcpp::Node {
   bool checkForModeChange(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
 
   /**
+   * @brief Checks all axis and button values
+   *
+   * This function checks if all relevant axis and button values are 0
+   *
+   * @param joystickMsg A shared pointer to the received joystick message.
+   * @p
+   * @return True if all axes (except slider) are 0, false otherwise
+   */
+  bool checkAxes(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
+
+  /**
    * @brief Changes the control mode.
    *
    * This function changes the control mode of the rover to the specified mode.
