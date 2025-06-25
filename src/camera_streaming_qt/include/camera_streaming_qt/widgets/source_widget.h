@@ -37,12 +37,16 @@ class SourceWidget : public QWidget {
 
   Source* get_source() const { return source_; }
 
+ signals:
+  void request_remove(SourceWidget* widget);
+
  public slots:
   void set_source_name(QString name);
   void set_width(QString width);
   void set_height(QString height);
   void set_origin_x(QString x);
   void set_origin_y(QString y);
+  void remove_source();
 
  private:
   // Source model

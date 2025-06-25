@@ -37,6 +37,7 @@ class PresetWidget : public QWidget {
  public slots:
   void add_source();
   void submit_preset();
+  void remove_source(SourceWidget* src);
 
  private:
   std::vector<SourceWidget*> sources_;

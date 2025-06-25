@@ -1,8 +1,8 @@
-#include <QDebug>
 #include "widgets/capture_image_widget.h"
 
-CaptureImageWidget::CaptureImageWidget(QWidget* parent) 
-  : QWidget(parent) {
+#include <QDebug>
+
+CaptureImageWidget::CaptureImageWidget(QWidget* parent) : QWidget(parent) {
   main_layout_ = new QVBoxLayout(this);
 
   widget_header_ = new QLabel("Capture Image");
@@ -15,7 +15,8 @@ CaptureImageWidget::CaptureImageWidget(QWidget* parent)
   source_layout_->addWidget(source_name_label_);
 
   source_name_combo_box_ = new QComboBox();
-  connect(source_name_combo_box_, &QComboBox::currentTextChanged, this, &CaptureImageWidget::set_source_name);
+  connect(source_name_combo_box_, &QComboBox::currentTextChanged, this,
+          &CaptureImageWidget::set_source_name);
   source_layout_->addWidget(source_name_combo_box_);
 
   refresh_button_ = new QPushButton("Refresh");
@@ -30,7 +31,8 @@ CaptureImageWidget::CaptureImageWidget(QWidget* parent)
   filename_layout_->addWidget(filename_label_);
 
   filename_line_edit_ = new QLineEdit();
-  connect(filename_line_edit_, &QLineEdit::textChanged, this, &CaptureImageWidget::set_filename);
+  connect(filename_line_edit_, &QLineEdit::textChanged, this,
+          &CaptureImageWidget::set_filename);
   filename_layout_->addWidget(filename_line_edit_);
 
   main_layout_->addLayout(filename_layout_);

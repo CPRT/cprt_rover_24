@@ -19,8 +19,7 @@ PresetWidget::PresetWidget(QWidget* parent) : QWidget(parent) {
   main_layout_->addWidget(sources_scroll_area_);
 
   // Create default source
-  sources_.push_back(new SourceWidget());
-  sources_layout_->addWidget(sources_[0]);
+  add_source();
 
   add_source_button_ = new QPushButton("Add Source");
 
@@ -43,8 +42,23 @@ void PresetWidget::add_source() {
   if (!sources_layout_) return;
 
   SourceWidget* src = new SourceWidget();
+  connect(src, &SourceWidget::request_remove, this,
+          &PresetWidget::remove_source);
   sources_.push_back(src);
   sources_layout_->addWidget(src);
 }
 
 void PresetWidget::submit_preset() {}
+
+void PresetWidget::remove_source(SourceWidget* src) {
+  if (!src) return;
+
+  // Remove src from sources
+  for (int i = 0; i < sources_.size(); i++) {
+    if (sources_[i] == src) {
+      sources_.erase(sources_.begin() + i);
+    }
+  }
+
+  src->deleteLater();
+}

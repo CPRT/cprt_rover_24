@@ -94,6 +94,10 @@ SourceWidget::SourceWidget(QWidget* parent) : QWidget(parent) {
 
   // Setup remove button
   remove_button_ = new QPushButton("Remove Source");
+
+  connect(remove_button_, &QPushButton::clicked, this,
+          &SourceWidget::remove_source);
+
   main_layout_->addWidget(remove_button_);
 }
 
@@ -128,3 +132,5 @@ void SourceWidget::set_origin_y(QString y) {
   source_->y = y.toInt();
   qDebug() << "Changed source origin y to: " << source_->y;
 }
+
+void SourceWidget::remove_source() { emit request_remove(this); }
