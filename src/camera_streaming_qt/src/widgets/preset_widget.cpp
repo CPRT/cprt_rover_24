@@ -48,7 +48,16 @@ void PresetWidget::add_source() {
   sources_layout_->addWidget(src);
 }
 
-void PresetWidget::submit_preset() {}
+void PresetWidget::submit_preset() {
+  std::vector<Source*> sources;
+
+  // Put all Sources from sources_ in sources
+  for (int i = 0; i < sources_.size(); i++) {
+    sources.push_back(sources_[i]->get_source());
+  }
+
+  Preset* preset = new Preset(sources);
+}
 
 void PresetWidget::remove_source(SourceWidget* src) {
   if (!src) return;
