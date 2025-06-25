@@ -19,12 +19,7 @@ def get_included_launch_descriptions(launch_files):
 def generate_launch_description():
     SetEnvironmentVariable("ROS_LOG_LEVEL", "warn"),
     launch_files = [
-        ("drive", "talon.launch.py"),
-        ("camera_streaming", "webRTC.launch.py"),
-        ("gps", "rover.launch.py"),
-        ("joystick_control", "controller.launch.py"),
         ("science_sensors", "talon.launch.py"),
-        ("servo_pkg", "usb_servo_launch.launch.py"),
         ("science_sensors", "panoramic.launch.py"),
     ]
     return LaunchDescription(get_included_launch_descriptions(launch_files))

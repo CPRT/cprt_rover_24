@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 source ./docker/common.sh
 
 aarch=$(uname -m)
+# TODO: emulate aarch64 on x86_64
 
 colcon build --continue-on-error --cmake-args=-DCMAKE_BUILD_TYPE=Release --parallel-workers $(nproc) \
              --build-base build-$aarch \
