@@ -3,6 +3,9 @@
 PresetWidget::PresetWidget(QWidget* parent) : QWidget(parent) {
   main_layout_ = new QVBoxLayout(this);
 
+  widget_header_ = new QLabel("Custom Preset");
+  main_layout_->addWidget(widget_header_);
+
   // Create the layout and scroll area that will hold all the sources
   sources_container_ = new QWidget();
   sources_layout_ = new QVBoxLayout(sources_container_);

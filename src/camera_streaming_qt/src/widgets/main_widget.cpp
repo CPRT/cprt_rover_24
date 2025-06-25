@@ -42,9 +42,17 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
 
   main_layout_->addLayout(signal_server_layout_);
 
-  // Setup sources UI
+  controls_layout_ = new QHBoxLayout();
+
+  // Setup capture image UI
+  capture_image_widget_ = new CaptureImageWidget();
+  controls_layout_->addWidget(capture_image_widget_, 1);
+
+  // Setup preset UI
   preset_widget_ = new PresetWidget();
-  main_layout_->addWidget(preset_widget_);
+  controls_layout_->addWidget(preset_widget_, 1);
+
+  main_layout_->addLayout(controls_layout_);
 
   // Make widgets start at top
   main_layout_->setAlignment(Qt::AlignTop);

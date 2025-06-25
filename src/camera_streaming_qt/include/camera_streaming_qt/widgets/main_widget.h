@@ -11,11 +11,13 @@
 #ifndef MAIN_WIDGET_H
 #define MAIN_WIDGET_H
 
+#include <QHBoxLayout>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "widgets/capture_image_widget.h"
 #include "widgets/preset_widget.h"
 
 /**
@@ -62,7 +64,13 @@ class MainWidget : public QWidget {
 
   QString signal_server_ip_;
 
-  // Sources UI
+  // Layout for horizontally displaying capture image and preset UIs
+  QHBoxLayout* controls_layout_;
+
+  // Capture Image UI
+  CaptureImageWidget* capture_image_widget_;
+
+  // Preset UI
   PresetWidget* preset_widget_;
 };
 
