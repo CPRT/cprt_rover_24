@@ -30,9 +30,7 @@ class PhoenixComponent : public PhoenixNodeType {
   rclcpp::Subscription<ros_phoenix::msg::MotorControl>::SharedPtr sub_;
 };
 
-using TalonFX = PhoenixComponent<TalonFXNode>;
 using TalonSRX = PhoenixComponent<TalonSRXNode>;
-using VictorSPX = PhoenixComponent<VictorSPXNode>;
 
 }  // namespace ros_phoenix
 

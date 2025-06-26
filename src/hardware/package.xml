@@ -20,6 +20,11 @@
   <depend>interfaces</depend>
   <depend>ros_phoenix</depend>
 
+  <build_depend>rclcpp_components</build_depend>
+  <build_depend>rcutils</build_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>forward_command_controller</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
