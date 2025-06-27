@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(interfaces REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
@@ -37,6 +38,7 @@ link_directories(
 set(SOURCES
     src/camera_client.cpp
     src/mainwindow.cpp
+    src/ros_client.cpp
     src/widgets/capture_image_widget.cpp
     src/widgets/main_widget.cpp
     src/widgets/preset_widget.cpp
@@ -46,6 +48,7 @@ set(SOURCES
 set(HEADERS
     include/${PROJECT_NAME}/camera_client.h
     include/${PROJECT_NAME}/mainwindow.h
+    include/${PROJECT_NAME}/ros_client.h
     include/${PROJECT_NAME}/models/preset_model.h
     include/${PROJECT_NAME}/models/source_model.h
     include/${PROJECT_NAME}/widgets/capture_image_widget.h
@@ -66,7 +69,12 @@ target_link_libraries(
     ${GST_VIDEO_LIBRARIES}
 )
 
-ament_target_dependencies(camera_client_node rclcpp std_msgs)
+ament_target_dependencies(camera_client_node 
+    rclcpp 
+    std_msgs
+    interfaces
+    std_srvs
+)
 
 install(DIRECTORY include/
     DESTINATION include/${PROJECT_NAME}

@@ -1,3 +1,13 @@
+/**
+ * @file capture_image_widget.h
+ * @brief Header file for the CaptureImageWidget class
+ * @author Aria Wong
+ *
+ * This file contains the declaration of the CaptureImageWidget
+ * class, which holds the widgets that allow the user to take
+ * an image of one of the rover sources.
+ */
+
 #ifndef CAPTURE_IMAGE_WIDGET_H
 #define CAPTURE_IMAGE_WIDGET_H
 
@@ -8,6 +18,13 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+/**
+ * @class CaptureImageWidget
+ * @brief A class that holds the widgets, allowing the user to capture an image.
+ *
+ * The CaptureImageWidget class provides the widgets that allow the user to take
+ * an image of the video sources on the rover.
+ */
 class CaptureImageWidget : public QWidget {
   Q_OBJECT
 

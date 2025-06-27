@@ -134,3 +134,5 @@ void SourceWidget::set_origin_y(QString y) {
 }
 
 void SourceWidget::remove_source() { emit request_remove(this); }
+
+void SourceWidget::get_source_names() {}

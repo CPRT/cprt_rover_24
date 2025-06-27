@@ -47,6 +47,7 @@ class SourceWidget : public QWidget {
   void set_origin_x(QString x);
   void set_origin_y(QString y);
   void remove_source();
+  void get_source_names();
 
  private:
   // Source model
