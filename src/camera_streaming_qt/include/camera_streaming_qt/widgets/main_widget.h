@@ -17,8 +17,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "ros_client.h"
 #include "widgets/capture_image_widget.h"
 #include "widgets/preset_widget.h"
+#include "widgets/source_widget.h"
 
 /**
  * @class MainWidget
@@ -35,6 +37,9 @@ class MainWidget : public QWidget {
   MainWidget(QWidget* parent = nullptr);
   ~MainWidget();
 
+ signals:
+  void request_source_names(SourceWidget* source_widget);
+
  public slots:
   /**
    * @brief Slot that sets the signal server IP that gets called when the
@@ -43,6 +48,9 @@ class MainWidget : public QWidget {
    * @param ip IP address for the signal server
    */
   void set_signal_server_ip(QString ip);
+
+ private slots:
+  void get_source_names(SourceWidget* source_widget);
 
  private:
   QVBoxLayout* main_layout_;

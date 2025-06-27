@@ -39,6 +39,7 @@ class SourceWidget : public QWidget {
 
  signals:
   void request_remove(SourceWidget* widget);
+  void request_source_names(SourceWidget* widget);
 
  public slots:
   void set_source_name(QString name);

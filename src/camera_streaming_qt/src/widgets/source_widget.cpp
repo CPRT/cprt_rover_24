@@ -24,6 +24,10 @@ SourceWidget::SourceWidget(QWidget* parent) : QWidget(parent) {
   name_layout_->addWidget(name_combo_box_);
 
   refresh_sources_button_ = new QPushButton("Refresh");
+
+  connect(refresh_sources_button_, &QPushButton::clicked, this,
+          &SourceWidget::get_source_names);
+
   name_layout_->addWidget(refresh_sources_button_);
 
   main_layout_->addLayout(name_layout_);
@@ -135,4 +139,7 @@ void SourceWidget::set_origin_y(QString y) {
 
 void SourceWidget::remove_source() { emit request_remove(this); }
 
-void SourceWidget::get_source_names() {}
+void SourceWidget::get_source_names() {
+  qDebug() << "1";
+  emit request_source_names(this);
+}

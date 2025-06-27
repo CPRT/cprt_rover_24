@@ -1,5 +1,7 @@
 #include "widgets/preset_widget.h"
 
+#include <QDebug>
+
 PresetWidget::PresetWidget(QWidget* parent) : QWidget(parent) {
   main_layout_ = new QVBoxLayout(this);
 
@@ -42,8 +44,12 @@ void PresetWidget::add_source() {
   if (!sources_layout_) return;
 
   SourceWidget* src = new SourceWidget();
+
   connect(src, &SourceWidget::request_remove, this,
           &PresetWidget::remove_source);
+  connect(src, &SourceWidget::request_source_names, this,
+          &PresetWidget::get_source_names);
+
   sources_.push_back(src);
   sources_layout_->addWidget(src);
 }
@@ -70,4 +76,9 @@ void PresetWidget::remove_source(SourceWidget* src) {
   }
 
   src->deleteLater();
+}
+
+void PresetWidget::get_source_names(SourceWidget* source_widget) {
+  qDebug() << "2";
+  request_source_names(source_widget);
 }

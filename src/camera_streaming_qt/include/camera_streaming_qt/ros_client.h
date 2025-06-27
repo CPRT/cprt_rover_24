@@ -2,9 +2,8 @@
 #define ROS_CLIENT_H
 
 #include <QObject>
-#include <rclcpp/rclcpp.hpp>
-
 #include <interfaces/srv/get_cameras.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 class ROSClient : public QObject {
   Q_OBJECT
@@ -15,7 +14,6 @@ class ROSClient : public QObject {
 
  public slots:
   void get_cameras();
-
 };
 
 #endif

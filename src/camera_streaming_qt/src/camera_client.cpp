@@ -10,15 +10,14 @@ CameraClient::CameraClient() : Node("camera_client_node") {}
 CameraClient::~CameraClient() {}
 
 int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
+
   QApplication a(argc, argv);
   MainWindow w;
   w.resize(1280, 720);
   w.show();
   a.exec();
 
-  ROSClient ros_client = ROSClient();
-
-  rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<CameraClient>());
   rclcpp::shutdown();
 

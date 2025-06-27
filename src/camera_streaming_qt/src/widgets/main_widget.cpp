@@ -50,6 +50,10 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
 
   // Setup preset UI
   preset_widget_ = new PresetWidget();
+
+  connect(preset_widget_, &PresetWidget::request_source_names, this,
+          &MainWidget::get_source_names);
+
   controls_layout_->addWidget(preset_widget_, 1);
 
   main_layout_->addLayout(controls_layout_);
@@ -63,4 +67,9 @@ MainWidget::~MainWidget() {}
 void MainWidget::set_signal_server_ip(QString ip) {
   signal_server_ip_ = ip;
   qDebug() << "IP: " << signal_server_ip_;
+}
+
+void MainWidget::get_source_names(SourceWidget* source_widget) {
+  qDebug() << "3";
+  emit request_source_names(source_widget);
 }

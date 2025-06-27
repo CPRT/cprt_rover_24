@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "models/source_model.h"
+#include "widgets/source_widget.h"
 
 class Preset {
  public:

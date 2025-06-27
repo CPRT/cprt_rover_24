@@ -35,10 +35,16 @@ class PresetWidget : public QWidget {
   PresetWidget(QWidget* parent = nullptr);
   ~PresetWidget();
 
+ signals:
+  void request_source_names(SourceWidget* source_widget);
+
  public slots:
   void add_source();
   void submit_preset();
   void remove_source(SourceWidget* src);
+
+ private slots:
+  void get_source_names(SourceWidget* source_widget);
 
  private:
   std::vector<SourceWidget*> sources_;
