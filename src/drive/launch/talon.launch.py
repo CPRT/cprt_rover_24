@@ -10,10 +10,6 @@ import os
 
 def generate_launch_description():
     """Generate launch description with multiple components."""
-    try:
-        subprocess.run(["sudo", "enablecan.sh"], check=True)
-    except Exception:
-        print("enablecan.sh not found or failed to run.")
 
     common_config_path = os.path.join(
         get_package_share_directory("drive"), "config", "talon_drive_common.yaml"
