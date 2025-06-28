@@ -61,6 +61,8 @@ macro(add_ctre_library LIB_NAME URL_NAME)
     install(FILES ${LIB_DEST}
         DESTINATION lib
     )
+    install(DIRECTORY ${LIB_DIR}/ctre/
+        DESTINATION include/ctre)
 endmacro()
 
 # Default to C99
@@ -183,6 +185,36 @@ ament_export_include_directories(
 )
 ament_export_libraries(
   ${PROJECT_NAME}_components ${PROJECT_NAME}_control
+)
+
+set(EXPORT_SET export_${PROJECT_NAME})
+
+install(
+  TARGETS
+    ${PROJECT_NAME}_components
+    ${PROJECT_NAME}_control
+  EXPORT  ${EXPORT_SET}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  EXPORT      ${EXPORT_SET}
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+
+ament_export_libraries(
+  CTRE_Phoenix
+  CTRE_PhoenixCCI
+)
+
+ament_export_targets(${EXPORT_SET} HAS_LIBRARY_TARGET)
+
+ament_export_include_directories(
+  include
+  ${CMAKE_CURRENT_BINARY_DIR}/ctre/${CTRE_VERSION}/api-cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/ctre/${CTRE_VERSION}/cci
 )
 
 ament_package()

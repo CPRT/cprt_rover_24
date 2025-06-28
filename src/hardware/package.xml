@@ -18,7 +18,8 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>interfaces</depend>
-  <depend>ros_phoenix</depend>
+  <build_depend>ros_phoenix</build_depend>
+  <exec_depend>ros_phoenix</exec_depend>
 
   <build_depend>rclcpp_components</build_depend>
   <build_depend>rcutils</build_depend>
