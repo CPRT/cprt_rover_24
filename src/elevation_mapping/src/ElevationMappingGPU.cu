@@ -13,7 +13,49 @@ struct CellUpdate {
   float sensor_x, sensor_y, sensor_z;
   bool valid;
 };
+__device__ float atomicCASFloat(float* address, float expected, float desired) {
+  unsigned int* address_as_ui = (unsigned int*)address;
+  unsigned int expected_ui = __float_as_uint(expected);
+  unsigned int desired_ui = __float_as_uint(desired);
+  unsigned int old_ui = atomicCAS(address_as_ui, expected_ui, desired_ui);
+  return __uint_as_float(old_ui);
+}
 
+// Atomic Kalman filter update on elevation and variance in a loop
+__device__ void atomicKalmanUpdate(float* elevation, float* variance, float new_z, float new_var) {
+  float old_elev, old_var;
+  float fused_z, fused_var;
+  while (true) {
+    old_elev = *elevation;
+    old_var = *variance;
+
+    if (isnan(old_elev) || isnan(old_var)) {
+      // Initialize if not yet initialized
+      fused_z = new_z;
+      fused_var = new_var;
+    } else {
+      float combinedVar = old_var + new_var;
+      fused_z = (old_var * new_z + new_var * old_elev) / combinedVar;
+      fused_var = (old_var * new_var) / combinedVar;
+    }
+
+    float prev_elev = atomicCASFloat(elevation, old_elev, fused_z);
+    if (prev_elev != old_elev) {
+      // elevation changed, try again
+      continue;
+    }
+
+    float prev_var = atomicCASFloat(variance, old_var, fused_var);
+    if (prev_var != old_var) {
+      // variance changed, rollback elevation and retry
+      atomicExch(elevation, old_elev);
+      continue;
+    }
+
+    // Successful update
+    break;
+  }
+}
 __global__ void computeUpdateInfoKernel(
   const PointXYZRGBConfidenceDevice* points,
   const float* variances,
@@ -112,7 +154,7 @@ __global__ void applyUpdateKernel(
     return;
   }
 
-  // Update lowest scan point if necessary
+// Update lowest scan point if necessary
   float uncertainty_z = u.z + 3.0f * sqrtf(u.variance);
   float current_lowest = lowest_scan_point[cell];
   if (isnan(current_lowest) || uncertainty_z < current_lowest) {
@@ -122,13 +164,8 @@ __global__ void applyUpdateKernel(
     sensor_z_at_lowest[cell] = u.sensor_z;
   }
 
-  // Kalman update
-  float combinedVar = old_var + u.variance;
-  float fused_z = (old_var * u.z + u.variance * old_elev) / combinedVar;
-  float fused_var = (old_var * u.variance) / combinedVar;
-
-  atomicExch(&elevation[cell], fused_z);
-  atomicExch(&variance[cell], fused_var);
+  // Use atomic Kalman update here
+  atomicKalmanUpdate(&elevation[cell], &variance[cell], u.z, u.variance);
 
   color[cell] = ((u.r & 0xFF) << 16) | ((u.g & 0xFF) << 8) | (u.b & 0xFF);
 
@@ -202,8 +239,8 @@ const grid_map::Position origin = map.getPosition();
 const float mapWidthMeters = width * map.getResolution();
 const float mapHeightMeters = height * map.getResolution();
 
-const float mapOriginX = origin[0] - mapWidthMeters / 2.0f;
-const float mapOriginY = origin[1] - mapHeightMeters / 2.0f;
+const float mapOriginX = origin.x() - mapWidthMeters / 2.0f;
+const float mapOriginY = origin.y() - mapHeightMeters / 2.0f;
 
 // Allocate GPU memory
 PointXYZRGBConfidenceDevice* d_points;
