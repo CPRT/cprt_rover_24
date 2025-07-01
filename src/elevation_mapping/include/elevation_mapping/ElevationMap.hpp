@@ -36,6 +36,11 @@ namespace elevation_mapping {
  */
 class ElevationMap {
  public:
+  using Pose = kindr::HomogeneousTransformationPosition3RotationQuaternionD;
+  using Covariance = Eigen::Matrix<double, 3, 3>;
+  using PoseCovariance = Eigen::Matrix<double, 6, 6>;
+  using ReducedCovariance = Eigen::Matrix<double, 4, 4>;
+  using Jacobian = Eigen::Matrix<double, 4, 4>;
   /*!
    * Constructor.
    */
@@ -83,11 +88,12 @@ class ElevationMap {
    * @param time the time of the update.
    * @return true if successful.
    */
-  bool update(const grid_map::Matrix& varianceUpdate,
-              const grid_map::Matrix& horizontalVarianceUpdateX,
-              const grid_map::Matrix& horizontalVarianceUpdateY,
-              const grid_map::Matrix& horizontalVarianceUpdateXY,
-              const rclcpp::Time& time);
+  bool update_variance_layers(
+      const grid_map::Matrix& varianceUpdate,
+      const grid_map::Matrix& horizontalVarianceUpdateX,
+      const grid_map::Matrix& horizontalVarianceUpdateY,
+      const grid_map::Matrix& horizontalVarianceUpdateXY,
+      const rclcpp::Time& time);
 
   /*!
    * Triggers the fusion of the entire elevation map.
@@ -260,6 +266,17 @@ class ElevationMap {
                           float mapHeight, double lengthInXSubmap,
                           double lengthInYSubmap, double margin);
 
+  /*!
+   * Computes the model update for the elevation map based on the pose
+   * covariance and adds the update to the map.
+   * @param[in] robotPose the current pose.
+   * @param[in] robotPoseCovariance the current pose covariance matrix.
+   * @param[in] time the time of the current update.
+   * @return true if successful.
+   */
+  bool update(const Pose& robotPose, const PoseCovariance& robotPoseCovariance,
+              const rclcpp::Time& time);
+
   friend class ElevationMapping;
 
  private:
@@ -292,6 +309,29 @@ class ElevationMap {
    */
   float cumulativeDistributionFunction(float x, float mean,
                                        float standardDeviation);
+  /*!
+   * Computes the reduced covariance (4x4: x, y, z, yaw) from the full pose
+   * covariance (6x6: x, y, z, roll, pitch, yaw).
+   * @param[in] robotPose the robot pose.
+   * @param[in] robotPoseCovariance the full pose covariance matrix (6x6).
+   * @param[out] reducedCovariance the reduced covariance matrix (4x4);
+   * @return true if successful.
+   */
+  bool computeReducedCovariance(const Pose& robotPose,
+                                const PoseCovariance& robotPoseCovariance,
+                                ReducedCovariance& reducedCovariance);
+  /*!
+   * Computes the covariance between the new and the previous pose.
+   * @param[in] robotPose the current robot pose.
+   * @param[in] reducedCovariance the current robot pose covariance matrix
+   * (reduced).
+   * @param[out] relativeRobotPoseCovariance the relative covariance between the
+   * current and the previous robot pose (reduced form).
+   * @return true if successful.
+   */
+  bool computeRelativeCovariance(const Pose& robotPose,
+                                 const ReducedCovariance& reducedCovariance,
+                                 ReducedCovariance& relativeCovariance);
 
   //! ROS nodehandle.
   std::shared_ptr<rclcpp::Node> nodeHandle_;
@@ -341,6 +381,15 @@ class ElevationMap {
   //! Initial ros time
   rclcpp::Time initialTime_;
 
+  //! Time of the previous update.
+  rclcpp::Time previousUpdateTime_;
+
+  //! Previous robot pose.
+  Pose previousRobotPose_;
+
+  //! Robot pose covariance (reduced) from the previous update.
+  ReducedCovariance previousReducedCovariance_;
+
   //! Parameters. Are set through the ElevationMapping class.
   double minVariance_;
   double maxVariance_;
@@ -353,6 +402,8 @@ class ElevationMap {
   bool enableContinuousCleanup_;
   double visibilityCleanupDuration_;
   double scanningDuration_;
+  double covarianceScale_;
+  bool use_gpu_;
 };
 
 }  // namespace elevation_mapping

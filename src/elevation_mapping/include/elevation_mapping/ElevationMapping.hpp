@@ -40,7 +40,6 @@
 
 #include "elevation_mapping/ElevationMap.hpp"
 #include "elevation_mapping/PointXYZRGBConfidenceRatio.hpp"
-#include "elevation_mapping/RobotMotionMapUpdater.hpp"
 #include "elevation_mapping/WeightedEmpiricalCumulativeDistributionFunction.hpp"
 #include "elevation_mapping/input_sources/InputSourceManager.hpp"
 #include "elevation_mapping/sensor_processors/SensorProcessorBase.hpp"
@@ -349,9 +348,6 @@ class ElevationMapping {
 
   //! Sensor processors. Deprecated use the one from input sources instead.
   SensorProcessorBase::Ptr sensorProcessor_;
-
-  //! Robot motion elevation map updater.
-  RobotMotionMapUpdater robotMotionMapUpdater_;
 
   //! If true, robot motion updates are ignored.
   bool ignoreRobotMotionUpdates_;

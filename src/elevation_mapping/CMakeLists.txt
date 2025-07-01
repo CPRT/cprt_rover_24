@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(elevation_mapping)
 
+enable_language(CUDA)
+
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
@@ -36,6 +38,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
+find_package(CUDA REQUIRED)
 find_package(Threads REQUIRED)
 
 set(DEPENDENCIES
@@ -58,17 +61,6 @@ set(DEPENDENCIES
   # Threads
 )
 
-# catkin_package(
-#   INCLUDE_DIRS
-#     include
-#     ${Eigen_INCLUDE_DIRS}
-#   LIBRARIES
-#     ${PROJECT_NAME}_library
-#   CATKIN_DEPENDS
-#     ${CATKIN_PACKAGE_DEPENDENCIES}
-#   DEPENDS
-#     Boost
-# )
 
 include_directories(
   include
@@ -77,6 +69,7 @@ include_directories(
     # ${catkin_INCLUDE_DIRS}
     ${Eigen3_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
 )
 
 ###########
@@ -99,12 +92,12 @@ ament_target_dependencies(${PROJECT_NAME}_pcl_types
 add_library(${PROJECT_NAME}_library
   src/ElevationMapping.cpp
   src/ElevationMap.cpp
+  src/ElevationMappingGPU.cu
   src/input_sources/Input.cpp
   src/input_sources/InputSourceManager.cpp
   src/postprocessing/PostprocessorPool.cpp
   src/postprocessing/PostprocessingWorker.cpp
   src/postprocessing/PostprocessingPipelineFunctor.cpp
-  src/RobotMotionMapUpdater.cpp
   src/sensor_processors/SensorProcessorBase.cpp
   src/sensor_processors/StructuredLightSensorProcessor.cpp
   src/sensor_processors/StereoSensorProcessor.cpp
@@ -119,6 +112,7 @@ ament_target_dependencies(${PROJECT_NAME}_library
 target_link_libraries(${PROJECT_NAME}_library
   ${PROJECT_NAME}_pcl_types
   ${Boost_LIBRARIES}
+  ${CUDA_LIBRARIES}
   pthread  
 )
 
