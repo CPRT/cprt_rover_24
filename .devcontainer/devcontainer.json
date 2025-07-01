@@ -1,10 +1,9 @@
 {
   "name": "CPRT Dev Container",
 
-  "image": "cprtsoftware/cprt_rover_24-dev:amd64",
+  "image": "cprtsoftware/cprt_rover_24-dev:latest",
 
   "runArgs": [
-    "--privileged",
     "--network=host"
   ],
   "mounts": [

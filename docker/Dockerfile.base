@@ -79,7 +79,7 @@ ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
 # Copy workspace into container
-COPY . ${DIR}
+COPY src/**/package.xml src/**/setup.py src/**/CMakeLists.txt ./src
 
 ARG FILE=/opt/rosdeps.sh
 

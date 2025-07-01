@@ -13,16 +13,23 @@ This repository contains the workspace and source code for the CPRT Rover 2024 p
 
 ## Getting started
 
-#### Host (Only ubuntu 22.04)
+### Host (Only ubuntu 22.04)
 See setup/README.md for which setup scripts to run
 
-#### Docker Method (New and still experimental):
+### Docker Method (New and still experimental):
 Note: Still recommended to use ubuntu 22.04 even with devcontainer
 
-Install Docker:
+#### Install Docker:
 Window - [Link to download](https://docs.docker.com/desktop/setup/install/windows-install/)
 Mac - [Link to download](https://docs.docker.com/desktop/setup/install/mac-install/)
 Linux - [Link to download] (https://docs.docker.com/engine/install/)
 
-Install VS code dev containers extension
+#### Install VS code dev containers extension:
+Use extension marketplace
 
+#### Open Dev container in VS code
+
+#### From inside the container run:
+```
+./make.sh
+```

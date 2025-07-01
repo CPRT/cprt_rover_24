@@ -2,12 +2,6 @@ ARG IMAGE
 FROM ${IMAGE} as ros2_humble-base
 
 FROM ros2_humble-base as ros2_humble-dev
-ENV DEBIAN_FRONTEND=noninteractive
-ENV ROS_DISTRO=humble
-ENV ROS_VERSION=2
-ENV ROS_PYTHON_VERSION=3
-ENV ROS_LOCALHOST_ONLY=0
-ENV ROS_DOMAIN_ID=0
 
 RUN apt-get update && apt-get install -y locales apt-utils \
     && locale-gen en_US.UTF-8 \
@@ -46,47 +40,7 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python packages
-RUN pip3 install --no-cache-dir \
-    pyserial \
-    adafruit-circuitpython-lis3dh \
-    adafruit-circuitpython-pca9685 \
-    adafruit-circuitpython-motorkit \
-    Adafruit-Blinka \
-    adafruit-circuitpython-bme280 \
-    adafruit-circuitpython-ens160 \
-    adafruit-circuitpython-busdevice \
-    adafruit-circuitpython-register \
-    pyubx2 \
-    black \
-    RPi.GPIO \
-    rpi-hardware-pwm
-
-
-FROM ros2_humble-dev as rosdeps
-# Set project directory
-ARG DIR=/cprt_rover_24
-WORKDIR ${DIR}
-
-# Copy workspace into container
-COPY . ${DIR}
-
-# Generate list of rosdep dependencies to be installed later
-RUN apt-get update && \
-    rosdep init && \
-    rosdep update && \
-    rosdep install -i -r -y --from-paths src -s > /opt/rosdeps.sh
-
-RUN ldconfig
-
 FROM ros2_humble-dev as final
-COPY --from=rosdeps /opt/rosdeps.sh /opt/rosdeps.sh
-
-# Install rosdep dependencies
-RUN apt-get update && \
-    chmod +x /opt/rosdeps.sh && \
-    /opt/rosdeps.sh && \
-    rm -rf /var/lib/apt/lists/*
 
 # Create entrypoint script
 RUN echo '#!/bin/bash' > /entrypoint.sh && \
