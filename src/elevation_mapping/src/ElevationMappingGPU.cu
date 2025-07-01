@@ -2,121 +2,167 @@
 
 #include <cuda_runtime.h>
 
-__global__ void updateElevationFullKernel(
+struct CellUpdate {
+  int cell_index;
+  float x, y, z;
+  float variance;
+  uint8_t r, g, b;
+  float confidence_ratio;
+  float scan_time;
+  float current_pattern_time;
+  float sensor_x, sensor_y, sensor_z;
+  bool valid;
+};
+
+__global__ void computeUpdateInfoKernel(
   const PointXYZRGBConfidenceDevice* points,
   const float* variances,
   int num_points,
-  float* elevation,
-  float* variance,
-  float* horizontal_variance_x,
-  float* horizontal_variance_y,
-  float* horizontal_variance_xy,
-  uint32_t* color,
-  float* time,
-  float* dynamic_time,
-  float* lowest_scan_point,
-  float* sensor_x_at_lowest_scan,
-  float* sensor_y_at_lowest_scan,
-  float* sensor_z_at_lowest_scan,
+  CellUpdate* updateBuffer,
   int width, int height,
   float resolution, float originX, float originY,
-  float minHorizontalVariance,
-  float multiHeightNoise,
-  float mahalanobisDistanceThreshold,
-  float scanningDuration,
-  float scanTimeSinceInitialization,
-  float currentTimeSecondsPattern,
-  float sensorX, float sensorY, float sensorZ)
+  float scan_time, float current_pattern_time,
+  float sensor_x, float sensor_y, float sensor_z)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx >= num_points) return;
 
-  // Convert point to grid indices
-  int grid_x = int((points[idx].x - originX) / resolution);
-  int grid_y = int((points[idx].y - originY) / resolution);
+  PointXYZRGBConfidenceDevice pt = points[idx];
 
-  if (grid_x < 0 || grid_x >= width || grid_y < 0 || grid_y >= height)
-      return;
+  int gx = int((pt.x - originX) / resolution);
+  int gy = int((pt.y - originY) / resolution);
+  bool valid = gx >= 0 && gx < width && gy >= 0 && gy < height;
 
-  int cell_index = grid_y * width + grid_x;
+  CellUpdate update;
+  update.cell_index = valid ? (gy * width + gx) : -1;
+  update.x = pt.x;
+  update.y = pt.y;
+  update.z = pt.z;
+  update.variance = variances[idx] * 1e-11f;
+  update.r = pt.r;
+  update.g = pt.g;
+  update.b = pt.b;
+  update.confidence_ratio = pt.confidence_ratio;
+  update.scan_time = scan_time;
+  update.current_pattern_time = current_pattern_time;
+  update.sensor_x = sensor_x;
+  update.sensor_y = sensor_y;
+  update.sensor_z = sensor_z;
+  update.valid = valid;
 
-  float pointVariance = 1e-11f * variances[idx];
+  updateBuffer[idx] = update;
+}
 
-  // Check if all basic layers valid (NaN check)
-  bool valid = !isnan(elevation[cell_index]) && !isnan(variance[cell_index]) &&
-               !isnan(horizontal_variance_x[cell_index]) && !isnan(horizontal_variance_y[cell_index]) &&
-               !isnan(horizontal_variance_xy[cell_index]) && color[cell_index] != 0 &&
-               !isnan(time[cell_index]) && !isnan(dynamic_time[cell_index]) &&
-               !isnan(lowest_scan_point[cell_index]) && !isnan(sensor_x_at_lowest_scan[cell_index]) &&
-               !isnan(sensor_y_at_lowest_scan[cell_index]) && !isnan(sensor_z_at_lowest_scan[cell_index]);
+__global__ void applyUpdateKernel(
+  const CellUpdate* updates,
+  int num_points,
+  float* elevation, float* variance,
+  float* horz_var_x, float* horz_var_y, float* horz_var_xy,
+  uint32_t* color,
+  float* time, float* dynamic_time,
+  float* lowest_scan_point,
+  float* sensor_x_at_lowest, float* sensor_y_at_lowest, float* sensor_z_at_lowest,
+  float minHorizontalVariance, float multiHeightNoise,
+  float mahalanobisThreshold, float scanningDuration)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx >= num_points) return;
 
-  if (!valid) {
-      // Initialize cell from point
-      elevation[cell_index] = points[idx].z;
-      variance[cell_index] = pointVariance;
-      horizontal_variance_x[cell_index] = minHorizontalVariance;
-      horizontal_variance_y[cell_index] = minHorizontalVariance;
-      horizontal_variance_xy[cell_index] = 0.0f;
+  const CellUpdate& u = updates[idx];
+  if (!u.valid) return;
 
-      color[cell_index] = ((points[idx].r & 0xFF) << 16) | ((points[idx].g & 0xFF) << 8) | (points[idx].b & 0xFF);
+  int cell = u.cell_index;
+  float old_elev = elevation[cell];
+  float old_var  = variance[cell];
+  bool initialized = !isnan(old_elev) && !isnan(old_var);
 
-      time[cell_index] = scanTimeSinceInitialization;
-      dynamic_time[cell_index] = currentTimeSecondsPattern;
+  if (!initialized) {
+    elevation[cell] = u.z;
+    variance[cell] = u.variance;
 
-      lowest_scan_point[cell_index] = points[idx].z + 3.0f * sqrtf(pointVariance);
-      sensor_x_at_lowest_scan[cell_index] = sensorX;
-      sensor_y_at_lowest_scan[cell_index] = sensorY;
-      sensor_z_at_lowest_scan[cell_index] = sensorZ;
+    horz_var_x[cell] = minHorizontalVariance;
+    horz_var_y[cell] = minHorizontalVariance;
+    horz_var_xy[cell] = 0.0f;
 
-      return;
+    color[cell] = ((u.r & 0xFF) << 16) | ((u.g & 0xFF) << 8) | (u.b & 0xFF);
+
+    time[cell] = u.scan_time;
+    dynamic_time[cell] = u.current_pattern_time;
+
+    float height_plus_sigma = u.z + 3.0f * sqrtf(u.variance);
+    lowest_scan_point[cell] = height_plus_sigma;
+    sensor_x_at_lowest[cell] = u.sensor_x;
+    sensor_y_at_lowest[cell] = u.sensor_y;
+    sensor_z_at_lowest[cell] = u.sensor_z;
+    return;
   }
 
-  // Mahalanobis distance
-  float mahalanobisDistance = fabsf(points[idx].z - elevation[cell_index]) / sqrtf(variance[cell_index]);
-
-  if (mahalanobisDistance > mahalanobisDistanceThreshold) {
-      if ((scanTimeSinceInitialization - time[cell_index]) <= scanningDuration && elevation[cell_index] > points[idx].z) {
-          // Ignore lower point within scanning duration
-          return;
-      } else if ((scanTimeSinceInitialization - time[cell_index]) <= scanningDuration) {
-          // Point higher, update elevation and variance
-          elevation[cell_index] = points[idx].z;
-          variance[cell_index] = pointVariance;
-      } else {
-          // Increase variance due to multi-height noise
-          variance[cell_index] += multiHeightNoise;
-      }
-      return;
+  // Mahalanobis check
+  if (old_var <= 0.0f || isnan(old_var)) return;
+  float dist = fabsf(u.z - old_elev) / sqrtf(old_var);
+  if (dist > mahalanobisThreshold) {
+    if ((u.scan_time - time[cell]) <= scanningDuration && old_elev > u.z) {
+      return; // Ignore lower point
+    } else if ((u.scan_time - time[cell]) <= scanningDuration) {
+      elevation[cell] = u.z;
+      variance[cell] = u.variance;
+    } else {
+      atomicAdd(&variance[cell], multiHeightNoise);
+    }
+    return;
   }
 
-  // Update lowest scan point and sensor pose
-  float pointHeightPlusUncertainty = points[idx].z + 3.0f * sqrtf(pointVariance);
-  if (isnan(lowest_scan_point[cell_index]) || pointHeightPlusUncertainty < lowest_scan_point[cell_index]) {
-      lowest_scan_point[cell_index] = pointHeightPlusUncertainty;
-      sensor_x_at_lowest_scan[cell_index] = sensorX;
-      sensor_y_at_lowest_scan[cell_index] = sensorY;
-      sensor_z_at_lowest_scan[cell_index] = sensorZ;
+  // Update lowest scan point if necessary
+  float uncertainty_z = u.z + 3.0f * sqrtf(u.variance);
+  float current_lowest = lowest_scan_point[cell];
+  if (isnan(current_lowest) || uncertainty_z < current_lowest) {
+    lowest_scan_point[cell] = uncertainty_z;
+    sensor_x_at_lowest[cell] = u.sensor_x;
+    sensor_y_at_lowest[cell] = u.sensor_y;
+    sensor_z_at_lowest[cell] = u.sensor_z;
   }
 
-  // Fuse elevation and variance (Kalman update)
-  float combinedVariance = variance[cell_index] + pointVariance;
-  elevation[cell_index] = (variance[cell_index] * points[idx].z + pointVariance * elevation[cell_index]) / combinedVariance;
-  variance[cell_index] = (pointVariance * variance[cell_index]) / combinedVariance;
+  // Kalman update
+  float combinedVar = old_var + u.variance;
+  float fused_z = (old_var * u.z + u.variance * old_elev) / combinedVar;
+  float fused_var = (old_var * u.variance) / combinedVar;
 
-  // TODO: Fuse color (simple overwrite here)
-  color[cell_index] = ((points[idx].r & 0xFF) << 16) | ((points[idx].g & 0xFF) << 8) | (points[idx].b & 0xFF);
+  atomicExch(&elevation[cell], fused_z);
+  atomicExch(&variance[cell], fused_var);
 
-  time[cell_index] = scanTimeSinceInitialization;
-  dynamic_time[cell_index] = currentTimeSecondsPattern;
+  color[cell] = ((u.r & 0xFF) << 16) | ((u.g & 0xFF) << 8) | (u.b & 0xFF);
 
-  horizontal_variance_x[cell_index] = minHorizontalVariance;
-  horizontal_variance_y[cell_index] = minHorizontalVariance;
-  horizontal_variance_xy[cell_index] = 0.0f;
+  time[cell] = u.scan_time;
+  dynamic_time[cell] = u.current_pattern_time;
+
+  horz_var_x[cell] = minHorizontalVariance;
+  horz_var_y[cell] = minHorizontalVariance;
+  horz_var_xy[cell] = 0.0f;
 }
 
 
 
 namespace elevation_mapping {
+
+  ElevationMappingGPU::ElevationMappingGPU(){
+    d_elevation = nullptr;
+    d_variance = nullptr; 
+    d_horzVarX = nullptr;
+    d_horzVarY = nullptr;
+    d_horzVarXY = nullptr;
+    d_time = nullptr;
+    d_dynamicTime = nullptr;
+    d_lowestScanPoint = nullptr;
+    d_sensorXatLowest = nullptr;
+    d_sensorYatLowest = nullptr;
+    d_sensorZatLowest = nullptr;
+    d_variances = nullptr;
+    d_color = nullptr;
+    lastSize_ = 0;
+  }
+  ElevationMappingGPU::~ElevationMappingGPU(){
+    deallocate();
+  }
 
 void ElevationMappingGPU::to_GPU(const PointCloudType::Ptr pointCloud,
                                  PointXYZRGBConfidenceDevice*& d_points) {
@@ -142,141 +188,150 @@ void ElevationMappingGPU::to_GPU(const PointCloudType::Ptr pointCloud,
 }
 
 bool ElevationMappingGPU::updateMapGPU(
-    const PointCloudType::Ptr pointCloud, const Eigen::VectorXf& variances,
-    float scanTimeSinceInitialization, float currentTimeSecondsPattern,
-    const Eigen::Vector3f& sensorTranslation, const float minHorizontalVariance,
-    const float multiHeightNoise, const float mahalanobisDistanceThreshold,
-    const float scanningDuration, grid_map::GridMap& map) {
-  // Map size
-  const int width = map.getSize()(0);
-  const int height = map.getSize()(1);
-  const int mapSize = width * height;
-  const grid_map::Position origin = map.getPosition();
+  const PointCloudType::Ptr pointCloud, const Eigen::VectorXf& variances,
+  float scanTimeSinceInitialization, float currentTimeSecondsPattern,
+  const Eigen::Vector3f& sensorTranslation, const float minHorizontalVariance,
+  const float multiHeightNoise, const float mahalanobisDistanceThreshold,
+  const float scanningDuration, grid_map::GridMap& map) {
 
-  // --- Prepare device memory pointers ---
-  // Elevation and variance (float)
-  float *d_elevation, *d_variance;
-  float *d_horzVarX, *d_horzVarY, *d_horzVarXY;
-  float *d_time, *d_dynamicTime, *d_lowestScanPoint;
-  float *d_sensorXatLowest, *d_sensorYatLowest, *d_sensorZatLowest;
+// Map size
+const int width = map.getSize()(0);
+const int height = map.getSize()(1);
+const int mapSize = width * height;
+const grid_map::Position origin = map.getPosition();
+const float mapWidthMeters = width * map.getResolution();
+const float mapHeightMeters = height * map.getResolution();
 
-  // Color (uint32_t)
-  uint32_t* d_color;
+const float mapOriginX = origin[0] - mapWidthMeters / 2.0f;
+const float mapOriginY = origin[1] - mapHeightMeters / 2.0f;
 
-  // Points
-  PointXYZRGBConfidenceDevice* d_points;
+// Allocate GPU memory
+PointXYZRGBConfidenceDevice* d_points;
+CellUpdate* d_updates;
 
-  // Allocate GPU memory for map layers
-  cudaMalloc(&d_elevation, sizeof(float) * mapSize);
-  cudaMalloc(&d_variance, sizeof(float) * mapSize);
-  cudaMalloc(&d_horzVarX, sizeof(float) * mapSize);
-  cudaMalloc(&d_horzVarY, sizeof(float) * mapSize);
-  cudaMalloc(&d_horzVarXY, sizeof(float) * mapSize);
-  cudaMalloc(&d_time, sizeof(float) * mapSize);
-  cudaMalloc(&d_dynamicTime, sizeof(float) * mapSize);
-  cudaMalloc(&d_lowestScanPoint, sizeof(float) * mapSize);
-  cudaMalloc(&d_sensorXatLowest, sizeof(float) * mapSize);
-  cudaMalloc(&d_sensorYatLowest, sizeof(float) * mapSize);
-  cudaMalloc(&d_sensorZatLowest, sizeof(float) * mapSize);
-  cudaMalloc(&d_color, sizeof(uint32_t) * mapSize);
-
-  // Copy map data from host to device
-  auto& elevationLayer = map.get("elevation");
-  auto& varianceLayer = map.get("variance");
-  auto& horzVarXLayer = map.get("horizontal_variance_x");
-  auto& horzVarYLayer = map.get("horizontal_variance_y");
-  auto& horzVarXYLayer = map.get("horizontal_variance_xy");
-  auto& timeLayer = map.get("time");
-  auto& dynamicTimeLayer = map.get("dynamic_time");
-  auto& lowestScanLayer = map.get("lowest_scan_point");
-  auto& sensorXLayer = map.get("sensor_x_at_lowest_scan");
-  auto& sensorYLayer = map.get("sensor_y_at_lowest_scan");
-  auto& sensorZLayer = map.get("sensor_z_at_lowest_scan");
-  auto& colorLayer = map.get("color");  // Assuming uint32_t packed RGB
-
-  cudaMemcpy(d_elevation, elevationLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_variance, varianceLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_horzVarX, horzVarXLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_horzVarY, horzVarYLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_horzVarXY, horzVarXYLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_time, timeLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_dynamicTime, dynamicTimeLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_lowestScanPoint, lowestScanLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sensorXatLowest, sensorXLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sensorYatLowest, sensorYLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sensorZatLowest, sensorZLayer.data(), sizeof(float) * mapSize,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_color, colorLayer.data(), sizeof(uint32_t) * mapSize,
-             cudaMemcpyHostToDevice);
-
-  to_GPU(pointCloud, d_points);
-
-  // --- Launch kernel ---
-  int threadsPerBlock = 256;
-  int blocks = (static_cast<int>(pointCloud->size()) + threadsPerBlock - 1) /
-               threadsPerBlock;
-
-  updateElevationFullKernel<<<blocks, threadsPerBlock>>>(
-      d_points, variances.data(), static_cast<int>(pointCloud->size()),
-      d_elevation, d_variance, d_horzVarX, d_horzVarY, d_horzVarXY, d_color,
-      d_time, d_dynamicTime, d_lowestScanPoint, d_sensorXatLowest,
-      d_sensorYatLowest, d_sensorZatLowest, width, height, map.getResolution(), origin[0],
-      origin[1], minHorizontalVariance, multiHeightNoise,
-      mahalanobisDistanceThreshold, scanningDuration,
-      scanTimeSinceInitialization, currentTimeSecondsPattern,
-      sensorTranslation.x(), sensorTranslation.y(), sensorTranslation.z());
-  cudaDeviceSynchronize();
-
-  // --- Copy updated layers back to host ---
-  cudaMemcpy(elevationLayer.data(), d_elevation, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(varianceLayer.data(), d_variance, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(horzVarXLayer.data(), d_horzVarX, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(horzVarYLayer.data(), d_horzVarY, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(horzVarXYLayer.data(), d_horzVarXY, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(timeLayer.data(), d_time, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(dynamicTimeLayer.data(), d_dynamicTime, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(lowestScanLayer.data(), d_lowestScanPoint, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(sensorXLayer.data(), d_sensorXatLowest, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(sensorYLayer.data(), d_sensorYatLowest, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(sensorZLayer.data(), d_sensorZatLowest, sizeof(float) * mapSize,
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(colorLayer.data(), d_color, sizeof(uint32_t) * mapSize,
-             cudaMemcpyDeviceToHost);
-
-  // --- Free device memory ---
-  cudaFree(d_elevation);
-  cudaFree(d_variance);
-  cudaFree(d_horzVarX);
-  cudaFree(d_horzVarY);
-  cudaFree(d_horzVarXY);
-  cudaFree(d_time);
-  cudaFree(d_dynamicTime);
-  cudaFree(d_lowestScanPoint);
-  cudaFree(d_sensorXatLowest);
-  cudaFree(d_sensorYatLowest);
-  cudaFree(d_sensorZatLowest);
-  cudaFree(d_color);
-  cudaFree(d_points);
-  return true;
+// Copy map layers from host
+auto& elevationLayer = map.get("elevation");
+auto& varianceLayer = map.get("variance");
+auto& horzVarXLayer = map.get("horizontal_variance_x");
+auto& horzVarYLayer = map.get("horizontal_variance_y");
+auto& horzVarXYLayer = map.get("horizontal_variance_xy");
+auto& timeLayer = map.get("time");
+auto& dynamicTimeLayer = map.get("dynamic_time");
+auto& lowestScanLayer = map.get("lowest_scan_point");
+auto& sensorXLayer = map.get("sensor_x_at_lowest_scan");
+auto& sensorYLayer = map.get("sensor_y_at_lowest_scan");
+auto& sensorZLayer = map.get("sensor_z_at_lowest_scan");
+auto& colorLayer = map.get("color");
+if (lastSize_ != mapSize) {
+  allocate(mapSize);
+  lastSize_ = mapSize;
 }
+cudaMalloc(&d_variances, sizeof(float) * variances.size());
+
+// Copy map layer data from host to device
+cudaMemcpy(d_elevation, elevationLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_variance, varianceLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_horzVarX, horzVarXLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_horzVarY, horzVarYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_horzVarXY, horzVarXYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_time, timeLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_dynamicTime, dynamicTimeLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_lowestScanPoint, lowestScanLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_sensorXatLowest, sensorXLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_sensorYatLowest, sensorYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_sensorZatLowest, sensorZLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_color, colorLayer.data(), sizeof(uint32_t) * mapSize, cudaMemcpyHostToDevice);
+cudaMemcpy(d_variances, variances.data(), sizeof(float) * variances.size(), cudaMemcpyHostToDevice);
+
+// Copy point cloud to GPU
+to_GPU(pointCloud, d_points);
+
+// Allocate update buffer
+int num_points = pointCloud->size();
+cudaMalloc(&d_updates, sizeof(CellUpdate) * num_points);
+
+// Launch kernel 1: compute per-point updates
+int threadsPerBlock = 256;
+int blocks = (num_points + threadsPerBlock - 1) / threadsPerBlock;
+computeUpdateInfoKernel<<<blocks, threadsPerBlock>>>(
+    d_points, d_variances, num_points, d_updates,
+    width, height, map.getResolution(), mapOriginX, mapOriginY,
+    scanTimeSinceInitialization, currentTimeSecondsPattern,
+    sensorTranslation.x(), sensorTranslation.y(), sensorTranslation.z());
+cudaDeviceSynchronize();
+
+// Launch kernel 2: apply updates with atomics
+applyUpdateKernel<<<blocks, threadsPerBlock>>>(
+    d_updates, num_points, d_elevation, d_variance,
+    d_horzVarX, d_horzVarY, d_horzVarXY, d_color, d_time, d_dynamicTime,
+    d_lowestScanPoint, d_sensorXatLowest, d_sensorYatLowest, d_sensorZatLowest,
+    minHorizontalVariance, multiHeightNoise,
+    mahalanobisDistanceThreshold, scanningDuration);
+cudaDeviceSynchronize();
+
+// Copy map layers back to host
+cudaMemcpy(elevationLayer.data(), d_elevation, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(varianceLayer.data(), d_variance, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(horzVarXLayer.data(), d_horzVarX, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(horzVarYLayer.data(), d_horzVarY, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(horzVarXYLayer.data(), d_horzVarXY, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(timeLayer.data(), d_time, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(dynamicTimeLayer.data(), d_dynamicTime, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(lowestScanLayer.data(), d_lowestScanPoint, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(sensorXLayer.data(), d_sensorXatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(sensorYLayer.data(), d_sensorYatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(sensorZLayer.data(), d_sensorZatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
+cudaMemcpy(colorLayer.data(), d_color, sizeof(uint32_t) * mapSize, cudaMemcpyDeviceToHost);
+
+// Free device memory
+cudaFree(d_points);
+cudaFree(d_variances);
+cudaFree(d_updates);
+return true;
+}
+
+void ElevationMappingGPU::allocate(size_t size) {
+  deallocate();
+  cudaMalloc(&d_elevation, sizeof(float) * size);
+  cudaMalloc(&d_variance, sizeof(float) * size);
+  cudaMalloc(&d_horzVarX, sizeof(float) * size);
+  cudaMalloc(&d_horzVarY, sizeof(float) * size);
+  cudaMalloc(&d_horzVarXY, sizeof(float) * size);
+  cudaMalloc(&d_time, sizeof(float) * size);
+  cudaMalloc(&d_dynamicTime, sizeof(float) * size);
+  cudaMalloc(&d_lowestScanPoint, sizeof(float) * size);
+  cudaMalloc(&d_sensorXatLowest, sizeof(float) * size);
+  cudaMalloc(&d_sensorYatLowest, sizeof(float) * size);
+  cudaMalloc(&d_sensorZatLowest, sizeof(float) * size);
+  cudaMalloc(&d_color, sizeof(uint32_t) * size);
+}
+
+void ElevationMappingGPU::deallocate() {
+  if (d_elevation)
+    cudaFree(d_elevation);
+  if (d_variance)
+  cudaFree(d_variance);
+  if (d_horzVarX)
+  cudaFree(d_horzVarX);
+  if (d_horzVarY)
+  cudaFree(d_horzVarY);
+  if (d_horzVarXY)
+  cudaFree(d_horzVarXY);
+  if (d_time)
+  cudaFree(d_time);
+  if (d_dynamicTime)
+  cudaFree(d_dynamicTime);
+  if (d_lowestScanPoint)
+  cudaFree(d_lowestScanPoint);
+  if (d_sensorXatLowest)
+  cudaFree(d_sensorXatLowest);
+  if (d_sensorYatLowest)
+  cudaFree(d_sensorYatLowest);
+  if (d_sensorZatLowest)
+  cudaFree(d_sensorZatLowest);
+  if (d_color)
+  cudaFree(d_color);
+}
+
+
 }  // namespace elevation_mapping

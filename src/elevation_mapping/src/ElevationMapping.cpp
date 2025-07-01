@@ -339,6 +339,7 @@ bool ElevationMapping::readParameters() {
   nodeHandle_->declare_parameter("enable_visibility_cleanup", true);
   nodeHandle_->declare_parameter("enable_continuous_cleanup", false);
   nodeHandle_->declare_parameter("scanning_duration", 1.0);
+  nodeHandle_->declare_parameter("use_gpu", false);
   nodeHandle_->declare_parameter("robot_motion_map_update/covariance_scale",
                                  rclcpp::ParameterValue(1.0));
   nodeHandle_->declare_parameter("masked_replace_service_mask_layer_name",
@@ -359,6 +360,7 @@ bool ElevationMapping::readParameters() {
   nodeHandle_->get_parameter("enable_continuous_cleanup",
                              map_.enableContinuousCleanup_);
   nodeHandle_->get_parameter("scanning_duration", map_.scanningDuration_);
+  nodeHandle_->get_parameter("use_gpu", map_.use_gpu_);
   nodeHandle_->get_parameter("robot_motion_map_update/covariance_scale",
                              map_.covarianceScale_);
   nodeHandle_->get_parameter("masked_replace_service_mask_layer_name",

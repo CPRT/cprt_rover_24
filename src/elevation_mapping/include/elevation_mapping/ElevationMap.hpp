@@ -25,6 +25,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 // Elevation Mapping
+#include "elevation_mapping/ElevationMappingGPU.hpp"
 #include "elevation_mapping/PointXYZRGBConfidenceRatio.hpp"
 #include "elevation_mapping/postprocessing/PostprocessorPool.hpp"
 
@@ -389,6 +390,7 @@ class ElevationMap {
 
   //! Robot pose covariance (reduced) from the previous update.
   ReducedCovariance previousReducedCovariance_;
+  ElevationMappingGPU elevationMappingGPU_;
 
   //! Parameters. Are set through the ElevationMapping class.
   double minVariance_;

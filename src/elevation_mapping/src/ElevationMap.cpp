@@ -15,7 +15,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "elevation_mapping/ElevationMapFunctors.hpp"
-#include "elevation_mapping/ElevationMappingGPU.hpp"
 #include "elevation_mapping/PointXYZRGBConfidenceRatio.hpp"
 #include "elevation_mapping/WeightedEmpiricalCumulativeDistributionFunction.hpp"
 
@@ -58,7 +57,8 @@ ElevationMap::ElevationMap(std::shared_ptr<rclcpp::Node> nodeHandle)
       visibilityCleanupDuration_(0.0),
       scanningDuration_(1.0),
       covarianceScale_(1.0),
-      use_gpu_(true) {
+      use_gpu_(false),
+      elevationMappingGPU_() {
   rawMap_.setBasicLayers({"elevation", "variance"});
   fusedMap_.setBasicLayers({"elevation", "upper_bound", "lower_bound"});
   clear();
@@ -116,7 +116,7 @@ bool ElevationMap::add(const PointCloudType::Ptr pointCloud,
   const float scanTimeSinceInitialization =
       (timestamp - initialTime_).seconds();
   if (use_gpu_) {
-    return ElevationMappingGPU::updateMapGPU(
+    return elevationMappingGPU_.updateMapGPU(
         pointCloud, pointCloudVariances, scanTimeSinceInitialization,
         currentTimeSecondsPattern,
         transformationSensorToMap.translation().cast<float>(),

@@ -16,17 +16,28 @@ namespace elevation_mapping {
 
 class ElevationMappingGPU {
  public:
-  static bool updateMapGPU(
-      const PointCloudType::Ptr pointCloud, const Eigen::VectorXf& variances,
-      float scanTimeSinceInitialization, float currentTimeSecondsPattern,
-      const Eigen::Vector3f& sensorTranslation,
-      const float minHorizontalVariance, const float multiHeightNoise,
-      const float mahalanobisDistanceThreshold, const float scanningDuration,
-      grid_map::GridMap& map);
+  ElevationMappingGPU();
+  ~ElevationMappingGPU();
+  bool updateMapGPU(const PointCloudType::Ptr pointCloud,
+                    const Eigen::VectorXf& variances,
+                    float scanTimeSinceInitialization,
+                    float currentTimeSecondsPattern,
+                    const Eigen::Vector3f& sensorTranslation,
+                    const float minHorizontalVariance,
+                    const float multiHeightNoise,
+                    const float mahalanobisDistanceThreshold,
+                    const float scanningDuration, grid_map::GridMap& map);
 
  private:
-  static void to_GPU(const PointCloudType::Ptr pointCloud,
-                     PointXYZRGBConfidenceDevice*& d_points);
+  void to_GPU(const PointCloudType::Ptr pointCloud,
+              PointXYZRGBConfidenceDevice*& d_points);
+  void allocate(size_t size);
+  void deallocate();
+  float *d_elevation, *d_variance, *d_horzVarX, *d_horzVarY, *d_horzVarXY,
+      *d_time, *d_dynamicTime, *d_lowestScanPoint, *d_sensorXatLowest,
+      *d_sensorYatLowest, *d_sensorZatLowest, *d_variances;
+  uint32_t* d_color;
+  size_t lastSize_;
 };
 
 }  // namespace elevation_mapping

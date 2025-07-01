@@ -24,3 +24,4 @@
     remove_penetrated_points_rate: 5.0
     visibility_cleanup_rate: 10.0
     enable_continuous_cleanup: false
+    use_gpu: true
