@@ -3,17 +3,15 @@
 
 #include <interfaces/srv/get_cameras.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <string>
+#include <vector>
 
 class CameraClient : public rclcpp::Node {
  public:
   CameraClient();
   ~CameraClient();
 
-  void get_cameras();
-
- private:
-  void on_cameras_received(
-      rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture future);
+  std::vector<std::string> get_cameras();
 };
 
 #endif

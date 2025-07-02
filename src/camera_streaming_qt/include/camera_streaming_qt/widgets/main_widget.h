@@ -16,6 +16,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <string>
+#include <vector>
 
 #include "ros_client.h"
 #include "widgets/capture_image_widget.h"
@@ -37,8 +39,10 @@ class MainWidget : public QWidget {
   MainWidget(QWidget* parent = nullptr);
   ~MainWidget();
 
+  void receive_source_names(std::vector<std::string> names);
+
  signals:
-  void request_source_names(SourceWidget* source_widget);
+  void request_source_names();
 
  public slots:
   /**
@@ -50,7 +54,7 @@ class MainWidget : public QWidget {
   void set_signal_server_ip(QString ip);
 
  private slots:
-  void get_source_names(SourceWidget* source_widget);
+  void get_source_names();
 
  private:
   QVBoxLayout* main_layout_;

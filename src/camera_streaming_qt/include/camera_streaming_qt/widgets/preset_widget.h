@@ -15,6 +15,7 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <string>
 #include <vector>
 
 #include "models/preset_model.h"
@@ -35,16 +36,19 @@ class PresetWidget : public QWidget {
   PresetWidget(QWidget* parent = nullptr);
   ~PresetWidget();
 
+  void get_sources() const;
+
  signals:
-  void request_source_names(SourceWidget* source_widget);
+  void request_source_names();
 
  public slots:
   void add_source();
   void submit_preset();
   void remove_source(SourceWidget* src);
+  void receive_source_names(std::vector<std::string> sources);
 
  private slots:
-  void get_source_names(SourceWidget* source_widget);
+  void get_source_names();
 
  private:
   std::vector<SourceWidget*> sources_;

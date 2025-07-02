@@ -107,6 +107,17 @@ SourceWidget::SourceWidget(QWidget* parent) : QWidget(parent) {
 
 SourceWidget::~SourceWidget() {}
 
+bool SourceWidget::get_requesting_source_names() const {
+  return requesting_source_names_;
+}
+
+void SourceWidget::receive_source_names(std::vector<std::string> names) {
+  name_combo_box_->clear();
+  for (int i = 0; i < names.size(); i++) {
+    name_combo_box_->addItem(QString::fromStdString(names[i]));
+  }
+}
+
 void SourceWidget::set_source_name(QString name) {
   if (!source_) return;
   source_->name = name;
@@ -140,6 +151,6 @@ void SourceWidget::set_origin_y(QString y) {
 void SourceWidget::remove_source() { emit request_remove(this); }
 
 void SourceWidget::get_source_names() {
-  qDebug() << "1";
-  emit request_source_names(this);
+  requesting_source_names_ = true;
+  emit request_source_names();
 }

@@ -17,6 +17,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <string>
+#include <vector>
 
 #include "models/source_model.h"
 
@@ -37,9 +39,13 @@ class SourceWidget : public QWidget {
 
   Source* get_source() const { return source_; }
 
+  bool get_requesting_source_names() const;
+
+  void receive_source_names(std::vector<std::string> names);
+
  signals:
   void request_remove(SourceWidget* widget);
-  void request_source_names(SourceWidget* widget);
+  void request_source_names();
 
  public slots:
   void set_source_name(QString name);
@@ -82,6 +88,8 @@ class SourceWidget : public QWidget {
   QIntValidator* origin_validator_;
 
   QPushButton* remove_button_;
+
+  bool requesting_source_names_;
 };
 
 #endif

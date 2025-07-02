@@ -2,9 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <string>
+#include <vector>
 
 #include "camera_client.h"
-#include "ros_client.h"
+#include "widgets/main_widget.h"
 #include "widgets/source_widget.h"
 
 class MainWindow : public QMainWindow {
@@ -15,12 +17,13 @@ class MainWindow : public QMainWindow {
   ~MainWindow();
 
  signals:
-  void request_source_names(SourceWidget* source_widget);
+  void request_source_names();
 
  private slots:
-  void get_source_names(SourceWidget* source_widget);
+  void get_source_names();
 
  private:
   CameraClient* camera_client_;
+  MainWidget* main_widget_;
 };
 #endif  // MAINWINDOW_H

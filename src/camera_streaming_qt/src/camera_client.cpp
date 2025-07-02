@@ -11,29 +11,52 @@ CameraClient::CameraClient() : Node("camera_client_node") {}
 
 CameraClient::~CameraClient() {}
 
-void CameraClient::get_cameras() {
+std::vector<std::string> CameraClient::get_cameras() {
   rclcpp::Client<interfaces::srv::GetCameras>::SharedPtr client =
       this->create_client<interfaces::srv::GetCameras>("get_cameras");
 
   auto request = std::make_shared<interfaces::srv::GetCameras::Request>();
 
-  /*
-   std::chrono::seconds wait_interval(1);
-   while (!client->wait_for_service(wait_interval)) {
-     if (!rclcpp::ok()) {
-       RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                    "Interrupted while waiting for the service. Exiting.");
-       return;
-     }
+  std::chrono::seconds wait_interval(1);
+  int counter_ = 0;
+  while (!client->wait_for_service(wait_interval)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Interrupted while waiting for the service. Exiting.");
+      return std::vector<std::string>();
+    }
 
-     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-                 "Service not available, waiting again...");
-   }
-  */
+    counter_++;
+    // 5 second timeout
+    if (counter_ >= 5) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Get camera service timed out.");
+      return std::vector<std::string>();
+    }
 
-  auto result_future = client->async_send_request(
-      request, std::bind(&CameraClient::on_cameras_received, this,
-                         std::placeholders::_1));
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+                "Service not available, waiting again...");
+  }
+
+  auto future = client->async_send_request(request);
+
+  // Wait for result
+  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(),
+                                         future, std::chrono::seconds(1)) !=
+      rclcpp::FutureReturnCode::SUCCESS) {
+    RCLCPP_ERROR(get_logger(), "Get Cameras service call failed.");
+    return std::vector<std::string>();
+  }
+
+  std::vector<std::string> sources = future.get()->sources;
+
+  RCLCPP_INFO(this->get_logger(), "Received sources: ");
+
+  for (int i = 0; i < sources.size(); i++) {
+    RCLCPP_INFO(this->get_logger(), sources[i].c_str());
+  }
+
+  return sources;
 
   /*
   std::chrono::seconds wait_interval(5);
@@ -44,17 +67,6 @@ void CameraClient::get_cameras() {
                 "time.";
   }
   */
-}
-
-void CameraClient::on_cameras_received(
-    rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture future) {
-  std::vector<std::string> sources = future.get()->sources;
-
-  RCLCPP_INFO(this->get_logger(), "Received sources: ");
-
-  for (int i = 0; i < sources.size(); i++) {
-    RCLCPP_INFO(this->get_logger(), sources[i].c_str());
-  }
 }
 
 int main(int argc, char** argv) {

@@ -64,12 +64,15 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
 
 MainWidget::~MainWidget() {}
 
+void MainWidget::receive_source_names(std::vector<std::string> names) {
+  if (!preset_widget_) return;
+
+  preset_widget_->receive_source_names(names);
+}
+
 void MainWidget::set_signal_server_ip(QString ip) {
   signal_server_ip_ = ip;
   qDebug() << "IP: " << signal_server_ip_;
 }
 
-void MainWidget::get_source_names(SourceWidget* source_widget) {
-  qDebug() << "3";
-  emit request_source_names(source_widget);
-}
+void MainWidget::get_source_names() { emit request_source_names(); }

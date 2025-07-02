@@ -78,7 +78,13 @@ void PresetWidget::remove_source(SourceWidget* src) {
   src->deleteLater();
 }
 
-void PresetWidget::get_source_names(SourceWidget* source_widget) {
-  qDebug() << "2";
-  request_source_names(source_widget);
+void PresetWidget::receive_source_names(std::vector<std::string> names) {
+  // Send source names to all SourceWidgets with requesting_source_names_ on
+  for (int i = 0; i < sources_.size(); i++) {
+    if (sources_[i]->get_requesting_source_names()) {
+      sources_[i]->receive_source_names(names);
+    }
+  }
 }
+
+void PresetWidget::get_source_names() { emit request_source_names(); }
