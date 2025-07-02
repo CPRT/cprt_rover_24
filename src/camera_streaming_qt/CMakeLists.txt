@@ -36,7 +36,6 @@ link_directories(
 )
 
 set(SOURCES
-    src/camera_client.cpp
     src/mainwindow.cpp
     src/ros_client.cpp
     src/widgets/capture_image_widget.cpp
@@ -51,13 +50,18 @@ set(HEADERS
     include/${PROJECT_NAME}/ros_client.h
     include/${PROJECT_NAME}/models/preset_model.h
     include/${PROJECT_NAME}/models/source_model.h
+    include/${PROJECT_NAME}/tests/test_get_camera_node.h
     include/${PROJECT_NAME}/widgets/capture_image_widget.h
     include/${PROJECT_NAME}/widgets/main_widget.h
     include/${PROJECT_NAME}/widgets/preset_widget.h
     include/${PROJECT_NAME}/widgets/source_widget.h
 )
 
-add_executable(camera_client_node ${SOURCES} ${HEADERS})
+# Camera client node
+add_executable(camera_client_node src/camera_client.cpp ${SOURCES} ${HEADERS})
+
+# Test nodes
+add_executable(get_camera_node src/tests/test_get_camera_node.cpp)
 
 # Link with the required libraries
 target_link_libraries(
@@ -69,7 +73,19 @@ target_link_libraries(
     ${GST_VIDEO_LIBRARIES}
 )
 
+target_link_libraries(
+ get_camera_node
+ rclcpp::rclcpp
+)
+
 ament_target_dependencies(camera_client_node 
+    rclcpp 
+    std_msgs
+    interfaces
+    std_srvs
+)
+
+ament_target_dependencies(get_camera_node
     rclcpp 
     std_msgs
     interfaces
@@ -82,6 +98,7 @@ install(DIRECTORY include/
 
 install(TARGETS 
     camera_client_node
+    get_camera_node
     DESTINATION lib/${PROJECT_NAME}
 )
 

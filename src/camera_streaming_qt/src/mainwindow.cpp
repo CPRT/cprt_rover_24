@@ -5,26 +5,22 @@
 
 #include "widgets/main_widget.h"
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
-  // Setup ROS client
-  ros_client_ = new ROSClient();
+MainWindow::MainWindow(CameraClient* camera_client, QWidget* parent)
+    : QMainWindow(parent) {
+  camera_client_ = camera_client;
 
   // Setup main widget
   MainWidget* main_widget = new MainWidget(this);
 
   connect(main_widget, &MainWidget::request_source_names, this,
-          &MainWindow::get_cameras);
+          &MainWindow::get_source_names);
 
   setCentralWidget(main_widget);
 }
 
-MainWindow::~MainWindow() {
-  if (ros_client_) {
-    delete ros_client_;
-  }
-}
+MainWindow::~MainWindow() {}
 
-void MainWindow::get_cameras() {
-  qDebug() << "4";
-  ros_client_->get_cameras();
+void MainWindow::get_source_names(SourceWidget* source_widget) {
+  if (!camera_client_) return;
+  camera_client_->get_cameras();
 }

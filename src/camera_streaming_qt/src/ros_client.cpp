@@ -6,7 +6,8 @@
 ROSClient::ROSClient() {}
 
 void ROSClient::get_cameras() {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("get_cameras");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("get_camera_client");
   rclcpp::Client<interfaces::srv::GetCameras>::SharedPtr client =
       node->create_client<interfaces::srv::GetCameras>("get_cameras");
 
@@ -26,22 +27,20 @@ void ROSClient::get_cameras() {
    }
   */
 
-  // Send the request
-  auto result = client->async_send_request(
+  auto result_future = client->async_send_request(
       request,
-      [](rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture response) {
-       // If the response is valid, return the sources
-       if(response.valid()) {
-        std::vector<std::string> sources = response.get()->sources;
+      std::bind(&ROSClient::on_cameras_received, this, std::placeholders::_1));
 
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Received sources:");
+  std::chrono::seconds wait_interval(5);
+  auto status = result_future.wait_for(wait_interval);
 
-        for (int i = 0; i < sources.size(); i++) {
-          qDebug() << QString::fromStdString(sources[i]);
-        }
-       }
-       else {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Could not receive sources.");
-       }
-      });
+  if (status != std::future_status::ready) {
+    qDebug() << "Timeout exceeded: did not receive camera sources within given "
+                "time.";
+  }
+}
+
+void ROSClient::on_cameras_received(
+    rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture future) {
+  std::cout << "received" << std::endl;
 }

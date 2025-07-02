@@ -14,6 +14,10 @@ class ROSClient : public QObject {
 
  public slots:
   void get_cameras();
+
+ private:
+  void on_cameras_received(
+      rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture future);
 };
 
 #endif
