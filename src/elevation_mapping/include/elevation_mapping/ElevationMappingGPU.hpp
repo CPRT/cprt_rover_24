@@ -1,3 +1,5 @@
+#include <cuda_runtime.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <cstdint>
@@ -30,14 +32,14 @@ class ElevationMappingGPU {
 
  private:
   void to_GPU(const PointCloudType::Ptr pointCloud,
-              PointXYZRGBConfidenceDevice*& d_points);
+              PointXYZRGBConfidenceDevice*& d_points, cudaStream_t& stream);
   void allocate(size_t size);
   void deallocate();
   float *d_elevation, *d_variance, *d_horzVarX, *d_horzVarY, *d_horzVarXY,
       *d_time, *d_dynamicTime, *d_lowestScanPoint, *d_sensorXatLowest,
-      *d_sensorYatLowest, *d_sensorZatLowest, *d_variances;
-  uint32_t* d_color;
+      *d_sensorYatLowest, *d_sensorZatLowest;
   size_t lastSize_;
+  cudaStream_t stream_;
 };
 
 }  // namespace elevation_mapping

@@ -1,7 +1,5 @@
 #include "elevation_mapping/ElevationMappingGPU.hpp"
 
-#include <cuda_runtime.h>
-
 struct CellUpdate {
   int cell_index;
   float x, y, z;
@@ -73,6 +71,8 @@ __global__ void computeUpdateInfoKernel(
 
   int gx = int((pt.x - originX) / resolution);
   int gy = int((pt.y - originY) / resolution);
+  gy = height - 1 - gy;
+  gx = width - 1 - gx;
   bool valid = gx >= 0 && gx < width && gy >= 0 && gy < height;
 
   CellUpdate update;
@@ -100,7 +100,6 @@ __global__ void applyUpdateKernel(
   int num_points,
   float* elevation, float* variance,
   float* horz_var_x, float* horz_var_y, float* horz_var_xy,
-  uint32_t* color,
   float* time, float* dynamic_time,
   float* lowest_scan_point,
   float* sensor_x_at_lowest, float* sensor_y_at_lowest, float* sensor_z_at_lowest,
@@ -126,8 +125,6 @@ __global__ void applyUpdateKernel(
     horz_var_y[cell] = minHorizontalVariance;
     horz_var_xy[cell] = 0.0f;
 
-    color[cell] = ((u.r & 0xFF) << 16) | ((u.g & 0xFF) << 8) | (u.b & 0xFF);
-
     time[cell] = u.scan_time;
     dynamic_time[cell] = u.current_pattern_time;
 
@@ -144,7 +141,7 @@ __global__ void applyUpdateKernel(
   float dist = fabsf(u.z - old_elev) / sqrtf(old_var);
   if (dist > mahalanobisThreshold) {
     if ((u.scan_time - time[cell]) <= scanningDuration && old_elev > u.z) {
-      return; // Ignore lower point
+      return;
     } else if ((u.scan_time - time[cell]) <= scanningDuration) {
       elevation[cell] = u.z;
       variance[cell] = u.variance;
@@ -166,8 +163,6 @@ __global__ void applyUpdateKernel(
 
   // Use atomic Kalman update here
   atomicKalmanUpdate(&elevation[cell], &variance[cell], u.z, u.variance);
-
-  color[cell] = ((u.r & 0xFF) << 16) | ((u.g & 0xFF) << 8) | (u.b & 0xFF);
 
   time[cell] = u.scan_time;
   dynamic_time[cell] = u.current_pattern_time;
@@ -193,16 +188,17 @@ namespace elevation_mapping {
     d_sensorXatLowest = nullptr;
     d_sensorYatLowest = nullptr;
     d_sensorZatLowest = nullptr;
-    d_variances = nullptr;
-    d_color = nullptr;
     lastSize_ = 0;
+    cudaStreamCreate(&stream_);
   }
   ElevationMappingGPU::~ElevationMappingGPU(){
     deallocate();
+    cudaStreamDestroy(stream_);
   }
 
 void ElevationMappingGPU::to_GPU(const PointCloudType::Ptr pointCloud,
-                                 PointXYZRGBConfidenceDevice*& d_points) {
+                                 PointXYZRGBConfidenceDevice*& d_points,
+                                 cudaStream_t& stream) {
   std::vector<PointXYZRGBConfidenceDevice> gpuPoints;
   gpuPoints.reserve(pointCloud->size());
 
@@ -219,9 +215,9 @@ void ElevationMappingGPU::to_GPU(const PointCloudType::Ptr pointCloud,
   }
 
   cudaMalloc(&d_points, sizeof(PointXYZRGBConfidenceDevice) * gpuPoints.size());
-  cudaMemcpy(d_points, gpuPoints.data(),
+  cudaMemcpyAsync(d_points, gpuPoints.data(),
              sizeof(PointXYZRGBConfidenceDevice) * gpuPoints.size(),
-             cudaMemcpyHostToDevice);
+             cudaMemcpyHostToDevice, stream);
 }
 
 bool ElevationMappingGPU::updateMapGPU(
@@ -230,101 +226,101 @@ bool ElevationMappingGPU::updateMapGPU(
   const Eigen::Vector3f& sensorTranslation, const float minHorizontalVariance,
   const float multiHeightNoise, const float mahalanobisDistanceThreshold,
   const float scanningDuration, grid_map::GridMap& map) {
+  
 
-// Map size
-const int width = map.getSize()(0);
-const int height = map.getSize()(1);
-const int mapSize = width * height;
-const grid_map::Position origin = map.getPosition();
-const float mapWidthMeters = width * map.getResolution();
-const float mapHeightMeters = height * map.getResolution();
+  // Map size
+  const int width = map.getSize()(0);
+  const int height = map.getSize()(1);
+  const int mapSize = width * height;
+  const grid_map::Position origin = map.getPosition();
+  const auto resolution = map.getResolution();
+  const float mapWidthMeters = width * resolution;
+  const float mapHeightMeters = height * resolution;
 
-const float mapOriginX = origin.x() - mapWidthMeters / 2.0f;
-const float mapOriginY = origin.y() - mapHeightMeters / 2.0f;
+  const float mapOriginX = origin.x() - mapWidthMeters / 2.0f;
+  const float mapOriginY = origin.y() - mapHeightMeters / 2.0f;
 
-// Allocate GPU memory
-PointXYZRGBConfidenceDevice* d_points;
-CellUpdate* d_updates;
+  // Allocate GPU memory
+  PointXYZRGBConfidenceDevice* d_points;
+  CellUpdate* d_updates;
+  float* d_variances;
 
-// Copy map layers from host
-auto& elevationLayer = map.get("elevation");
-auto& varianceLayer = map.get("variance");
-auto& horzVarXLayer = map.get("horizontal_variance_x");
-auto& horzVarYLayer = map.get("horizontal_variance_y");
-auto& horzVarXYLayer = map.get("horizontal_variance_xy");
-auto& timeLayer = map.get("time");
-auto& dynamicTimeLayer = map.get("dynamic_time");
-auto& lowestScanLayer = map.get("lowest_scan_point");
-auto& sensorXLayer = map.get("sensor_x_at_lowest_scan");
-auto& sensorYLayer = map.get("sensor_y_at_lowest_scan");
-auto& sensorZLayer = map.get("sensor_z_at_lowest_scan");
-auto& colorLayer = map.get("color");
-if (lastSize_ != mapSize) {
-  allocate(mapSize);
-  lastSize_ = mapSize;
-}
-cudaMalloc(&d_variances, sizeof(float) * variances.size());
+  // Copy map layers from host
+  auto& elevationLayer = map.get("elevation");
+  auto& varianceLayer = map.get("variance");
+  auto& horzVarXLayer = map.get("horizontal_variance_x");
+  auto& horzVarYLayer = map.get("horizontal_variance_y");
+  auto& horzVarXYLayer = map.get("horizontal_variance_xy");
+  auto& timeLayer = map.get("time");
+  auto& dynamicTimeLayer = map.get("dynamic_time");
+  auto& lowestScanLayer = map.get("lowest_scan_point");
+  auto& sensorXLayer = map.get("sensor_x_at_lowest_scan");
+  auto& sensorYLayer = map.get("sensor_y_at_lowest_scan");
+  auto& sensorZLayer = map.get("sensor_z_at_lowest_scan");
+  if (lastSize_ != mapSize) {
+    allocate(mapSize);
+    lastSize_ = mapSize;
+  }
+  cudaMalloc(&d_variances, sizeof(float) * variances.size());
 
-// Copy map layer data from host to device
-cudaMemcpy(d_elevation, elevationLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_variance, varianceLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_horzVarX, horzVarXLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_horzVarY, horzVarYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_horzVarXY, horzVarXYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_time, timeLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_dynamicTime, dynamicTimeLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_lowestScanPoint, lowestScanLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_sensorXatLowest, sensorXLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_sensorYatLowest, sensorYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_sensorZatLowest, sensorZLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_color, colorLayer.data(), sizeof(uint32_t) * mapSize, cudaMemcpyHostToDevice);
-cudaMemcpy(d_variances, variances.data(), sizeof(float) * variances.size(), cudaMemcpyHostToDevice);
+  // Copy map layer data from host to device
+  cudaMemcpyAsync(d_elevation, elevationLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_variance, varianceLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_horzVarX, horzVarXLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_horzVarY, horzVarYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_horzVarXY, horzVarXYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_time, timeLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_dynamicTime, dynamicTimeLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_lowestScanPoint, lowestScanLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_sensorXatLowest, sensorXLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_sensorYatLowest, sensorYLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_sensorZatLowest, sensorZLayer.data(), sizeof(float) * mapSize, cudaMemcpyHostToDevice, stream_);
+  cudaMemcpyAsync(d_variances, variances.data(), sizeof(float) * variances.size(), cudaMemcpyHostToDevice, stream_);
 
-// Copy point cloud to GPU
-to_GPU(pointCloud, d_points);
+  // Copy point cloud to GPU
+  to_GPU(pointCloud, d_points, stream_);
 
-// Allocate update buffer
-int num_points = pointCloud->size();
-cudaMalloc(&d_updates, sizeof(CellUpdate) * num_points);
+  // Allocate update buffer
+  int num_points = pointCloud->size();
+  cudaMalloc(&d_updates, sizeof(CellUpdate) * num_points);
 
-// Launch kernel 1: compute per-point updates
-int threadsPerBlock = 256;
-int blocks = (num_points + threadsPerBlock - 1) / threadsPerBlock;
-computeUpdateInfoKernel<<<blocks, threadsPerBlock>>>(
-    d_points, d_variances, num_points, d_updates,
-    width, height, map.getResolution(), mapOriginX, mapOriginY,
-    scanTimeSinceInitialization, currentTimeSecondsPattern,
-    sensorTranslation.x(), sensorTranslation.y(), sensorTranslation.z());
-cudaDeviceSynchronize();
+  // Launch kernel 1: compute per-point updates
+  int threadsPerBlock = 256;
+  int blocks = (num_points + threadsPerBlock - 1) / threadsPerBlock;
+  computeUpdateInfoKernel<<<blocks, threadsPerBlock, 0, stream_>>>(
+      d_points, d_variances, num_points, d_updates,
+      width, height, resolution, mapOriginX, mapOriginY,
+      scanTimeSinceInitialization, currentTimeSecondsPattern,
+      sensorTranslation.x(), sensorTranslation.y(), sensorTranslation.z());
 
-// Launch kernel 2: apply updates with atomics
-applyUpdateKernel<<<blocks, threadsPerBlock>>>(
-    d_updates, num_points, d_elevation, d_variance,
-    d_horzVarX, d_horzVarY, d_horzVarXY, d_color, d_time, d_dynamicTime,
-    d_lowestScanPoint, d_sensorXatLowest, d_sensorYatLowest, d_sensorZatLowest,
-    minHorizontalVariance, multiHeightNoise,
-    mahalanobisDistanceThreshold, scanningDuration);
-cudaDeviceSynchronize();
+  // Launch kernel 2: apply updates with atomics
+  applyUpdateKernel<<<blocks, threadsPerBlock, 0, stream_>>>(
+      d_updates, num_points, d_elevation, d_variance,
+      d_horzVarX, d_horzVarY, d_horzVarXY, d_time, d_dynamicTime,
+      d_lowestScanPoint, d_sensorXatLowest, d_sensorYatLowest, d_sensorZatLowest,
+      minHorizontalVariance, multiHeightNoise,
+      mahalanobisDistanceThreshold, scanningDuration);
 
-// Copy map layers back to host
-cudaMemcpy(elevationLayer.data(), d_elevation, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(varianceLayer.data(), d_variance, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(horzVarXLayer.data(), d_horzVarX, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(horzVarYLayer.data(), d_horzVarY, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(horzVarXYLayer.data(), d_horzVarXY, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(timeLayer.data(), d_time, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(dynamicTimeLayer.data(), d_dynamicTime, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(lowestScanLayer.data(), d_lowestScanPoint, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(sensorXLayer.data(), d_sensorXatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(sensorYLayer.data(), d_sensorYatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(sensorZLayer.data(), d_sensorZatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost);
-cudaMemcpy(colorLayer.data(), d_color, sizeof(uint32_t) * mapSize, cudaMemcpyDeviceToHost);
+  // Copy map layers back to host
+  cudaMemcpyAsync(elevationLayer.data(), d_elevation, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(varianceLayer.data(), d_variance, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(horzVarXLayer.data(), d_horzVarX, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(horzVarYLayer.data(), d_horzVarY, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(horzVarXYLayer.data(), d_horzVarXY, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(timeLayer.data(), d_time, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(dynamicTimeLayer.data(), d_dynamicTime, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(lowestScanLayer.data(), d_lowestScanPoint, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(sensorXLayer.data(), d_sensorXatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(sensorYLayer.data(), d_sensorYatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
+  cudaMemcpyAsync(sensorZLayer.data(), d_sensorZatLowest, sizeof(float) * mapSize, cudaMemcpyDeviceToHost, stream_);
 
-// Free device memory
-cudaFree(d_points);
-cudaFree(d_variances);
-cudaFree(d_updates);
-return true;
+  cudaStreamSynchronize(stream_);
+
+  // Free device memory
+  cudaFree(d_points);
+  cudaFree(d_variances);
+  cudaFree(d_updates);
+  return true;
 }
 
 void ElevationMappingGPU::allocate(size_t size) {
@@ -340,34 +336,53 @@ void ElevationMappingGPU::allocate(size_t size) {
   cudaMalloc(&d_sensorXatLowest, sizeof(float) * size);
   cudaMalloc(&d_sensorYatLowest, sizeof(float) * size);
   cudaMalloc(&d_sensorZatLowest, sizeof(float) * size);
-  cudaMalloc(&d_color, sizeof(uint32_t) * size);
 }
 
 void ElevationMappingGPU::deallocate() {
-  if (d_elevation)
+  if (d_elevation) {
     cudaFree(d_elevation);
-  if (d_variance)
-  cudaFree(d_variance);
-  if (d_horzVarX)
-  cudaFree(d_horzVarX);
-  if (d_horzVarY)
-  cudaFree(d_horzVarY);
-  if (d_horzVarXY)
-  cudaFree(d_horzVarXY);
-  if (d_time)
-  cudaFree(d_time);
-  if (d_dynamicTime)
-  cudaFree(d_dynamicTime);
-  if (d_lowestScanPoint)
-  cudaFree(d_lowestScanPoint);
-  if (d_sensorXatLowest)
-  cudaFree(d_sensorXatLowest);
-  if (d_sensorYatLowest)
-  cudaFree(d_sensorYatLowest);
-  if (d_sensorZatLowest)
-  cudaFree(d_sensorZatLowest);
-  if (d_color)
-  cudaFree(d_color);
+    d_elevation = nullptr;
+  }
+  if (d_variance) {
+    cudaFree(d_variance);
+    d_variance = nullptr;
+  }
+  if (d_horzVarX) {
+    cudaFree(d_horzVarX);
+    d_horzVarX = nullptr;
+  }
+  if (d_horzVarY) {
+    cudaFree(d_horzVarY);
+    d_horzVarY = nullptr;
+  }
+  if (d_horzVarXY) {
+    cudaFree(d_horzVarXY);
+    d_horzVarXY = nullptr;
+  }
+  if (d_time) {
+    cudaFree(d_time);
+    d_time = nullptr;
+  }
+  if (d_dynamicTime) {
+    cudaFree(d_dynamicTime);
+    d_dynamicTime = nullptr;
+  }
+  if (d_lowestScanPoint) {
+    cudaFree(d_lowestScanPoint);
+    d_lowestScanPoint = nullptr;
+  }
+  if (d_sensorXatLowest) {
+    cudaFree(d_sensorXatLowest);
+    d_sensorXatLowest = nullptr;
+  }
+  if (d_sensorYatLowest) {
+    cudaFree(d_sensorYatLowest);
+    d_sensorYatLowest = nullptr;
+  }
+  if (d_sensorZatLowest) {
+    cudaFree(d_sensorZatLowest);
+    d_sensorZatLowest = nullptr;
+  }
 }
 
 
