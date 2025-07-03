@@ -3,7 +3,7 @@
 #include <QDebug>
 
 SourceWidget::SourceWidget(QWidget* parent) : QWidget(parent) {
-  source_ = new Source();
+  source_ = new interfaces::msg::VideoSource();
 
   main_layout_ = new QVBoxLayout(this);
 
@@ -120,8 +120,9 @@ void SourceWidget::receive_source_names(std::vector<std::string> names) {
 
 void SourceWidget::set_source_name(QString name) {
   if (!source_) return;
-  source_->name = name;
-  qDebug() << "Changed source name to: " << source_->name;
+  source_->name = name.toStdString();
+  qDebug() << "Changed source name to: "
+           << QString::fromStdString(source_->name);
 }
 
 void SourceWidget::set_width(QString width) {
@@ -138,14 +139,14 @@ void SourceWidget::set_height(QString height) {
 
 void SourceWidget::set_origin_x(QString x) {
   if (!source_ || !x.toInt()) return;
-  source_->x = x.toInt();
-  qDebug() << "Changed source origin x to: " << source_->x;
+  source_->origin_x = x.toInt();
+  qDebug() << "Changed source origin x to: " << source_->origin_x;
 }
 
 void SourceWidget::set_origin_y(QString y) {
   if (!source_ || !y.toInt()) return;
-  source_->y = y.toInt();
-  qDebug() << "Changed source origin y to: " << source_->y;
+  source_->origin_y = y.toInt();
+  qDebug() << "Changed source origin y to: " << source_->origin_y;
 }
 
 void SourceWidget::remove_source() { emit request_remove(this); }

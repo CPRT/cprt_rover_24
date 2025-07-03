@@ -16,6 +16,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <interfaces/msg/video_source.hpp>
 #include <string>
 #include <vector>
 
@@ -43,6 +44,7 @@ class MainWidget : public QWidget {
 
  signals:
   void request_source_names();
+  void send_preset(std::vector<interfaces::msg::VideoSource> preset);
 
  public slots:
   /**
@@ -52,6 +54,8 @@ class MainWidget : public QWidget {
    * @param ip IP address for the signal server
    */
   void set_signal_server_ip(QString ip);
+
+  void receive_preset(std::vector<interfaces::msg::VideoSource> preset);
 
  private slots:
   void get_source_names();

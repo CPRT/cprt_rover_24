@@ -69,6 +69,46 @@ std::vector<std::string> CameraClient::get_cameras() {
   */
 }
 
+void CameraClient::start_video(
+    int num_sources, std::vector<interfaces::msg::VideoSource> sources) {
+  rclcpp::Client<interfaces::srv::VideoOut>::SharedPtr client =
+      this->create_client<interfaces::srv::VideoOut>("start_video");
+
+  auto request = std::make_shared<interfaces::srv::VideoOut::Request>();
+  request->num_sources = num_sources;
+  request->sources = sources;
+
+  std::chrono::seconds wait_interval(1);
+  int counter_ = 0;
+  while (!client->wait_for_service(wait_interval)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Interrupted while waiting for the service. Exiting.");
+    }
+
+    counter_++;
+    // 5 second timeout
+    if (counter_ >= 5) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Start video service timed out.");
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+                "Service not available, waiting again...");
+  }
+
+  auto future = client->async_send_request(request);
+
+  // Wait for result
+  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(),
+                                         future, std::chrono::seconds(1)) !=
+      rclcpp::FutureReturnCode::SUCCESS) {
+    RCLCPP_ERROR(get_logger(), "Start video service call failed.");
+  }
+
+  RCLCPP_INFO(get_logger(), "Start video service call succeeded.");
+}
+
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
 

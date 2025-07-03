@@ -17,6 +17,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <interfaces/msg/video_source.hpp>
 #include <string>
 #include <vector>
 
@@ -37,7 +38,7 @@ class SourceWidget : public QWidget {
   SourceWidget(QWidget* parent = nullptr);
   ~SourceWidget();
 
-  Source* get_source() const { return source_; }
+  interfaces::msg::VideoSource* get_source() const { return source_; }
 
   bool get_requesting_source_names() const;
 
@@ -58,7 +59,7 @@ class SourceWidget : public QWidget {
 
  private:
   // Source model
-  Source* source_;
+  interfaces::msg::VideoSource* source_;
 
   QVBoxLayout* main_layout_;
   QLabel* source_name_label_;

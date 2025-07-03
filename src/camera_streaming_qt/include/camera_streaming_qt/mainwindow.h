@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <interfaces/msg/video_source.hpp>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,7 @@ class MainWindow : public QMainWindow {
 
  private slots:
   void get_source_names();
+  void receive_preset(std::vector<interfaces::msg::VideoSource> preset);
 
  private:
   CameraClient* camera_client_;

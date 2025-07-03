@@ -54,6 +54,9 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
   connect(preset_widget_, &PresetWidget::request_source_names, this,
           &MainWidget::get_source_names);
 
+  connect(preset_widget_, &PresetWidget::send_preset, this,
+          &MainWidget::receive_preset);
+
   controls_layout_->addWidget(preset_widget_, 1);
 
   main_layout_->addLayout(controls_layout_);
@@ -68,6 +71,11 @@ void MainWidget::receive_source_names(std::vector<std::string> names) {
   if (!preset_widget_) return;
 
   preset_widget_->receive_source_names(names);
+}
+
+void MainWidget::receive_preset(
+    std::vector<interfaces::msg::VideoSource> preset) {
+  emit send_preset(preset);
 }
 
 void MainWidget::set_signal_server_ip(QString ip) {

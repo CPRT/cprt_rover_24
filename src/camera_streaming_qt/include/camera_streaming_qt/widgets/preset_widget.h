@@ -15,10 +15,10 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <interfaces/msg/video_source.hpp>
 #include <string>
 #include <vector>
 
-#include "models/preset_model.h"
 #include "models/source_model.h"
 #include "widgets/source_widget.h"
 
@@ -40,6 +40,7 @@ class PresetWidget : public QWidget {
 
  signals:
   void request_source_names();
+  void send_preset(std::vector<interfaces::msg::VideoSource> preset);
 
  public slots:
   void add_source();
