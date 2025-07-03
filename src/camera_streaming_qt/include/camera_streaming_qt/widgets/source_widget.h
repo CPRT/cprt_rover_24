@@ -21,8 +21,6 @@
 #include <string>
 #include <vector>
 
-#include "models/source_model.h"
-
 /**
  * @class SourceWidget
  * @brief A class for displaying and customizing the properties of a source.
@@ -40,12 +38,29 @@ class SourceWidget : public QWidget {
 
   interfaces::msg::VideoSource* get_source() const { return source_; }
 
+  /**
+   * @brief Returns get_requesting_source_names
+   */
   bool get_requesting_source_names() const;
 
+  /**
+   * @brief Uses names to fill name_combo_box
+   *
+   * @param names List of source names
+   */
   void receive_source_names(std::vector<std::string> names);
 
  signals:
+  /**
+   * @brief Removes this widget from the preset and deletes itself
+   *
+   * @param widget The SourceWidget to remove
+   */
   void request_remove(SourceWidget* widget);
+
+  /**
+   * @brief Gets the source names of all the cameras from CameraClient
+   */
   void request_source_names();
 
  public slots:
@@ -54,7 +69,16 @@ class SourceWidget : public QWidget {
   void set_height(QString height);
   void set_origin_x(QString x);
   void set_origin_y(QString y);
+
+  /**
+   * @brief Called when clicking on the remove source button to remove this
+   * source from the preset
+   */
   void remove_source();
+
+  /**
+   * @brief Called when clicking the refresh button to get the source names
+   */
   void get_source_names();
 
  private:

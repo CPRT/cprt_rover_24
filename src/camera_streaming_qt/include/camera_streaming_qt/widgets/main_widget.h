@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 
-#include "ros_client.h"
 #include "widgets/capture_image_widget.h"
 #include "widgets/preset_widget.h"
 #include "widgets/source_widget.h"
@@ -55,9 +54,15 @@ class MainWidget : public QWidget {
    */
   void set_signal_server_ip(QString ip);
 
+  /**
+   * @brief Receives preset to send to CameraClient
+   */
   void receive_preset(std::vector<interfaces::msg::VideoSource> preset);
 
  private slots:
+  /**
+   * @brief Gets source names from the CameraClient
+   */
   void get_source_names();
 
  private:

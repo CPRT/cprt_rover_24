@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "models/source_model.h"
 #include "widgets/source_widget.h"
 
 /**
@@ -36,16 +35,36 @@ class PresetWidget : public QWidget {
   PresetWidget(QWidget* parent = nullptr);
   ~PresetWidget();
 
-  void get_sources() const;
-
  signals:
+  /**
+   * @brief Gets the source names from CameraClient
+   */
   void request_source_names();
+  
+  /**
+   * @brief Sends this preset to the CameraClient to start video
+   */
   void send_preset(std::vector<interfaces::msg::VideoSource> preset);
 
  public slots:
+  /**
+   * @brief Adds a new SourceWidget to the preset
+   */
   void add_source();
+  
+  /**
+   * @brief Called when clicking on the submit preset button to send this preset to the CameraClient.
+   */
   void submit_preset();
+  
+  /**
+   * @brief Removes given SourceWidget from this preset and deletes it
+   */
   void remove_source(SourceWidget* src);
+  
+  /**
+   * @brief Gets source names from CameraClient
+   */
   void receive_source_names(std::vector<std::string> sources);
 
  private slots:

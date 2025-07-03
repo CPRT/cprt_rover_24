@@ -37,7 +37,6 @@ link_directories(
 
 set(SOURCES
     src/mainwindow.cpp
-    src/ros_client.cpp
     src/widgets/capture_image_widget.cpp
     src/widgets/main_widget.cpp
     src/widgets/preset_widget.cpp
@@ -47,8 +46,6 @@ set(SOURCES
 set(HEADERS
     include/${PROJECT_NAME}/camera_client.h
     include/${PROJECT_NAME}/mainwindow.h
-    include/${PROJECT_NAME}/ros_client.h
-    include/${PROJECT_NAME}/models/source_model.h
     include/${PROJECT_NAME}/tests/test_get_camera_node.h
     include/${PROJECT_NAME}/widgets/capture_image_widget.h
     include/${PROJECT_NAME}/widgets/main_widget.h

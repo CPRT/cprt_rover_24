@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "mainwindow.h"
-#include "ros_client.h"
 
 CameraClient::CameraClient() : Node("camera_client_node") {}
 

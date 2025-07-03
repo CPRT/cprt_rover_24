@@ -1,3 +1,10 @@
+/**
+ * @file test_get_camera_node.h
+ * @brief Header file for the GetCameraNode class.
+ * @author Aria Wong
+ * 
+ * This file contains the declaration of the GetCameraNode which is used as a test class for the get_cameras and start_video services.
+ */
 #ifndef TEST_GET_CAMERA_NODE_H
 #define TEST_GET_CAMERA_NODE_H
 
