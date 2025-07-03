@@ -124,20 +124,23 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
         std::hypot(goal.pose.position.x - new_goal.pose.position.x,
                    goal.pose.position.y - new_goal.pose.position.y) /
         interpolation_resolution_;
-    double x_increment = (goal.pose.position.x - new_goal.pose.position.x) /
-                         total_number_of_loop;
-    double y_increment = (goal.pose.position.y - new_goal.pose.position.y) /
-                         total_number_of_loop;
 
-    for (int i = 0; i < total_number_of_loop; ++i) {
-      geometry_msgs::msg::PoseStamped pose;
-      pose.pose.position.x = new_goal.pose.position.x + x_increment * i;
-      pose.pose.position.y = new_goal.pose.position.y + y_increment * i;
-      pose.pose.position.z = 0.0;
-      pose.pose.orientation = new_goal.pose.orientation;
-      pose.header.stamp = node_->now();
-      pose.header.frame_id = global_frame_;
-      global_path.poses.push_back(pose);
+    if (total_number_of_loop > 0) {
+      double x_increment = (goal.pose.position.x - new_goal.pose.position.x) /
+                           total_number_of_loop;
+      double y_increment = (goal.pose.position.y - new_goal.pose.position.y) /
+                           total_number_of_loop;
+
+      for (int i = 0; i < total_number_of_loop; ++i) {
+        geometry_msgs::msg::PoseStamped pose;
+        pose.pose.position.x = new_goal.pose.position.x + x_increment * i;
+        pose.pose.position.y = new_goal.pose.position.y + y_increment * i;
+        pose.pose.position.z = 0.0;
+        pose.pose.orientation = new_goal.pose.orientation;
+        pose.header.stamp = node_->now();
+        pose.header.frame_id = global_frame_;
+        global_path.poses.push_back(pose);
+      }
     }
 
     geometry_msgs::msg::PoseStamped goal_pose = goal;
