@@ -29,7 +29,7 @@ include_directories(
   include
 )
 
-set(library_name ${PROJECT_NAME}_plugin)
+set(library_name ${PROJECT_NAME})
 
 set(dependencies
   rclcpp

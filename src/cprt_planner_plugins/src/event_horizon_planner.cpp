@@ -10,7 +10,7 @@
 namespace cprt_planner_plugins {
 
 EventHorizonPlanner::EventHorizonPlanner()
-    : lp_loader_("nav2_core", "nav2_core::Controller"),
+    : lp_loader_("nav2_core", "nav2_core::GlobalPlanner"),
       primary_planner_(nullptr) {}
 
 void EventHorizonPlanner::configure(
@@ -60,21 +60,26 @@ void EventHorizonPlanner::configure(
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::cleanup() {
-  RCLCPP_INFO(logger_, "CleaningUp plugin %s of type NavfnPlanner",
+  RCLCPP_INFO(logger_, "CleaningUp plugin %s of type EventHorizonPlanner",
               name_.c_str());
   primary_planner_->cleanup();
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::activate() {
-  RCLCPP_INFO(logger_, "Activating plugin %s of type NavfnPlanner",
+  RCLCPP_INFO(logger_, "Activating plugin %s of type EventHorizonPlanner",
               name_.c_str());
+  if (primary_planner_) {
+    RCLCPP_INFO(logger_, "Activate successful");
+  } else {
+    RCLCPP_INFO(logger_, "Planner null");
+  }
   primary_planner_->activate();
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::deactivate() {
-  RCLCPP_INFO(logger_, "Deactivating plugin %s of type NavfnPlanner",
+  RCLCPP_INFO(logger_, "Deactivating plugin %s of type EventHorizonPlanner",
               name_.c_str());
   primary_planner_->deactivate();
 }
@@ -82,6 +87,7 @@ void EventHorizonPlanner::deactivate() {
 nav_msgs::msg::Path EventHorizonPlanner::createPlan(
     const geometry_msgs::msg::PoseStamped& start,
     const geometry_msgs::msg::PoseStamped& goal) {
+  RCLCPP_INFO(logger_, "Creating plan");
   nav_msgs::msg::Path global_path;
 
   // Checking if the goal and start state is in the global frame
@@ -108,8 +114,9 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
   // get path from primary planner
   global_path = primary_planner_->createPlan(start, new_goal);
 
-  if (goal != new_goal) {
+  if (goal != new_goal && false) {
     // create a straight line from new_goal on the horizon to the original goal
+
     int total_number_of_loop =
         std::hypot(goal.pose.position.x - new_goal.pose.position.x,
                    goal.pose.position.y - new_goal.pose.position.y) /
@@ -129,12 +136,12 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
       pose.header.frame_id = global_frame_;
       global_path.poses.push_back(pose);
     }
-  }
 
-  geometry_msgs::msg::PoseStamped goal_pose = goal;
-  goal_pose.header.stamp = node_->now();
-  goal_pose.header.frame_id = global_frame_;
-  global_path.poses.push_back(goal_pose);
+    geometry_msgs::msg::PoseStamped goal_pose = goal;
+    goal_pose.header.stamp = node_->now();
+    goal_pose.header.frame_id = global_frame_;
+    global_path.poses.push_back(goal_pose);
+  }
 
   return global_path;
 }
@@ -149,7 +156,9 @@ geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
                              goal.pose.position.y - start.pose.position.y);
     geometry_msgs::msg::PoseStamped new_goal;
     new_goal.pose.position.x = std::cos(angle);
+    RCLCPP_INFO(logger_, "New goal x: %s", std::cos(angle));
     new_goal.pose.position.y = std::sin(angle);
+    RCLCPP_INFO(logger_, "New goal y: %s", std::sin(angle));
     new_goal.pose.position.y = 0.0;
     new_goal.pose.orientation =
         EulerToQuaternion(goal.pose.position.x - start.pose.position.x,
@@ -163,8 +172,8 @@ geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
   }
 }
 
-geometry_msgs::msg::Quaternion EulerToQuaternion(float roll, float pitch,
-                                                 float yaw) {
+geometry_msgs::msg::Quaternion EventHorizonPlanner::EulerToQuaternion(
+    float roll, float pitch, float yaw) {
   float cy = std::cos(yaw * 0.5);
   float sy = std::sin(yaw * 0.5);
   float cp = std::cos(pitch * 0.5);

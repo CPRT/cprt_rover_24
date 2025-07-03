@@ -1,4 +1,4 @@
-<library path="prt_planner_plugins">
+<library path="cprt_planner_plugins">
 	<class type="cprt_planner_plugins::EventHorizonPlanner" base_class_type="nav2_core::GlobalPlanner">
 	  <description>Placeholder.</description>
 	</class>
