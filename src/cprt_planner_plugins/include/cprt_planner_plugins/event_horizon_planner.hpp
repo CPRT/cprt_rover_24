@@ -1,0 +1,124 @@
+
+#ifndef PLANNER_HPP_
+#define PLANNER_HPP_
+
+#include <limits.h>
+
+#include <memory>
+#include <string>
+
+#include "geometry_msgs/msg/point.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_core/global_planner.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav2_util/lifecycle_node.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "rclcpp/rclcpp.hpp"
+
+namespace cprt_planner_plugins {
+
+/**
+ * @class event_horizon_planner::EventHorizonPlanner
+ * @brief Create a path using another specified planner up to a specified
+ * horizon before completing the rest with a straight line.
+ */
+class EventHorizonPlanner : public nav2_core::GlobalPlanner {
+ public:
+  /**
+   * @brief Constructor for planner::EventHorizonPlanner
+   */
+  EventHorizonPlanner();
+
+  /**
+   * @brief Destructor for planner::EventHorizonPlanner
+   */
+  ~EventHorizonPlanner() = default;
+
+  /**
+   * @brief Configure planner state machine
+   * @param parent WeakPtr to node
+   * @param name Name of plugin
+   * @param tf TF buffer
+   * @param costmap_ros Costmap2DROS object of environment
+   */
+  void configure(
+      const rclcpp_lifecycle::LifecycleNode::WeakPtr& parent, std::string name,
+      std::shared_ptr<tf2_ros::Buffer> tf,
+      std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros) override;
+
+  /**
+   * @brief Cleanup planner state machine
+   */
+  void cleanup() override;
+
+  /**
+   * @brief Activate planner state machine
+   */
+  void activate() override;
+
+  /**
+   * @brief Deactivate planner state machine
+   */
+  void deactivate() override;
+
+  /**
+   * @brief Create plan using primary planner up to the horizon, then a straight
+   * line to the final goal if needed.
+   * @param start Start pose
+   * @param goal Goal pose
+   * @return Path to goal pose from start pose
+   */
+  nav_msgs::msg::Path createPlan(
+      const geometry_msgs::msg::PoseStamped& start,
+      const geometry_msgs::msg::PoseStamped& goal) override;
+
+ private:
+  /**
+   * @brief Provides a new goal pose that is on/within the horizon on the line
+   * between the start and goal if needed.
+   * @param start Start pose
+   * @param goal Goal pose
+   * @return Updated goal pose
+   */
+  geometry_msgs::msg::PoseStamped getNewGoal(
+      const geometry_msgs::msg::PoseStamped& start,
+      const geometry_msgs::msg::PoseStamped& goal);
+
+  /**
+   * @brief Convert euler vector to a quaternion
+   * @param roll
+   * @param pitch
+   * @param yaw
+   * @return Quaternion equivalent
+   */
+  geometry_msgs::msg::Quaternion EulerToQuaternion(float roll, float pitch,
+                                                   float yaw);
+
+  // parameters
+
+  pluginlib::ClassLoader<nav2_core::GlobalPlanner> lp_loader_;
+
+  nav2_core::GlobalPlanner::Ptr primary_planner_;
+
+  std::shared_ptr<tf2_ros::Buffer> tf_;
+
+  nav2_util::LifecycleNode::SharedPtr node_;
+
+  nav2_costmap_2d::Costmap2D* costmap_;
+
+  std::string global_frame_, name_;
+
+  double interpolation_resolution_;
+
+  double const DEFAULT_INTERPOLATION_RESOLUTION = 0.1;
+
+  double horizon_distance_;
+
+  double const DEFAULT_HORIZON_DISTANCE = std::numeric_limits<double>::max();
+
+  rclcpp::Logger logger_{rclcpp::get_logger("RotationShimController")};
+};
+
+}  // namespace cprt_planner_plugins
+
+#endif

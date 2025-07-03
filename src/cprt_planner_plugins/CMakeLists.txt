@@ -49,7 +49,7 @@ set(dependencies
 )
 
 add_library(${library_name} SHARED
-  src/planner.cpp
+  src/event_horizon_planner.cpp
 )
 
 ament_target_dependencies(${library_name}
