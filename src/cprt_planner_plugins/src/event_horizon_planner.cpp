@@ -1,4 +1,3 @@
-
 #include "cprt_planner_plugins/event_horizon_planner.hpp"
 
 #include <cmath>
@@ -56,6 +55,10 @@ void EventHorizonPlanner::configure(
   }
 
   primary_planner_->configure(parent, name, tf, costmap_ros);
+
+  new_goal_publisher_ =
+      node_->create_publisher<geometry_msgs::msg::PoseStamped>(
+          "intermediate_goal", 10);
 }
 
 // taken from ros-navigation/navigation2_tutorials
@@ -114,7 +117,7 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
   // get path from primary planner
   global_path = primary_planner_->createPlan(start, new_goal);
 
-  if (goal != new_goal && false) {
+  if (goal != new_goal) {
     // create a straight line from new_goal on the horizon to the original goal
 
     int total_number_of_loop =
@@ -149,27 +152,31 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
 geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
     const geometry_msgs::msg::PoseStamped& start,
     const geometry_msgs::msg::PoseStamped& goal) {
+  geometry_msgs::msg::PoseStamped new_goal;
+
   if (std::sqrt(std::pow(goal.pose.position.x - start.pose.position.x, 2) +
                 std::pow(goal.pose.position.y - start.pose.position.y, 2)) >
       horizon_distance_) {
-    float angle = std::atan2(goal.pose.position.x - start.pose.position.x,
-                             goal.pose.position.y - start.pose.position.y);
-    geometry_msgs::msg::PoseStamped new_goal;
-    new_goal.pose.position.x = std::cos(angle);
-    RCLCPP_INFO(logger_, "New goal x: %s", std::cos(angle));
-    new_goal.pose.position.y = std::sin(angle);
-    RCLCPP_INFO(logger_, "New goal y: %s", std::sin(angle));
-    new_goal.pose.position.y = 0.0;
-    new_goal.pose.orientation =
-        EulerToQuaternion(goal.pose.position.x - start.pose.position.x,
-                          goal.pose.position.y - start.pose.position.y,
-                          goal.pose.position.z - start.pose.position.z);
+    float angle = std::atan2(goal.pose.position.y - start.pose.position.y,
+                             goal.pose.position.x - start.pose.position.x);
+    new_goal.pose.position.x =
+        start.pose.position.x + horizon_distance_ * std::cos(angle);
+    RCLCPP_INFO(logger_, "New goal x: %f", new_goal.pose.position.x);
+    new_goal.pose.position.y =
+        start.pose.position.y + horizon_distance_ * std::sin(angle);
+    RCLCPP_INFO(logger_, "New goal y: %f", new_goal.pose.position.y);
+    new_goal.pose.position.z = 0.0;
+    new_goal.pose.orientation = EulerToQuaternion(0.0, 0.0, angle);
     new_goal.header.stamp = node_->now();
     new_goal.header.frame_id = global_frame_;
-    return new_goal;
   } else {
-    return goal;
+    new_goal = goal;
   }
+
+  // Publish the new goal
+  new_goal_publisher_->publish(new_goal);
+
+  return new_goal;
 }
 
 geometry_msgs::msg::Quaternion EventHorizonPlanner::EulerToQuaternion(

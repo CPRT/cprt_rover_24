@@ -106,6 +106,9 @@ class EventHorizonPlanner : public nav2_core::GlobalPlanner {
 
   nav2_costmap_2d::Costmap2D* costmap_;
 
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr
+      new_goal_publisher_;
+
   std::string global_frame_, name_;
 
   double interpolation_resolution_;
