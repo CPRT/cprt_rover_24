@@ -24,6 +24,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm # Colormap module
 import scipy.ndimage # Import for image processing operations (blur, zoom)
 import math # For math.ceil
+import traceback
 
 # --- Utility Functions ---
 
@@ -155,7 +156,7 @@ def download_dtm_data_from_kml_index(base_data_directory_url, local_kml_folder, 
     Downloads all available DTM GeoTIFF files based on a KML index.
 
     Args:
-        base_data_directory_url (str): The base URL containing the KMZ index file.
+        base_directory_url (str): The base URL containing the KMZ index file.
         local_kml_folder (str): Folder to store the KMZ and its extracted KML content (will not be deleted).
         output_dtm_folder (str): The local folder to save all downloaded GeoTIFFs.
 
@@ -445,6 +446,31 @@ def write_elevation_costmap(cost_array, costmap_origin_transform, costmap_crs, o
     center_y = (miny + maxy) / 2
     center_lon, center_lat = wgs84_transformer.transform(center_x, center_y)
 
+    # --- Calculate Map Heading ---
+    # The "up" direction of the map corresponds to the vector pointing from a pixel
+    # to the pixel directly above it in the image (decreasing row index).
+    # This vector in pixel space is (0, -1).
+    # Applying the affine transform to this vector gives its direction in world coordinates:
+    # dx = transform.a * 0 + transform.b * (-1) = -transform.b
+    # dy = transform.d * 0 + transform.e * (-1) = -transform.e
+    up_vector_x = -costmap_origin_transform.b
+    up_vector_y = -costmap_origin_transform.e
+
+    # Calculate the angle of this "up" vector counter-clockwise from the positive Easting (X) axis.
+    # math.atan2 returns an angle in radians in the range (-pi, pi].
+    angle_rad_ccw_from_easting = math.atan2(up_vector_y, up_vector_x)
+    angle_deg_ccw_from_easting = math.degrees(angle_rad_ccw_from_easting)
+
+    # Normalize the angle to be within [0, 360)
+    map_north_direction_deg_ccw_from_easting = (angle_deg_ccw_from_easting % 360 + 360) % 360
+
+    # Calculate heading clockwise from North (0 degrees).
+    # North is +Y, which is 90 degrees CCW from +X (Easting).
+    # So, angle from North CCW = (angle from Easting CCW) - 90
+    # heading clockwise from North = (360 - angle from North CCW) % 360
+    angle_from_north_ccw = map_north_direction_deg_ccw_from_easting - 90
+    map_heading_degrees_clockwise_from_north = (360 - angle_from_north_ccw) % 360
+
     metadata = {
         'filename': os.path.basename(image_filename),
         'resolution_m': resolution_m,
@@ -458,6 +484,11 @@ def write_elevation_costmap(cost_array, costmap_origin_transform, costmap_crs, o
         'center_lat_lon': {
             'lat': center_lat,
             'lon': center_lon
+        },
+        # New metadata fields for map orientation/heading
+        'map_orientation': {
+            'map_north_direction_deg_ccw_from_easting': map_north_direction_deg_ccw_from_easting, # Angle of the "up" vector
+            'heading_deg_clockwise_from_north': map_heading_degrees_clockwise_from_north
         }
     }
 
@@ -693,6 +724,7 @@ class CanElevationDownloader(Node): # Renamed node
                         self.get_logger().error(f"Error reading GeoTIFF file {dtm_filepath}: {e}. Skipping tile.")
                     except Exception as e:
                         self.get_logger().error(f"An unexpected error occurred while processing tile {dtm_filepath}: {e}. Skipping tile.")
+                        traceback.print_exc()
             
             response.success = True
             response.message = "All elevation costmaps generated successfully."
