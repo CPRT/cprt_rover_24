@@ -72,11 +72,10 @@ void EventHorizonPlanner::cleanup() {
 void EventHorizonPlanner::activate() {
   RCLCPP_INFO(logger_, "Activating plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  if (primary_planner_) {
-    RCLCPP_INFO(logger_, "Activate successful");
-  } else {
-    RCLCPP_INFO(logger_, "Planner null");
-  }
+  if (!primary_planner_) {
+    RCLCPP_FATAL(logger_, "primary_planner_ is null in activate(). Aborting.");
+    std::terminate();
+  }  
   primary_planner_->activate();
 }
 
