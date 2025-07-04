@@ -63,7 +63,7 @@ void EventHorizonPlanner::configure(
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::cleanup() {
-  RCLCPP_INFO(logger_, "CleaningUp plugin %s of type EventHorizonPlanner",
+  RCLCPP_INFO(logger_, "Cleaning up plugin %s of type EventHorizonPlanner",
               name_.c_str());
   primary_planner_->cleanup();
 }
