@@ -165,8 +165,8 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       rolling_window: false
-      height: 500
-      width: 500
+      height: 1000
+      width: 1000
       origin_x: -500.0
       origin_y: -500.0
       use_sim_time: True
@@ -213,8 +213,12 @@ planner_server:
     planner_plugins: ["GridBased"]
     use_sim_time: True
 
+
     GridBased:
-      plugin: "nav2_smac_planner/SmacPlannerHybrid" # In Iron and older versions, "/" was used instead of "::"
+      plugin: "cprt_planner_plugins::EventHorizonPlanner" # In Iron and older versions, "/" was used instead of "::"
+      primary_planner: "nav2_smac_planner/SmacPlannerHybrid"
+      interpolation_resolution: 0.1       
+      horizon_distance: 20.0
       downsample_costmap: true            # whether or not to downsample the map
       downsampling_factor: 2              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
       tolerance: 0.5                      # dist-to-goal heuristic cost (distance) for valid tolerance endpoints if exact goal cannot be found.
@@ -243,6 +247,8 @@ planner_server:
       downsample_obstacle_heuristic: True
       allow_primitive_interpolation: False
       smooth_path: True                   # If true, does a simple and quick smoothing post-processing to the path
+
+      
 
     # TODO: Uncomment when using the GridBased 
     # GridBased:
