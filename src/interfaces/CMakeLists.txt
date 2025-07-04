@@ -37,6 +37,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/VideoCapture.srv"
   "srv/GetCameras.srv"
   "srv/Raman.srv"
+  "msg/MotorControl.msg"
+  "msg/MotorStatus.msg"
   DEPENDENCIES 
   builtin_interfaces
   geometry_msgs 

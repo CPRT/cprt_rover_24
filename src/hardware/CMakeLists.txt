@@ -91,7 +91,6 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(ros_phoenix REQUIRED)
 
 
 include_directories(
@@ -120,12 +119,11 @@ ament_target_dependencies(${PROJECT_NAME}
   "std_msgs"
   "interfaces"
   "rclcpp_lifecycle"
-  "ros_phoenix"
   )
 target_link_libraries(${PROJECT_NAME}
   ${PHOENIX_LIBRARIES}
   Threads::Threads
-  ros_phoenix__rosidl_typesupport_cpp)
+)
 
 # Register plugins for control
 pluginlib_export_plugin_description_file(hardware_interface ros_phoenix_hardware.xml)
@@ -135,18 +133,6 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})
-
-# Install headers
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
-
-# Install launch files.
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
