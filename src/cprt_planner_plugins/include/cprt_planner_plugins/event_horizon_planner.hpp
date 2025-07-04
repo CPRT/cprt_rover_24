@@ -80,7 +80,7 @@ class EventHorizonPlanner : public nav2_core::GlobalPlanner {
    * @param goal Goal pose
    * @return Updated goal pose
    */
-  geometry_msgs::msg::PoseStamped getNewGoal(
+  const geometry_msgs::msg::PoseStamped getNewGoal(
       const geometry_msgs::msg::PoseStamped& start,
       const geometry_msgs::msg::PoseStamped& goal);
 
@@ -91,8 +91,9 @@ class EventHorizonPlanner : public nav2_core::GlobalPlanner {
    * @param yaw
    * @return Quaternion equivalent
    */
-  geometry_msgs::msg::Quaternion EulerToQuaternion(float roll, float pitch,
-                                                   float yaw);
+  static geometry_msgs::msg::Quaternion EulerToQuaternion(float roll,
+                                                          float pitch,
+                                                          float yaw);
 
   // parameters
 

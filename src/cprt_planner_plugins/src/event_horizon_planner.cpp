@@ -76,7 +76,7 @@ void EventHorizonPlanner::activate() {
   if (!primary_planner_) {
     RCLCPP_FATAL(logger_, "primary_planner_ is null in activate(). Aborting.");
     std::terminate();
-  }  
+  }
   primary_planner_->activate();
 }
 
@@ -152,7 +152,7 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
   return global_path;
 }
 
-geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
+const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
     const geometry_msgs::msg::PoseStamped& start,
     const geometry_msgs::msg::PoseStamped& goal) {
   geometry_msgs::msg::PoseStamped new_goal;
@@ -169,7 +169,8 @@ geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
         start.pose.position.y + horizon_distance_ * std::sin(angle);
     RCLCPP_INFO(logger_, "New goal y: %f", new_goal.pose.position.y);
     new_goal.pose.position.z = 0.0;
-    new_goal.pose.orientation = EulerToQuaternion(0.0, 0.0, angle);
+    new_goal.pose.orientation =
+        EventHorizonPlanner::EulerToQuaternion(0.0, 0.0, angle);
     new_goal.header.stamp = node_->now();
     new_goal.header.frame_id = global_frame_;
   } else {
