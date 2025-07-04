@@ -56,6 +56,7 @@ void EventHorizonPlanner::configure(
 
   primary_planner_->configure(parent, name, tf, costmap_ros);
 
+  // Create a publisher to a topic to help visualize the intermediate goal.
   new_goal_publisher_ =
       node_->create_publisher<geometry_msgs::msg::PoseStamped>(
           "intermediate_goal", 10);
