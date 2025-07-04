@@ -78,6 +78,14 @@ class MainWidget : public QWidget {
   QPushButton* drive_eef_preset_button_;
   QPushButton* eef_drive_preset_button_;
 
+  // Functions for sending presets to CameraClient
+  void send_drive_preset();
+  void send_eef_preset();
+  void send_microscope_preset();
+  void send_belly_preset();
+  void send_drive_eef_preset();
+  void send_eef_drive_preset();
+
   // Signal server UI
   QHBoxLayout* signal_server_layout_;
   QLineEdit* server_ip_line_edit_;

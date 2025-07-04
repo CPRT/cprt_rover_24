@@ -10,21 +10,33 @@ MainWidget::MainWidget(QWidget* parent) : QWidget(parent) {
 
   drive_preset_button_ = new QPushButton("Drive");
   preset_layout_->addWidget(drive_preset_button_);
+  connect(drive_preset_button_, &QPushButton::clicked, this,
+          &MainWidget::send_drive_preset);
 
   eef_preset_button_ = new QPushButton("EEF");
   preset_layout_->addWidget(eef_preset_button_);
+  connect(eef_preset_button_, &QPushButton::clicked, this,
+          &MainWidget::send_eef_preset);
 
   microscope_preset_button_ = new QPushButton("Microscope");
   preset_layout_->addWidget(microscope_preset_button_);
+  connect(microscope_preset_button_, &QPushButton::clicked, this,
+          &MainWidget::send_microscope_preset);
 
   belly_preset_button_ = new QPushButton("Belly");
   preset_layout_->addWidget(belly_preset_button_);
+  connect(belly_preset_button_, &QPushButton::clicked, this,
+          &MainWidget::send_belly_preset);
 
   drive_eef_preset_button_ = new QPushButton("Drive + EEF");
   preset_layout_->addWidget(drive_eef_preset_button_);
+  connect(drive_eef_preset_button_, &QPushButton::clicked, this,
+          &MainWidget::send_drive_eef_preset);
 
   eef_drive_preset_button_ = new QPushButton("EEF + Drive");
   preset_layout_->addWidget(eef_drive_preset_button_);
+  connect(eef_drive_preset_button_, &QPushButton::clicked, this,
+          &MainWidget::send_eef_drive_preset);
 
   main_layout_->addLayout(preset_layout_);
 
@@ -84,3 +96,89 @@ void MainWidget::set_signal_server_ip(QString ip) {
 }
 
 void MainWidget::get_source_names() { emit request_source_names(); }
+
+void MainWidget::send_drive_preset() {
+  std::vector<interfaces::msg::VideoSource> preset;
+  interfaces::msg::VideoSource drive;
+  drive.name = "Drive";
+  drive.width = 100;
+  drive.height = 100;
+  preset.push_back(drive);
+
+  emit send_preset(preset);
+}
+
+void MainWidget::send_eef_preset() {
+  std::vector<interfaces::msg::VideoSource> preset;
+  interfaces::msg::VideoSource eef;
+  eef.name = "EndEffector";
+  eef.width = 100;
+  eef.height = 100;
+  preset.push_back(eef);
+
+  emit send_preset(preset);
+}
+
+void MainWidget::send_microscope_preset() {
+  std::vector<interfaces::msg::VideoSource> preset;
+  interfaces::msg::VideoSource microscope;
+  microscope.name = "Microscope";
+  microscope.width = 100;
+  microscope.height = 100;
+  preset.push_back(microscope);
+
+  emit send_preset(preset);
+}
+
+void MainWidget::send_belly_preset() {
+  std::vector<interfaces::msg::VideoSource> preset;
+  interfaces::msg::VideoSource belly;
+  belly.name = "Bottom";
+  belly.width = 100;
+  belly.height = 100;
+  preset.push_back(belly);
+
+  emit send_preset(preset);
+}
+
+void MainWidget::send_drive_eef_preset() {
+  std::vector<interfaces::msg::VideoSource> preset;
+
+  interfaces::msg::VideoSource drive;
+  interfaces::msg::VideoSource eef;
+
+  drive.name = "Drive";
+  drive.width = 100;
+  drive.height = 100;
+  preset.push_back(drive);
+
+  eef.name = "EndEffector";
+  eef.width = 30;
+  eef.height = 30;
+  eef.origin_x = 70;
+  eef.origin_y = 0;
+  preset.push_back(eef);
+
+  emit send_preset(preset);
+}
+
+void MainWidget::send_eef_drive_preset() {
+  std::vector<interfaces::msg::VideoSource> preset;
+
+  interfaces::msg::VideoSource eef;
+  interfaces::msg::VideoSource drive;
+
+  eef.name = "EndEffector";
+  eef.width = 100;
+  eef.height = 100;
+  preset.push_back(eef);
+
+  drive.name = "Drive";
+  drive.width = 30;
+  drive.height = 30;
+  drive.origin_x = 70;
+  drive.origin_y = 0;
+  preset.push_back(drive);
+
+  emit send_preset(preset);
+}

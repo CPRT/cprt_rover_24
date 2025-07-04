@@ -40,7 +40,7 @@ class PresetWidget : public QWidget {
    * @brief Gets the source names from CameraClient
    */
   void request_source_names();
-  
+
   /**
    * @brief Sends this preset to the CameraClient to start video
    */
@@ -51,17 +51,18 @@ class PresetWidget : public QWidget {
    * @brief Adds a new SourceWidget to the preset
    */
   void add_source();
-  
+
   /**
-   * @brief Called when clicking on the submit preset button to send this preset to the CameraClient.
+   * @brief Called when clicking on the submit preset button to send this preset
+   * to the CameraClient.
    */
   void submit_preset();
-  
+
   /**
    * @brief Removes given SourceWidget from this preset and deletes it
    */
   void remove_source(SourceWidget* src);
-  
+
   /**
    * @brief Gets source names from CameraClient
    */
