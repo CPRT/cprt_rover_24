@@ -157,17 +157,17 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
     const geometry_msgs::msg::PoseStamped& goal) {
   geometry_msgs::msg::PoseStamped new_goal;
 
-  if (std::sqrt(std::pow(goal.pose.position.x - start.pose.position.x, 2) +
-                std::pow(goal.pose.position.y - start.pose.position.y, 2)) >
-      horizon_distance_) {
+  const double distance_to_goal =
+      std::sqrt(std::pow(goal.pose.position.x - start.pose.position.x, 2) +
+                std::pow(goal.pose.position.y - start.pose.position.y, 2));
+
+  if (distance_to_goal > horizon_distance_) {
     float angle = std::atan2(goal.pose.position.y - start.pose.position.y,
                              goal.pose.position.x - start.pose.position.x);
     new_goal.pose.position.x =
         start.pose.position.x + horizon_distance_ * std::cos(angle);
-    RCLCPP_INFO(logger_, "New goal x: %f", new_goal.pose.position.x);
     new_goal.pose.position.y =
         start.pose.position.y + horizon_distance_ * std::sin(angle);
-    RCLCPP_INFO(logger_, "New goal y: %f", new_goal.pose.position.y);
     new_goal.pose.position.z = 0.0;
     new_goal.pose.orientation =
         EventHorizonPlanner::EulerToQuaternion(0.0, 0.0, angle);
@@ -179,6 +179,9 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
 
   // Publish the new goal
   new_goal_publisher_->publish(new_goal);
+
+  RCLCPP_INFO(logger_, "Intermediate goal: %f, %f", new_goal.pose.position.x,
+              new_goal.pose.position.y);
 
   return new_goal;
 }
