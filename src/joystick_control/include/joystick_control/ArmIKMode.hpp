@@ -8,8 +8,8 @@
 #include "interfaces/srv/move_servo.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-const std::string CAM_FRAME_ID = "eef_link";
-const std::string BASE_FRAME_ID = "Link_1";
+const std::string CAM_FRAME_ID = "Link_6";
+const std::string BASE_FRAME_ID = "Link_2";
 
 class ArmIKMode : public Mode {
  public:
