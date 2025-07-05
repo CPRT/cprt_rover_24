@@ -6,6 +6,11 @@
 
 #include "nav2_util/node_utils.hpp"
 
+using nav2_costmap_2d::FREE_SPACE;
+using nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::NO_INFORMATION;
+
 namespace cprt_planner_plugins {
 
 EventHorizonPlanner::EventHorizonPlanner()
@@ -45,6 +50,9 @@ void EventHorizonPlanner::configure(
       node_, name_ + ".horizon_distance",
       rclcpp::ParameterValue(DEFAULT_HORIZON_DISTANCE));
   node_->get_parameter(name_ + ".horizon_distance", horizon_distance_);
+
+  angle_offset_increment =
+      interpolation_resolution_ / (2 * M_PI * horizon_distance_);
 
   try {
     primary_planner_ = lp_loader_.createUniqueInstance(primary_planner);
@@ -173,6 +181,43 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
         EventHorizonPlanner::EulerToQuaternion(0.0, 0.0, angle);
     new_goal.header.stamp = node_->now();
     new_goal.header.frame_id = global_frame_;
+
+    // Check intermediate point validity and repeat process until a valid point
+    // is found or all angles have been checked
+    double angle_offset = 0;
+    while (costmap_->getCost(new_goal.pose.position.x,
+                             new_goal.pose.position.y) != FREE_SPACE &&
+           costmap_->getCost(new_goal.pose.position.x,
+                             new_goal.pose.position.y) != NO_INFORMATION &&
+           std::abs(angle_offset) <= M_PI) {
+      if (angle_offset <= 0) {
+        angle_offset -= angle_offset_increment;
+      }
+
+      angle_offset = -1 * angle_offset;
+
+      float angle_from_start = angle + angle_offset;
+
+      new_goal.pose.position.x = start.pose.position.x +
+                                 horizon_distance_ * std::cos(angle_from_start);
+      new_goal.pose.position.y = start.pose.position.y +
+                                 horizon_distance_ * std::sin(angle_from_start);
+      new_goal.pose.position.z = 0.0;
+
+      float angle_to_goal =
+          std::atan2(goal.pose.position.y - new_goal.pose.position.y,
+                     goal.pose.position.x - new_goal.pose.position.x);
+      new_goal.pose.orientation =
+          EventHorizonPlanner::EulerToQuaternion(0.0, 0.0, angle_to_goal);
+      new_goal.header.stamp = node_->now();
+    }
+
+    if (std::abs(angle_offset) > M_PI) {
+      new_goal = goal;
+      RCLCPP_INFO(logger_,
+                  "Could not find valid point on horizon, sending final goal "
+                  "to primary planner instead.");
+    }
   } else {
     new_goal = goal;
   }
