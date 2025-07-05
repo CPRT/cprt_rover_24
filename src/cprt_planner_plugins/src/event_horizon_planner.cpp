@@ -182,19 +182,31 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
     new_goal.header.stamp = node_->now();
     new_goal.header.frame_id = global_frame_;
 
+
+    unsigned int mx = 0;
+    unsigned int my = 0;
+    costmap_->worldToMap(new_goal.pose.position.x, new_goal.pose.position.y, mx,
+                         my);
+    
+                         if (costmap_->getCost(mx, my) >= 200) {
+                          new_goal= goal;
+                         }
+
+    /*
     // Check intermediate point validity and repeat process until a valid point
     // is found or all angles have been checked
     double angle_offset = 0;
-    while (costmap_->getCost(new_goal.pose.position.x,
-                             new_goal.pose.position.y) != FREE_SPACE &&
-           costmap_->getCost(new_goal.pose.position.x,
-                             new_goal.pose.position.y) != NO_INFORMATION &&
+    RCLCPP_INFO(logger_, "COST %d cost", costmap_->getCost(mx, my));
+    while (costmap_->getCost(mx, my) > 200 &&
+           costmap_->getCost(mx, my) != NO_INFORMATION &&
            std::abs(angle_offset) <= M_PI) {
       if (angle_offset <= 0) {
         angle_offset -= angle_offset_increment;
       }
 
       angle_offset = -1 * angle_offset;
+      RCLCPP_INFO(logger_, "LOOPING, angle at %f, %d cost, %u, %u",
+                  angle_offset, costmap_->getCost(mx, my), mx, my);
 
       float angle_from_start = angle + angle_offset;
 
@@ -210,6 +222,9 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
       new_goal.pose.orientation =
           EventHorizonPlanner::EulerToQuaternion(0.0, 0.0, angle_to_goal);
       new_goal.header.stamp = node_->now();
+
+      costmap_->worldToMap(new_goal.pose.position.x, new_goal.pose.position.y,
+                           mx, my);
     }
 
     if (std::abs(angle_offset) > M_PI) {
@@ -218,6 +233,7 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
                   "Could not find valid point on horizon, sending final goal "
                   "to primary planner instead.");
     }
+                  */
   } else {
     new_goal = goal;
   }
