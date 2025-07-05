@@ -1,6 +1,7 @@
 
 #ifndef CPRT_PLANNER_PLUGINS_EVENT_HORIZON_PLANNER_HPP_
 #define CPRT_PLANNER_PLUGINS_EVENT_HORIZON_PLANNER_HPP_
+#define _USE_MATH_DEFINES
 
 #include <limits.h>
 
@@ -121,6 +122,8 @@ class EventHorizonPlanner : public nav2_core::GlobalPlanner {
   double const DEFAULT_HORIZON_DISTANCE = std::numeric_limits<double>::max();
 
   rclcpp::Logger logger_{rclcpp::get_logger("RotationShimController")};
+
+  double angle_offset_increment;
 };
 
 }  // namespace cprt_planner_plugins
