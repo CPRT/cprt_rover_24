@@ -44,7 +44,7 @@ void ArmIKMode::handleTwist(
   twist_msg.header.frame_id = frame_to_publish_;
 
   twist_msg.twist.linear.x = joystickMsg->axes[kxAxis];
-  twist_msg.twist.linear.y = -joystickMsg->axes[kyAxis];
+  twist_msg.twist.linear.y = joystickMsg->axes[kyAxis];
   twist_msg.twist.linear.z =
       joystickMsg->buttons[kUpBut] - joystickMsg->buttons[kDownBut];
   twist_msg.twist.angular.x = joystickMsg->axes[kAroundX];

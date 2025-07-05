@@ -4,7 +4,7 @@ namespace motors = ctre::phoenix::motorcontrol;
 
 TalonSRXWrapper::TalonSRXWrapper(const hardware_interface::ComponentInfo &joint,
                                  std::shared_ptr<rclcpp::Node> debug_node)
-    : info_(joint), kP_(0), kI_(0), kD_(0), debug_node_(debug_node) {
+    : info_(joint), kP_(0), kI_(0), kD_(0), kF_(0), debug_node_(debug_node) {
   id_ = -1;
   control_type_ = motors::ControlMode::Disabled;
   position_ = 0.0;
@@ -13,7 +13,7 @@ TalonSRXWrapper::TalonSRXWrapper(const hardware_interface::ComponentInfo &joint,
   talon_controller_ = nullptr;
   debug_pub_ = nullptr;
   debug_timer_ = nullptr;
-  sensor_type_ = motors::FeedbackDevice::CTRE_MagEncoder_Relative;
+  sensor_type_ = motors::TalonSRXFeedbackDevice::CTRE_MagEncoder_Relative;
   sensor_ticks_ = 4096;
   sensor_offset_ = 0.0;
   crossover_mode_ = false;
@@ -31,7 +31,7 @@ TalonSRXWrapper::TalonSRXWrapper(const hardware_interface::ComponentInfo &joint,
       sensor_ticks_ = std::stoi(param.second);
     } else if (param.first == "sensor_offset") {
       sensor_offset_ = std::stod(param.second);
-    } else if (param.first == "crossover_mode") {
+    } else if (param.first == "crossover") {
       crossover_mode_ = (param.second == "true");
     } else if (param.first == "kP") {
       kP_ = std::stod(param.second);
@@ -39,10 +39,18 @@ TalonSRXWrapper::TalonSRXWrapper(const hardware_interface::ComponentInfo &joint,
       kI_ = std::stod(param.second);
     } else if (param.first == "kD") {
       kD_ = std::stod(param.second);
+    } else if (param.first == "kF") {
+      kF_ = std::stod(param.second);
+    } else if (param.first == "crossover_mode") {
+      crossover_mode_ = (param.second == "true");
     } else if (param.first == "debug_frequency") {
       freq = std::stoi(param.second);
     } else if (param.first == "can_interface") {
       can_interface = param.second;
+    } else if (param.first == "invert") {
+      inverted_ = (param.second == "true");
+    } else if (param.first == "invert_sensor") {
+      invert_sensor_ = (param.second == "true");
     } else {
       RCLCPP_WARN(debug_node_->get_logger(),
                   "[%s] Unknown parameter: %s, ignoring", joint.name.c_str(),
@@ -89,12 +97,12 @@ TalonSRXWrapper::TalonSRXWrapper(const hardware_interface::ComponentInfo &joint,
   std::transform(sensor_type_str.begin(), sensor_type_str.end(),
                  sensor_type_str.begin(),
                  [](unsigned char c) { return std::tolower(c); });
-  if (sensor_type_str == "relative") {
-    sensor_type_ = motors::FeedbackDevice::CTRE_MagEncoder_Relative;
+  if (sensor_type_str == "quadrature") {
+    sensor_type_ = motors::TalonSRXFeedbackDevice::CTRE_MagEncoder_Relative;
   } else if (sensor_type_str == "absolute") {
-    sensor_type_ = motors::FeedbackDevice::CTRE_MagEncoder_Absolute;
+    sensor_type_ = motors::TalonSRXFeedbackDevice::CTRE_MagEncoder_Absolute;
   } else if (sensor_type_str == "analog") {
-    sensor_type_ = motors::FeedbackDevice::Analog;
+    sensor_type_ = motors::TalonSRXFeedbackDevice::Analog;
   }
 }
 
@@ -119,26 +127,29 @@ void TalonSRXWrapper::write() {
   if (control_type_ == motors::ControlMode::Position) {
     output = (command_ - sensor_offset_) * sensor_ticks_ / (2.0 * M_PI);
   } else if (control_type_ == motors::ControlMode::Velocity) {
-    output = command_ * sensor_ticks_ / (2.0 * M_PI);
+    output = command_ * sensor_ticks_ / (2.0 * M_PI) /
+             10.0;  // Convert rad/s to ticks per 100ms
   }
   talon_controller_->Set(control_type_, output);
 }
 
 void TalonSRXWrapper::read() {
   double raw_ticks = talon_controller_->GetSelectedSensorPosition();
-  double offset = sensor_offset_;
-  double ticks_per_rev = static_cast<double>(sensor_ticks_);
-  position_ = ((raw_ticks / ticks_per_rev) * 2.0 * M_PI) + offset;
+  double position = ((raw_ticks / sensor_ticks_) * 2.0 * M_PI) + sensor_offset_;
 
-  // Crossover mode: wrap between 0 and 2pi
+  // Crossover mode: wrap between -pi and pi
   if (crossover_mode_) {
-    position_ = std::fmod(position_, 2.0 * M_PI);
-    if (position_ < 0) position_ += 2.0 * M_PI;
+    position = std::fmod(position + M_PI, 2.0 * M_PI);
+    if (position < 0) position += 2.0 * M_PI;
+    position -= M_PI;
   }
+  position_ = position;
 
   double raw_velocity = talon_controller_->GetSelectedSensorVelocity();
   // Convert raw velocity to rad/s
-  velocity_ = (raw_velocity / ticks_per_rev) * 2.0 * M_PI;
+  // The TalonSRX reports velocity in ticks per 100ms, so we need to convert
+  // it to radians per second.
+  velocity_ = (raw_velocity / sensor_ticks_) * 2.0 * M_PI * 10;
 }
 
 void TalonSRXWrapper::add_state_interface(
@@ -167,10 +178,48 @@ void TalonSRXWrapper::add_command_interface(
   }
 }
 
-void TalonSRXWrapper::activate() {
-  talon_controller_->SetNeutralMode(motors::NeutralMode::Brake);
+void TalonSRXWrapper::configure() {
+  while (true) {
+    if (talon_controller_->GetFirmwareVersion() == -1) {
+      RCLCPP_ERROR_THROTTLE(
+          debug_node_->get_logger(), *debug_node_->get_clock(), 500,
+          "%s: Motor controller not responding, retrying...", __FUNCTION__);
+      continue;
+    }
+    SlotConfiguration slot;
+    slot.kP = kP_;
+    slot.kI = kI_;
+    slot.kD = kD_;
+    // TODO: Add support for F, and other parameters if needed
+    slot.kF = kF_;
+
+    TalonSRXConfiguration config;
+    config.slot0 = slot;
+    config.voltageCompSaturation = 24.0;
+    config.pulseWidthPeriod_EdgesPerRot = sensor_ticks_;
+    config.continuousCurrentLimit = 10.0;
+    config.peakCurrentLimit = 10.0;
+    config.peakCurrentDuration = 100;  // ms
+    talon_controller_->EnableCurrentLimit(true);
+    ErrorCode error =
+        talon_controller_->ConfigAllSettings(config, /*timeout*/ 50);
+    if (error != ErrorCode::OK) {
+      RCLCPP_ERROR_THROTTLE(
+          debug_node_->get_logger(), *debug_node_->get_clock(), 500,
+          "%s: Failed to configure motor controller with code: %d",
+          __FUNCTION__, error);
+      continue;
+    }
+    break;
+  }
+  talon_controller_->SetNeutralMode(NeutralMode::Brake);
+  talon_controller_->ConfigSelectedFeedbackCoefficient(1.0);
   talon_controller_->ConfigSelectedFeedbackSensor(sensor_type_, 0, 0);
-  talon_controller_->Config_kP(0, kP_, 0);
-  talon_controller_->Config_kI(0, kI_, 0);
-  talon_controller_->Config_kD(0, kD_, 0);
+  talon_controller_->EnableVoltageCompensation(true);
+  talon_controller_->SetInverted(inverted_);
+  talon_controller_->SetSensorPhase(invert_sensor_);
+  talon_controller_->SelectProfileSlot(0, 0);
+  RCLCPP_INFO(debug_node_->get_logger(),
+              "%s: Successfully configured Motor Controller %d", __FUNCTION__,
+              id_);
 }

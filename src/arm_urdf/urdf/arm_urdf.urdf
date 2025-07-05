@@ -102,7 +102,7 @@
       link="Link_2" />
     <axis
       xyz="0 0 1" />
-    <limit effort="100.0" velocity="1.0" lower="-100.0" upper="100.0"/>
+    <limit effort="100.0" velocity="0.5" lower="-3.14" upper="3.14"/>
   </joint>
   <link
     name="Link_3">
@@ -264,7 +264,7 @@
       link="Link_5" />
     <axis
       xyz="-0.99059 0 0.1369" />
-    <limit effort="100.0" velocity="1.0" lower="-30.14" upper="30.14"/>
+    <limit effort="100.0" velocity="0.5" lower="-3.14" upper="3.14"/>
   </joint>
   <link
     name="Link_6">
@@ -372,7 +372,7 @@
       link="Link_7" />
     <axis
       xyz="-1 0 0" />
-    <limit effort="100.0" velocity="1.5"/>
+    <limit effort="100.0" velocity="1.0"/>
   </joint>
   <link name="eef_link"/>
   <joint name="eef_joint" type="fixed">

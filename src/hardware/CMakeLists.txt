@@ -130,7 +130,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 # Register plugins for control
-pluginlib_export_plugin_description_file(hardware_interface ros_phoenix_hardware.xml)
+pluginlib_export_plugin_description_file(hardware_interface ros2_control_rover_arm.xml)
 
 # Install Components
 install(TARGETS ${PROJECT_NAME}

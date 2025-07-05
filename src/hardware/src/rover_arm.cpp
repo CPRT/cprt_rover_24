@@ -1,5 +1,9 @@
 #include "rover_arm.hpp"
 
+#include "ctre/phoenix/cci/Unmanaged_CCI.h"
+#include "ctre/phoenix/platform/can/PlatformCAN.h"
+#include "ctre/phoenix/unmanaged/Unmanaged.h"
+
 namespace ros2_control_rover_arm {
 
 hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
@@ -13,7 +17,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
     debug_node_ = std::make_shared<rclcpp::Node>("rover_arm_debug_node");
     try {
       auto controller = std::make_shared<TalonSRXWrapper>(joint, debug_node_);
-      controller->activate();
+      controller->configure();
       controllers_.push_back(controller);
     } catch (const std::exception &e) {
       RCLCPP_FATAL(rclcpp::get_logger("RoverArmHardwareInterface"),
@@ -31,6 +35,7 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
 
 hardware_interface::CallbackReturn RoverArmHardwareInterface::on_configure(
     const rclcpp_lifecycle::State & /*previous_state*/) {
+  c_SetPhoenixDiagnosticsStartTime(1);
   RCLCPP_INFO(rclcpp::get_logger("RoverArmHardwareInterface"),
               "Successfully configured!");
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -81,6 +86,7 @@ hardware_interface::return_type RoverArmHardwareInterface::write(
   for (auto &controller : controllers_) {
     controller->write();
   }
+  ctre::phoenix::unmanaged::Unmanaged::FeedEnable(100);
   return hardware_interface::return_type::OK;
 }
 

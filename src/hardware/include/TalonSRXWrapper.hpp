@@ -39,7 +39,9 @@ class TalonSRXWrapper {
 
   void add_command_interface(
       std::vector<hardware_interface::CommandInterface> &command_interfaces);
-  void activate();
+  void configure();
+
+  static void setup();
 
  private:
   const hardware_interface::ComponentInfo info_;
@@ -49,11 +51,14 @@ class TalonSRXWrapper {
   double kP_;
   double kI_;
   double kD_;
+  double kF_;
   ctre::phoenix::motorcontrol::ControlMode control_type_;
-  ctre::phoenix::motorcontrol::FeedbackDevice sensor_type_;
+  ctre::phoenix::motorcontrol::TalonSRXFeedbackDevice sensor_type_;
   int sensor_ticks_;
   double sensor_offset_;
   bool crossover_mode_;
+  bool inverted_;
+  bool invert_sensor_;
 
   // Interfaces
   double position_;
