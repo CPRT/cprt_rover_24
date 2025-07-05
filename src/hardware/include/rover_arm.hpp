@@ -10,15 +10,12 @@
 #include <string>
 #include <vector>
 
-#define Phoenix_No_WPI
-#include "ctre/Phoenix.h"
+#include "TalonSRXWrapper.hpp"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
-#include "interfaces/msg/motor_control.hpp"
-#include "interfaces/msg/motor_status.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
@@ -30,6 +27,7 @@
 #define RELATIVE 3
 
 namespace ros2_control_rover_arm {
+
 class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
  public:
   RCLCPP_SHARED_PTR_DEFINITIONS(RoverArmHardwareInterface)
@@ -67,25 +65,10 @@ class RoverArmHardwareInterface : public hardware_interface::SystemInterface {
   // hardware commands vector and send it out
   hardware_interface::return_type write(
       const rclcpp::Time &time, const rclcpp::Duration &period) override;
-  // TODO Docs CN
-  static std::string phoenix_to_HW_type(int control_type);
 
  private:
-  std::vector<double> hw_commands_;
-  std::vector<double> hw_position_states_;
-  std::vector<double> hw_velocity_states_;
-  std::vector<int> control_type_;
-  std::vector<std::shared_ptr<ctre::phoenix::motorcontrol::can::TalonSRX>>
-      talon_controllers_;
   rclcpp::Node::SharedPtr debug_node_;
-  std::vector<rclcpp::Publisher<interfaces::msg::MotorStatus>::SharedPtr>
-      status_publishers_;
-  std::vector<double> kP_, kI_, kD_;
-  std::vector<std::string> control_type_str_;
-  std::vector<std::string> sensor_type_;
-  std::vector<int> sensor_ticks_;
-  std::vector<double> sensor_offset_;
-  std::vector<bool> crossover_mode_;
+  std::vector<std::shared_ptr<TalonSRXWrapper>> controllers_;
 };
 
 }  // namespace ros2_control_rover_arm

@@ -91,6 +91,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(ros_phoenix REQUIRED)
 
 
 include_directories(
@@ -109,7 +110,9 @@ add_ctre_library(CTRE_PhoenixCCI cci)
 
 # Create shared library with components and CTRE libraries
 add_library(${PROJECT_NAME} SHARED
-  "src/rover_arm.cpp")
+  "src/rover_arm.cpp"
+  "src/TalonSRXWrapper.cpp"
+)
 ament_target_dependencies(${PROJECT_NAME}
   "rclcpp"
   "hardware_interface"
@@ -119,6 +122,7 @@ ament_target_dependencies(${PROJECT_NAME}
   "std_msgs"
   "interfaces"
   "rclcpp_lifecycle"
+  "ros_phoenix"
   )
 target_link_libraries(${PROJECT_NAME}
   ${PHOENIX_LIBRARIES}
@@ -133,6 +137,12 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})
+
+# Install headers
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
