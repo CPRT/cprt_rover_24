@@ -10,7 +10,7 @@ bool ArmHelpers::start_moveit_servo(rclcpp::Node* node, int attempts) {
     RCLCPP_WARN(node->get_logger(), "Service not available, Waiting...");
     if (++i >= attempts) {
       RCLCPP_ERROR(node->get_logger(),
-                   "Service not available after %d attempts. Quiting...", i);
+                   "Service not available after %d attempts. Giving up", i);
       return false;
     }
   }
