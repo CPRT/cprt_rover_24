@@ -4,8 +4,14 @@ namespace motors = ctre::phoenix::motorcontrol;
 
 TalonSRXWrapper::TalonSRXWrapper(const hardware_interface::ComponentInfo &joint,
                                  std::shared_ptr<rclcpp::Node> debug_node)
-    : info_(joint), kP_(0), kI_(0), kD_(0), kF_(0), debug_node_(debug_node),
-      inverted_(false), invert_sensor_(false) {
+    : info_(joint),
+      kP_(0),
+      kI_(0),
+      kD_(0),
+      kF_(0),
+      debug_node_(debug_node),
+      inverted_(false),
+      invert_sensor_(false) {
   id_ = -1;
   control_type_ = motors::ControlMode::Disabled;
   position_ = 0.0;
