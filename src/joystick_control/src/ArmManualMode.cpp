@@ -12,7 +12,9 @@ ArmManualMode::ArmManualMode(rclcpp::Node* node) : Mode("Manual Arm", node) {
   servo_client_ =
       node_->create_client<interfaces::srv::MoveServo>("servo_service");
   if (!ArmHelpers::start_moveit_servo(node_)) {
-    return;
+    RCLCPP_ERROR(
+        node_->get_logger(),
+        "Failed to start MoveIt servo service, Manual mode will not work");
   }
 
   auto stop_hw_interface_pub =

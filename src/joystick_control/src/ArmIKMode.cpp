@@ -12,7 +12,8 @@ ArmIKMode::ArmIKMode(rclcpp::Node* node) : Mode("IK Arm", node) {
   twist_pub_ = node_->create_publisher<geometry_msgs::msg::TwistStamped>(
       "/servo_node/delta_twist_cmds", 10);
   if (!ArmHelpers::start_moveit_servo(node_)) {
-    return;
+    RCLCPP_ERROR(node_->get_logger(),
+                 "Failed to start MoveIt servo service, IK mode will not work");
   }
 
   auto stop_hw_interface_pub =
