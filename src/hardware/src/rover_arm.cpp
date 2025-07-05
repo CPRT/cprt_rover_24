@@ -12,9 +12,9 @@ hardware_interface::CallbackReturn RoverArmHardwareInterface::on_init(
       hardware_interface::CallbackReturn::SUCCESS) {
     return hardware_interface::CallbackReturn::ERROR;
   }
+  debug_node_ = std::make_shared<rclcpp::Node>("rover_arm_debug_node");
 
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
-    debug_node_ = std::make_shared<rclcpp::Node>("rover_arm_debug_node");
     try {
       auto controller = std::make_shared<TalonSRXWrapper>(joint, debug_node_);
       controller->configure();
