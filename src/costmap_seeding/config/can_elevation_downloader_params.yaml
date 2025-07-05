@@ -1,0 +1,14 @@
+can_elevation_downloader_node:
+  ros__parameters:
+    dataset_parent_dir: "/usr/local/cprt"
+    download_dtms: true
+    dataset_names: ["Drumheller", "Ottawa_Gatineau"]
+    Drumheller_url: "https://ftp.maps.canada.ca/pub/elevation/dem_mne/highresolution_hauteresolution/dtm_mnt/1m/AB/Drumheller/"
+    Ottawa_Gatineau_url: "https://ftp.maps.canada.ca/pub/elevation/dem_mne/highresolution_hauteresolution/dsm_mns/1m/VILLE_OTTAWA/Ottawa_Gatineau_2020/"
+    target_map_resolution_meters: 1.0
+    max_chunk_dimension: 6000
+    slope_weight: 0.7
+    roughness_weight: 0.3
+    max_slope_deg: 25.0
+    max_roughness_m: 0.75
+    roughness_blur_sigma: 4.0
