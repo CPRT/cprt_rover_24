@@ -40,7 +40,7 @@ bool FlightstickControl::checkForModeChange(
       {kScienceModeButton, ModeType::SCIENCE}};
   for (const auto& [buttonIndex, mode] : buttonToMode) {
     if (joystickMsg->buttons[buttonIndex]) {
-      if (!checkAxes(joystickMsg)) {
+      if (!checkAxes(joystickMsg, mode)) {
         RCLCPP_WARN(this->get_logger(),
                     "At least one axis is not 0, can't switch modes");
         return false;
@@ -53,7 +53,7 @@ bool FlightstickControl::checkForModeChange(
 }
 
 bool FlightstickControl::checkAxes(
-    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
+    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg, ModeType nextMode) {
   // key is mode, vector is axes
   static const std::map<ModeType, std::vector<int>> modeParameters = {
       {ModeType::DRIVE, {0, 1, 3, 4}},
@@ -61,15 +61,17 @@ bool FlightstickControl::checkAxes(
       {ModeType::ARM_MANUAL, {0, 1, 4, 5, 6, 7}},
       {ModeType::SCIENCE, {1, 3}},
       {ModeType::ARM_DUMMY, {0, 1, 4, 5, 6, 7}}};  // add nav?
-  auto it = modeParameters.find(currentMode_);
-  if (it != modeParameters.end()) {
-    const auto& axesIndices = it->second;
-    for (int index : axesIndices) {
-      if (index < static_cast<int>(joystickMsg->axes.size())) {
-        if (joystickMsg->axes[index] != 0.0f) {
-          return false;
-        }
-      }
+  auto it = modeParameters.find(nextMode);
+  if (it == modeParameters.end()) {
+    return true;
+  }
+  const auto& axesIndices = it->second;
+  for (const int& index : axesIndices) {
+    if (index >= joystickMsg->axes.size()) {
+      continue;
+    }
+    if (joystickMsg->axes[index] > 0.01) {
+      return false;
     }
   }
   return true;

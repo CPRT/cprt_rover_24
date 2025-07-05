@@ -99,10 +99,11 @@ class FlightstickControl : public rclcpp::Node {
    * This function checks if all relevant axis and button values are 0
    *
    * @param joystickMsg A shared pointer to the received joystick message.
-   * @p
+   * @param nextMode The mode to check against.
    * @return True if all axes (except slider) are 0, false otherwise
    */
-  bool checkAxes(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg);
+  bool checkAxes(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg,
+                 ModeType nextMode);
 
   /**
    * @brief Changes the control mode.
