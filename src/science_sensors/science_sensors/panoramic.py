@@ -8,6 +8,7 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from interfaces.srv import MoveServo
 from interfaces.srv import VideoCapture
+from threading import Event
 
 
 class PanoramicNode(Node):
@@ -74,8 +75,15 @@ class PanoramicNode(Node):
             return
         request = VideoCapture.Request()
         request.source = self.camera_name
+        event = Event()
+
+        def done_callback(future):
+            nonlocal event
+            event.set()
+
         future = self.video_cli.call_async(request)
-        rclpy.spin_until_future_complete(self, future)
+        future.add_done_callback(done_callback)
+        event.wait()
 
         result = future.result()
         if result is None:
