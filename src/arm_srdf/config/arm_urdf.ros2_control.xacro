@@ -28,7 +28,7 @@
         <param name="kP">10.0</param>
         <param name="kI">0.0</param>
         <param name="kD">10.0</param>
-        <param name="kF">100</param>
+        <param name="kF">5.785</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">3.14</param>
@@ -44,7 +44,7 @@
         <param name="kP">30.0</param>
         <param name="kI">0.0</param>
         <param name="kD">3.0</param>
-        <param name="kF">125</param>
+        <param name="kF">5.729</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">2.02401481</param>
@@ -60,7 +60,7 @@
         <param name="kP">2.0</param>
         <param name="kI">0.0</param>
         <param name="kD">0.0</param>
-        <param name="kF">5.0</param>
+        <param name="kF">2.9034</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">4.54</param>
