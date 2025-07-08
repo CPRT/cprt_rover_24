@@ -78,3 +78,24 @@ flightstick_control:
       collection_lock: 180
       throttle_axis: 2
 
+    preset_mode:
+      preset_1_button: 3
+      preset_1:
+        x: 0
+        y: 0
+        z: 0
+      preset_2_button: 4
+      preset_2:
+        x: 0
+        y: 0
+        z: 0
+      preset_3_button: 5
+      preset_3:
+        x: 0
+        y: 0
+        z: 0
+      preset_4_button: 6
+      preset_4:
+        x: 0
+        y: 0
+        z: 0
