@@ -12,6 +12,7 @@ find_package(interfaces REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
@@ -27,7 +28,9 @@ add_executable(flightstick_control
   src/ArmIKMode.cpp
   src/ArmHelpers.cpp
   src/ArmDummyMode.cpp
-  src/ScienceMode.cpp)
+  src/ScienceMode.cpp
+  src/ArmPresetMode.cpp
+  )
 
 # Link the dependencies to the executable
 ament_target_dependencies(flightstick_control
@@ -40,6 +43,7 @@ ament_target_dependencies(flightstick_control
   control_msgs
   std_srvs
   controller_manager_msgs
+  moveit_ros_planning_interface
 )
 
 # Install the executable
