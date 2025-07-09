@@ -7,7 +7,10 @@ ArmPresetMode::ArmPresetMode(rclcpp::Node* node,
       node_(node) {
   RCLCPP_INFO(node_->get_logger(), "Preset Arm Mode Initialized");
 
+  declareParameters(node_);
   loadParameters();
+  move_group_.setMaxAccelerationScalingFactor(1.0);
+  move_group_.setMaxVelocityScalingFactor(1.0);
 }
 
 void ArmPresetMode::processJoystickInput(
@@ -31,7 +34,6 @@ void ArmPresetMode::processJoystickInput(
 
 bool ArmPresetMode::moveToPose(const geometry_msgs::msg::Pose& target_pose) {
   move_group_.setPoseTarget(target_pose);
-
   moveit::planning_interface::MoveGroupInterface::Plan plan;
   bool success =
       (move_group_.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
