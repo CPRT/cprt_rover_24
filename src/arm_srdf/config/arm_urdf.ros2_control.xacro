@@ -28,7 +28,7 @@
         <param name="kP">10.0</param>
         <param name="kI">0.0</param>
         <param name="kD">10.0</param>
-        <param name="kF">5.785</param>
+        <param name="kF">204.3</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">3.14</param>
@@ -44,7 +44,7 @@
         <param name="kP">30.0</param>
         <param name="kI">0.0</param>
         <param name="kD">3.0</param>
-        <param name="kF">5.729</param>
+        <param name="kF">178.6</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">2.02401481</param>
@@ -60,7 +60,7 @@
         <param name="kP">2.0</param>
         <param name="kI">0.0</param>
         <param name="kD">0.0</param>
-        <param name="kF">2.9034</param>
+        <param name="kF">2.903</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">4.54</param>
@@ -76,7 +76,7 @@
         <param name="kP">20.0</param>
         <param name="kI">0.0</param>
         <param name="kD">0.0</param>
-        <param name="kF">7.8</param>
+        <param name="kF">102.8</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">2.54</param>
@@ -92,7 +92,7 @@
         <param name="kP">0.012</param>
         <param name="kI">0.0</param>
         <param name="kD">0.0</param>
-        <param name="kF">0.005</param>
+        <param name="kF">0.023222</param>
         <param name="sensor_type">quadrature</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">1163000</param> <!-- TODO: this number is close but not quite -->
         <param name="sensor_offset">0.0</param>
