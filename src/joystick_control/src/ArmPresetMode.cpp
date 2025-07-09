@@ -7,7 +7,6 @@ ArmPresetMode::ArmPresetMode(rclcpp::Node* node,
       node_(node) {
   RCLCPP_INFO(node_->get_logger(), "Preset Arm Mode Initialized");
 
-  declareParameters(node_);
   loadParameters();
 }
 
@@ -48,9 +47,9 @@ bool ArmPresetMode::moveToPose(const geometry_msgs::msg::Pose& target_pose) {
 }
 
 void ArmPresetMode::declareParameters(rclcpp::Node* node) {
-  auto declare_pose = [node](int index) {
-    std::string base = "preset_mode.presets[" + std::to_string(index) + "]";
-    node->declare_parameter<int>(base + ".button", index);
+  auto declare_pose = [node](const std::string& name, int default_button) {
+    std::string base = "preset_mode." + name;
+    node->declare_parameter<int>(base + ".button", default_button);
 
     std::string pose_base = base + ".pose";
     node->declare_parameter<double>(pose_base + ".x", 0.0);
@@ -62,15 +61,16 @@ void ArmPresetMode::declareParameters(rclcpp::Node* node) {
     node->declare_parameter<double>(pose_base + ".qw", 1.0);
   };
 
-  for (int i = 0; i < 4; ++i) {
-    declare_pose(i);
-  }
+  declare_pose("preset_1", 3);
+  declare_pose("preset_2", 4);
+  declare_pose("preset_3", 5);
+  declare_pose("preset_4", 6);
 }
 
 void ArmPresetMode::loadParameters() {
-  auto load_pose = [this](int index, int& button,
+  auto load_pose = [this](const std::string& name, int& button,
                           geometry_msgs::msg::Pose& pose) {
-    std::string base = "preset_mode.presets[" + std::to_string(index) + "]";
+    std::string base = "preset_mode." + name;
     std::string pose_base = base + ".pose";
 
     node_->get_parameter(base + ".button", button);
@@ -83,8 +83,8 @@ void ArmPresetMode::loadParameters() {
     node_->get_parameter(pose_base + ".qw", pose.orientation.w);
   };
 
-  load_pose(0, preset_1_button_, preset_1_pose_);
-  load_pose(1, preset_2_button_, preset_2_pose_);
-  load_pose(2, preset_3_button_, preset_3_pose_);
-  load_pose(3, preset_4_button_, preset_4_pose_);
+  load_pose("preset_1", preset_1_button_, preset_1_pose_);
+  load_pose("preset_2", preset_2_button_, preset_2_pose_);
+  load_pose("preset_3", preset_3_button_, preset_3_pose_);
+  load_pose("preset_4", preset_4_button_, preset_4_pose_);
 }

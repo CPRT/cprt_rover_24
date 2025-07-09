@@ -78,9 +78,8 @@ flightstick_control:
       collection_lock: 180
       throttle_axis: 2
 
-  preset_mode:
-    presets:
-      - name: preset_1
+    preset_mode:
+      preset_1:
         button: 3
         pose:
           x: 0.0
@@ -90,7 +89,7 @@ flightstick_control:
           qy: 0.0
           qz: 0.0
           qw: 1.0
-      - name: preset_2
+      preset_2:
         button: 4
         pose:
           x: 0.0
@@ -100,7 +99,7 @@ flightstick_control:
           qy: 0.0
           qz: 0.0
           qw: 1.0
-      - name: preset_3
+      preset_3:
         button: 5
         pose:
           x: 0.0
@@ -110,7 +109,7 @@ flightstick_control:
           qy: 0.0
           qz: 0.0
           qw: 1.0
-      - name: preset_4
+      preset_4:
         button: 6
         pose:
           x: 0.0
