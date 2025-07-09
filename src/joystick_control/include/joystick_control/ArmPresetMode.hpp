@@ -22,7 +22,8 @@ class ArmPresetMode : public Mode {
   ArmPresetMode(rclcpp::Node* node, const std::string& planning_group);
 
   /**
-   * @brief Process joystick input to move to a preset pose if a button is pressed.
+   * @brief Process joystick input to move to a preset pose if a button is
+   * pressed.
    */
   void processJoystickInput(
       std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) override;

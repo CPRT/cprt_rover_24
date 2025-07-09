@@ -4,8 +4,7 @@ ArmPresetMode::ArmPresetMode(rclcpp::Node* node,
                              const std::string& planning_group)
     : Mode("ArmPresetMode", node),
       move_group_(node->shared_from_this(), planning_group),
-      node_(node) 
-{
+      node_(node) {
   RCLCPP_INFO(node_->get_logger(), "Preset Arm Mode Initialized");
 
   declareParameters(node_);
@@ -51,7 +50,7 @@ bool ArmPresetMode::moveToPose(const geometry_msgs::msg::Pose& target_pose) {
 void ArmPresetMode::declareParameters(rclcpp::Node* node) {
   auto declare_pose = [node](int index) {
     std::string base = "preset_mode.presets[" + std::to_string(index) + "]";
-    node->declare_parameter<int>(base + ".button", index); 
+    node->declare_parameter<int>(base + ".button", index);
 
     std::string pose_base = base + ".pose";
     node->declare_parameter<double>(pose_base + ".x", 0.0);
@@ -69,7 +68,8 @@ void ArmPresetMode::declareParameters(rclcpp::Node* node) {
 }
 
 void ArmPresetMode::loadParameters() {
-  auto load_pose = [this](int index, int& button, geometry_msgs::msg::Pose& pose) {
+  auto load_pose = [this](int index, int& button,
+                          geometry_msgs::msg::Pose& pose) {
     std::string base = "preset_mode.presets[" + std::to_string(index) + "]";
     std::string pose_base = base + ".pose";
 

@@ -1,9 +1,9 @@
 #ifndef FLIGHTSTICK_CONTROL_HPP
 #define FLIGHTSTICK_CONTROL_HPP
 
-#include "ArmPresetMode.hpp"
 #include "ArmIKMode.hpp"
 #include "ArmManualMode.hpp"
+#include "ArmPresetMode.hpp"
 #include "DriveMode.hpp"
 #include "ScienceMode.hpp"
 #include "geometry_msgs/msg/twist.hpp"
