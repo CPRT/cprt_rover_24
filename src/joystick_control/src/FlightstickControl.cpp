@@ -35,7 +35,7 @@ bool FlightstickControl::checkForModeChange(
       {kDriveModeButton, ModeType::DRIVE},
       {kArmIKModeButton, ModeType::ARM_IK},
       {kArmManualModeButton, ModeType::ARM_MANUAL},
-      {kArmDummyButton, ModeType::ARM_DUMMY},
+      {kPresetModeButton, ModeType::PRESET},
       {kNavModeButton, ModeType::NAV},
       {kScienceModeButton, ModeType::SCIENCE}};
   for (const auto& [buttonIndex, mode] : buttonToMode) {
@@ -60,7 +60,7 @@ bool FlightstickControl::checkAxes(
       {ModeType::ARM_IK, {0, 1, 4, 5, 6}},
       {ModeType::ARM_MANUAL, {0, 1, 4, 5, 6, 7}},
       {ModeType::SCIENCE, {1, 3}},
-      {ModeType::ARM_DUMMY, {0, 1, 4, 5, 6, 7}}};  // add nav?
+      {ModeType::PRESET, {0, 1, 4, 5, 6, 7}}};  // add nav?
   auto it = modeParameters.find(nextMode);
   if (it == modeParameters.end()) {
     return true;
@@ -112,10 +112,10 @@ bool FlightstickControl::changeMode(ModeType mode) {
       message.data = "IK";
       status_pub_->publish(message);
       break;
-    case ModeType::ARM_DUMMY:
-      RCLCPP_INFO(this->get_logger(), "Entering Arm Dumb Mode");
-      mode_ = std::make_unique<ArmDummyMode>(this);
-      message.data = "Dummy";
+    case ModeType::PRESET:
+      RCLCPP_INFO(this->get_logger(), "Entering Preset Mode");
+      mode_ = std::make_unique<ArmPresetMode>(this);
+      message.data = "Preset";
       status_pub_->publish(message);
       break;
     default:
@@ -139,7 +139,7 @@ void FlightstickControl::declareParameters() {
   this->declare_parameter("arm_manual_mode_button", 10);
   this->declare_parameter("nav_mode_button", 13);
   this->declare_parameter("science_mode_button", 14);
-  this->declare_parameter("arm_dummy_mode_button", 8);
+  this->declare_parameter("preset_mode_button", 8);
   this->declare_parameter("teleop_light_mode", 1);
   DriveMode::declareParameters(this);
   ArmManualMode::declareParameters(this);
@@ -153,7 +153,7 @@ void FlightstickControl::loadParameters() {
   this->get_parameter("arm_manual_mode_button", kArmManualModeButton);
   this->get_parameter("nav_mode_button", kNavModeButton);
   this->get_parameter("science_mode_button", kScienceModeButton);
-  this->get_parameter("arm_dummy_mode_button", kArmDummyButton);
+  this->get_parameter("preset_mode_button", kPresetModeButton);
   this->get_parameter("teleop_light_mode", kTeleopLightMode);
 }
 

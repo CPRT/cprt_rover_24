@@ -1,7 +1,7 @@
 #ifndef FLIGHTSTICK_CONTROL_HPP
 #define FLIGHTSTICK_CONTROL_HPP
 
-#include "ArmDummyMode.hpp"
+#include "ArmPresetMode.hpp"
 #include "ArmIKMode.hpp"
 #include "ArmManualMode.hpp"
 #include "DriveMode.hpp"
@@ -67,7 +67,7 @@ class FlightstickControl : public rclcpp::Node {
     ARM_MANUAL,
     NAV,
     SCIENCE,
-    ARM_DUMMY
+    PRESET
   };
 
   uint8_t kDriveModeButton;      ///< Button index for drive mode.
@@ -76,7 +76,7 @@ class FlightstickControl : public rclcpp::Node {
   uint8_t kArmManualModeButton;  ///< Button index for manual arm control mode.
   uint8_t kNavModeButton;        ///< Button index for navigation mode.
   uint8_t kScienceModeButton;    ///< Button index for science mode.
-  uint8_t kArmDummyButton;
+  uint8_t kPresetModeButton;
 
   uint8_t kTeleopLightMode;  ///< Button index for teleoperation light mode.
 

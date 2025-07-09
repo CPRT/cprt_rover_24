@@ -1,6 +1,10 @@
 #include "ArmPresetMode.hpp"
 
-ArmPresetMode::ArmPresetMode(rclcpp::Node* node, const std::string& planning_group) : Mode("ArmPresetMode", node), move_group_(node->shared_from_this(), planning_group)
+ArmPresetMode::ArmPresetMode(rclcpp::Node* node,
+                             const std::string& planning_group)
+    : Mode("ArmPresetMode", node),
+      move_group_(node->shared_from_this(), planning_group),
+      node_(node) 
 {
   RCLCPP_INFO(node_->get_logger(), "Preset Arm Mode Initialized");
 
@@ -8,9 +12,10 @@ ArmPresetMode::ArmPresetMode(rclcpp::Node* node, const std::string& planning_gro
   loadParameters();
 }
 
+void ArmPresetMode::processJoystickInput(
+    std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
+  if (joystickMsg->buttons.size() == 0) return;
 
-void ArmPresetMode::processJoystickInput(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg)
-{
   if (joystickMsg->buttons[preset_1_button_]) {
     RCLCPP_INFO(node_->get_logger(), "Moving to preset_1");
     moveToPose(preset_1_pose_);
@@ -26,12 +31,12 @@ void ArmPresetMode::processJoystickInput(std::shared_ptr<sensor_msgs::msg::Joy> 
   }
 }
 
-bool ArmPresetMode::moveToPose(const geometry_msgs::msg::Pose& target_pose)
-{
+bool ArmPresetMode::moveToPose(const geometry_msgs::msg::Pose& target_pose) {
   move_group_.setPoseTarget(target_pose);
 
   moveit::planning_interface::MoveGroupInterface::Plan plan;
-  bool success = (move_group_.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
+  bool success =
+      (move_group_.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
 
   if (success) {
     RCLCPP_INFO(node_->get_logger(), "Plan successful. Executing...");
@@ -43,54 +48,43 @@ bool ArmPresetMode::moveToPose(const geometry_msgs::msg::Pose& target_pose)
   }
 }
 
-void ArmPresetMode::declareParameters(rclcpp::Node* node)
-{
-  node->declare_parameter("preset_mode.preset_1_button", 0);
-  node->declare_parameter("preset_mode.preset_2_button", 1);
-  node->declare_parameter("preset_mode.preset_3_button", 2);
-  node->declare_parameter("preset_mode.preset_4_button", 3);
+void ArmPresetMode::declareParameters(rclcpp::Node* node) {
+  auto declare_pose = [node](int index) {
+    std::string base = "preset_mode.presets[" + std::to_string(index) + "]";
+    node->declare_parameter<int>(base + ".button", index); 
 
-  node->declare_parameter("preset_mode.preset_1.x", 0.0);
-  node->declare_parameter("preset_mode.preset_1.y", 0.0);
-  node->declare_parameter("preset_mode.preset_1.z", 0.0);
+    std::string pose_base = base + ".pose";
+    node->declare_parameter<double>(pose_base + ".x", 0.0);
+    node->declare_parameter<double>(pose_base + ".y", 0.0);
+    node->declare_parameter<double>(pose_base + ".z", 0.0);
+    node->declare_parameter<double>(pose_base + ".qx", 0.0);
+    node->declare_parameter<double>(pose_base + ".qy", 0.0);
+    node->declare_parameter<double>(pose_base + ".qz", 0.0);
+    node->declare_parameter<double>(pose_base + ".qw", 1.0);
+  };
 
-  node->declare_parameter("preset_mode.preset_2.x", 0.0);
-  node->declare_parameter("preset_mode.preset_2.y", 0.0);
-  node->declare_parameter("preset_mode.preset_2.z", 0.0);
-
-  node->declare_parameter("preset_mode.preset_3.x", 0.0);
-  node->declare_parameter("preset_mode.preset_3.y", 0.0);
-  node->declare_parameter("preset_mode.preset_3.z", 0.0);
-
-  node->declare_parameter("preset_mode.preset_4.x", 0.0);
-  node->declare_parameter("preset_mode.preset_4.y", 0.0);
-  node->declare_parameter("preset_mode.preset_4.z", 0.0);
+  for (int i = 0; i < 4; ++i) {
+    declare_pose(i);
+  }
 }
 
-void ArmPresetMode::loadParameters()
-{
-  node_->get_parameter("preset_mode.preset_1_button", preset_1_button_);
-  node_->get_parameter("preset_mode.preset_2_button", preset_2_button_);
-  node_->get_parameter("preset_mode.preset_3_button", preset_3_button_);
-  node_->get_parameter("preset_mode.preset_4_button", preset_4_button_);
+void ArmPresetMode::loadParameters() {
+  auto load_pose = [this](int index, int& button, geometry_msgs::msg::Pose& pose) {
+    std::string base = "preset_mode.presets[" + std::to_string(index) + "]";
+    std::string pose_base = base + ".pose";
 
-  node_->get_parameter("preset_mode.preset_1.x", preset_1_pose_.position.x);
-  node_->get_parameter("preset_mode.preset_1.y", preset_1_pose_.position.y);
-  node_->get_parameter("preset_mode.preset_1.z", preset_1_pose_.position.z);
-  preset_1_pose_.orientation.w = 1.0;
+    node_->get_parameter(base + ".button", button);
+    node_->get_parameter(pose_base + ".x", pose.position.x);
+    node_->get_parameter(pose_base + ".y", pose.position.y);
+    node_->get_parameter(pose_base + ".z", pose.position.z);
+    node_->get_parameter(pose_base + ".qx", pose.orientation.x);
+    node_->get_parameter(pose_base + ".qy", pose.orientation.y);
+    node_->get_parameter(pose_base + ".qz", pose.orientation.z);
+    node_->get_parameter(pose_base + ".qw", pose.orientation.w);
+  };
 
-  node_->get_parameter("preset_mode.preset_2.x", preset_2_pose_.position.x);
-  node_->get_parameter("preset_mode.preset_2.y", preset_2_pose_.position.y);
-  node_->get_parameter("preset_mode.preset_2.z", preset_2_pose_.position.z);
-  preset_2_pose_.orientation.w = 1.0;
-
-  node_->get_parameter("preset_mode.preset_3.x", preset_3_pose_.position.x);
-  node_->get_parameter("preset_mode.preset_3.y", preset_3_pose_.position.y);
-  node_->get_parameter("preset_mode.preset_3.z", preset_3_pose_.position.z);
-  preset_3_pose_.orientation.w = 1.0;
-
-  node_->get_parameter("preset_mode.preset_4.x", preset_4_pose_.position.x);
-  node_->get_parameter("preset_mode.preset_4.y", preset_4_pose_.position.y);
-  node_->get_parameter("preset_mode.preset_4.z", preset_4_pose_.position.z);
-  preset_4_pose_.orientation.w = 1.0;
+  load_pose(0, preset_1_button_, preset_1_pose_);
+  load_pose(1, preset_2_button_, preset_2_pose_);
+  load_pose(2, preset_3_button_, preset_3_pose_);
+  load_pose(3, preset_4_button_, preset_4_pose_);
 }
