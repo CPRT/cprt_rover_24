@@ -32,6 +32,10 @@ ekf_profiles = {
         "local": "lidar_ekf_local.yaml",
         "global": "lidar_ekf_global.yaml",
     },
+    "indoors": {
+        "local": "indoors_ekf_local.yaml",
+        "global": "indoors_ekf_global.yaml",
+    }
 }
 default_profile = "gps"
 
