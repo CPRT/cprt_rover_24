@@ -80,6 +80,16 @@ flightstick_control:
 
     preset_mode:
       preset_1:
+        button: 2
+        pose:
+          x: -0.42531
+          y: -0.86227
+          z: 0.40021
+          qx: 0.050398
+          qy: 0.11847
+          qz: 0.86671
+          qw: -0.4819
+      preset_2:
         button: 3
         pose:
           x: 0.0
@@ -89,7 +99,7 @@ flightstick_control:
           qy: 0.0
           qz: 0.0
           qw: 1.0
-      preset_2:
+      preset_3:
         button: 4
         pose:
           x: 0.0
@@ -99,18 +109,8 @@ flightstick_control:
           qy: 0.0
           qz: 0.0
           qw: 1.0
-      preset_3:
-        button: 5
-        pose:
-          x: 0.0
-          y: 0.0
-          z: 0.0
-          qx: 0.0
-          qy: 0.0
-          qz: 0.0
-          qw: 1.0
       preset_4:
-        button: 6
+        button: 5
         pose:
           x: 0.0
           y: 0.0
