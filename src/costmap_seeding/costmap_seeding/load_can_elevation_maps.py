@@ -6,9 +6,9 @@ from rclpy.executors import MultiThreadedExecutor
 
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import OccupancyGrid
-from geometry_msgs.msg import PoseStamped, Quaternion
+from geometry_msgs.msg import PoseStamped, Quaternion, Point
 from std_srvs.srv import Trigger
-from robot_localization.srv import FromLL
+from robot_localization.srv import FromLL, ToLL  # Import ToLL service
 
 import os
 import yaml
@@ -94,6 +94,15 @@ class MapLoader(Node):
         while not self.fromLL_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("fromLL service not available, waiting again...")
         self.get_logger().info("fromLL service client successfully connected.")
+
+        # ToLL Service Client: Used to convert map coordinates to Lat/Lon/Alt.
+        self.toLL_client = self.create_client(
+            ToLL, "toLL", callback_group=self.service_callback_group
+        )
+        # Wait for the toLL service to be available before proceeding
+        while not self.toLL_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("toLL service not available, waiting again...")
+        self.get_logger().info("toLL service client successfully connected.")
 
         # Map Generation Service: Allows external triggers for map generation.
         self.generate_map_service = self.create_service(
@@ -181,7 +190,7 @@ class MapLoader(Node):
         req.ll_point.altitude = altitude
 
         self.get_logger().info(
-            f"Requesting map pose for: Long={req.ll_point.longitude:.8f}, Lat={req.ll_point.latitude:.8f}, Alt={req.ll_point.altitude:.8f}"
+            f"Requesting map pose for: Lat={req.ll_point.latitude:.8f}, Long={req.ll_point.longitude:.8f}, Alt={req.ll_point.altitude:.8f}"
         )
 
         try:
@@ -190,6 +199,7 @@ class MapLoader(Node):
             def done_callback(future):
                 nonlocal event
                 event.set()
+                self.get_logger().info("fromLL service call completed, setting event.")
 
             future = self.fromLL_client.call_async(req)
             future.add_done_callback(done_callback)
@@ -197,7 +207,7 @@ class MapLoader(Node):
             # Wait for the service call to complete with a timeout.
             # This prevents infinite blocking if the service never responds.
             # A timeout of 5 seconds is chosen as a reasonable wait time.
-            if not event.wait(timeout=5.0):
+            if not event.wait(timeout=60.0):
                 self.get_logger().warn("Timeout waiting for fromLL service response.")
                 if not rclpy.ok():
                     self.get_logger().info(
@@ -238,6 +248,63 @@ class MapLoader(Node):
             self.get_logger().error(f"Error during lat/lon conversion: {e}")
             return None
 
+    def convert_pose_to_lat_lon(self, map_point: Point) -> dict:
+        """
+        Converts a Point in the map frame to latitude, longitude, and altitude
+        using the 'toLL' service.
+        This function uses threading.Event to wait for the service response,
+        with a timeout for graceful shutdown.
+        """
+        req = ToLL.Request()
+        req.map_point = map_point
+
+        self.get_logger().info(
+            f"Requesting Lat/Lon for map point: x={req.map_point.x:.2f}, y={req.map_point.y:.2f}, z={req.map_point.z:.2f}"
+        )
+
+        try:
+            event = Event()
+
+            def done_callback(future):
+                nonlocal event
+                event.set()
+
+            future = self.toLL_client.call_async(req)
+            future.add_done_callback(done_callback)
+
+            if not event.wait(timeout=5.0):
+                self.get_logger().warn("Timeout waiting for toLL service response.")
+                if not rclpy.ok():
+                    self.get_logger().info(
+                        "ROS2 context is shutting down, aborting map to lat/lon conversion."
+                    )
+                return None
+
+            if future.done() and future.exception() is None:
+                result = future.result()
+                if result:
+                    self.get_logger().info(
+                        f"Converted to Lat/Lon: Lat={result.ll_point.latitude:.8f}, Lon={result.ll_point.longitude:.8f}, Alt={result.ll_point.altitude:.8f}"
+                    )
+                    return {
+                        "latitude": result.ll_point.latitude,
+                        "longitude": result.ll_point.longitude,
+                        "altitude": result.ll_point.altitude,
+                    }
+                else:
+                    self.get_logger().error(
+                        "Failed to convert map pose to lat/lon: Service returned no result."
+                    )
+                    return None
+            else:
+                self.get_logger().error(
+                    f"toLL service call failed: {future.exception()}"
+                )
+                return None
+        except Exception as e:
+            self.get_logger().error(f"Error during map to lat/lon conversion: {e}")
+            return None
+
     def load_maps(self):
         """
         The main function to load and publish the OccupancyGrid map.
@@ -270,11 +337,11 @@ class MapLoader(Node):
             f"Using current good GPS fix: Lat={current_gps.latitude:.6f}, Lon={current_gps.longitude:.6f}, Alt={current_gps.altitude:.2f}"
         )
 
-        # 2. Convert current GPS to map coordinates
         # A dummy identity quaternion is used as orientation is not relevant for position conversion
         dummy_orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
 
-        # Directly call the now synchronous-like convert_lat_lon_to_pose
+        # 2. Define the query square region centered on the current GPS location in Lat/Lon
+        # First, convert the current GPS location to map coordinates
         current_map_pose = self.convert_lat_lon_to_pose(
             current_gps.latitude,
             current_gps.longitude,
@@ -290,22 +357,56 @@ class MapLoader(Node):
 
         current_map_x = current_map_pose.pose.position.x
         current_map_y = current_map_pose.pose.position.y
+
+        half_square_size_map = self.map_square_size_m / 2.0
+
+        # Calculate the four corners of the query square in map coordinates
+        corners_map_frame = [
+            Point(
+                x=current_map_x - half_square_size_map,
+                y=current_map_y - half_square_size_map,
+                z=0.0,
+            ),  # Bottom-Left
+            Point(
+                x=current_map_x + half_square_size_map,
+                y=current_map_y - half_square_size_map,
+                z=0.0,
+            ),  # Bottom-Right
+            Point(
+                x=current_map_x - half_square_size_map,
+                y=current_map_y + half_square_size_map,
+                z=0.0,
+            ),  # Top-Left
+            Point(
+                x=current_map_x + half_square_size_map,
+                y=current_map_y + half_square_size_map,
+                z=0.0,
+            ),  # Top-Right
+        ]
+
+        # Convert these map coordinates back to Lat/Lon using the toLL service
+        converted_corners_ll = []
+        for corner_map_point in corners_map_frame:
+            ll_point = self.convert_pose_to_lat_lon(corner_map_point)
+            if ll_point:
+                converted_corners_ll.append(ll_point)
+            else:
+                self.get_logger().error(
+                    f"Failed to convert map corner {corner_map_point} to Lat/Lon. Aborting map loading."
+                )
+                return
+
+        # Determine the min/max Lat/Lon for the query region from the converted corners
+        query_min_lat = min(c["latitude"] for c in converted_corners_ll)
+        query_max_lat = max(c["latitude"] for c in converted_corners_ll)
+        query_min_lon = min(c["longitude"] for c in converted_corners_ll)
+        query_max_lon = max(c["longitude"] for c in converted_corners_ll)
+
         self.get_logger().info(
-            f"Current GPS converted to map position: x={current_map_x:.2f}, y={current_map_y:.2f}"
+            f"Query region in Lat/Lon (via toLL service): Lat[{query_min_lat:.6f}, {query_max_lat:.6f}], Lon[{query_min_lon:.6f}, {query_max_lon:.6f}]"
         )
 
-        # Define the query square region centered on the current GPS location
-        half_square_size = self.map_square_size_m / 2.0
-        query_min_x = current_map_x - half_square_size
-        query_max_x = current_map_x + half_square_size
-        query_min_y = current_map_y - half_square_size
-        query_max_y = current_map_y + half_square_size
-
-        self.get_logger().info(
-            f"Query region in map frame: X[{query_min_x:.2f}, {query_max_x:.2f}], Y[{query_min_y:.2f}, {query_max_y:.2f}]"
-        )
-
-        # 3. Find all suitable map files that intersect with the query region
+        # 3. Find all suitable map files that intersect with the query region (Lat/Lon check)
         intersecting_maps_data = []
 
         # Walk through the specified map directory to find costmap subdirectories
@@ -359,51 +460,57 @@ class MapLoader(Node):
                             )
                             continue
 
-                        # Convert map corners (bottom_left, top_right) to map coordinates
+                        # Extract map corners directly in Lat/Lon
                         bl_lat = corners_lat_lon["bottom_left"]["lat"]
                         bl_lon = corners_lat_lon["bottom_left"]["lon"]
                         tr_lat = corners_lat_lon["top_right"]["lat"]
                         tr_lon = corners_lat_lon["top_right"]["lon"]
 
-                        bl_map_pose = self.convert_lat_lon_to_pose(
-                            bl_lat, bl_lon, 0.0, dummy_orientation
+                        # Determine the bounding box of the map in Lat/Lon
+                        map_min_lat = min(bl_lat, tr_lat)
+                        map_max_lat = max(bl_lat, tr_lat)
+                        map_min_lon = min(bl_lon, tr_lon)
+                        map_max_lon = max(bl_lon, tr_lon)
+
+                        # Check for intersection between map bounding box (Lat/Lon) and query region (Lat/Lon)
+                        intersects_lat = not (
+                            map_max_lat < query_min_lat or map_min_lat > query_max_lat
                         )
-                        tr_map_pose = self.convert_lat_lon_to_pose(
-                            tr_lat, tr_lon, 0.0, dummy_orientation
+                        intersects_lon = not (
+                            map_max_lon < query_min_lon or map_min_lon > query_max_lon
                         )
 
-                        if bl_map_pose is None or tr_map_pose is None:
-                            self.get_logger().warn(
-                                f"Skipping {yaml_file}: Could not convert map corners to map coordinates."
-                            )
-                            continue
-
-                        # Determine the bounding box of the map in the 'map' frame
-                        map_min_x = min(
-                            bl_map_pose.pose.position.x, tr_map_pose.pose.position.x
-                        )
-                        map_max_x = max(
-                            bl_map_pose.pose.position.x, tr_map_pose.pose.position.x
-                        )
-                        map_min_y = min(
-                            bl_map_pose.pose.position.y, tr_map_pose.pose.position.y
-                        )
-                        map_max_y = max(
-                            bl_map_pose.pose.position.y, tr_map_pose.pose.position.y
-                        )
-
-                        # Check for intersection between map bounding box and query region
-                        intersects_x = not (
-                            map_max_x < query_min_x or map_min_x > query_max_x
-                        )
-                        intersects_y = not (
-                            map_max_y < query_min_y or map_min_y > query_max_y
-                        )
-
-                        if intersects_x and intersects_y:
+                        if intersects_lat and intersects_lon:
                             self.get_logger().info(
-                                f"Map '{map_filename}' intersects with the current region of interest."
+                                f"Map '{map_filename}' intersects with the current region of interest (Lat/Lon check)."
                             )
+                            # If it intersects, convert its corners to map coordinates for later combination
+                            bl_map_pose = self.convert_lat_lon_to_pose(
+                                bl_lat, bl_lon, 0.0, dummy_orientation
+                            )
+                            tr_map_pose = self.convert_lat_lon_to_pose(
+                                tr_lat, tr_lon, 0.0, dummy_orientation
+                            )
+
+                            if bl_map_pose is None or tr_map_pose is None:
+                                self.get_logger().warn(
+                                    f"Skipping {yaml_file}: Could not convert map corners to map coordinates for combination."
+                                )
+                                continue
+
+                            map_min_x = min(
+                                bl_map_pose.pose.position.x, tr_map_pose.pose.position.x
+                            )
+                            map_max_x = max(
+                                bl_map_pose.pose.position.x, tr_map_pose.pose.position.x
+                            )
+                            map_min_y = min(
+                                bl_map_pose.pose.position.y, tr_map_pose.pose.position.y
+                            )
+                            map_max_y = max(
+                                bl_map_pose.pose.position.y, tr_map_pose.pose.position.y
+                            )
+
                             intersecting_maps_data.append(
                                 {
                                     "png_path": png_path,
@@ -416,7 +523,7 @@ class MapLoader(Node):
                             )
                         else:
                             self.get_logger().debug(
-                                f"Map '{map_filename}' in {costmaps_dir} does not intersect. Map bounds: X[{map_min_x:.2f}, {map_max_x:.2f}], Y[{map_min_y:.2f}, {map_max_y:.2f}]. Query bounds: X[{query_min_x:.2f}, {query_max_x:.2f}], Y[{query_min_y:.2f}, {query_max_y:.2f}]."
+                                f"Map '{map_filename}' in {costmaps_dir} does not intersect (Lat/Lon check). Map bounds: Lat[{map_min_lat:.6f}, {map_max_lat:.6f}], Lon[{map_min_lon:.6f}, {map_max_lon:.6f}]. Query bounds: Lat[{query_min_lat:.6f}, {query_max_lat:.6f}], Lon[{query_min_lon:.6f}, {query_max_lon:.6f}]."
                             )
 
                     except yaml.YAMLError as e:
@@ -441,13 +548,21 @@ class MapLoader(Node):
         global_min_y = float("inf")
         global_max_y = float("-inf")
 
-        # Also ensure the combined map covers at least the query area
-        global_min_x = min(global_min_x, query_min_x)
-        global_max_x = max(global_max_x, query_max_x)
-        global_min_y = min(global_min_y, query_min_y)
-        global_max_y = max(global_max_y, query_max_y)
+        # The current_map_pose is already in map coordinates from step 2.
+        # Define the query square region centered on the current GPS location in map coordinates
+        # This is needed to ensure the final published map covers the requested square size
+        half_square_size_map = self.map_square_size_m / 2.0
+        query_min_x_map = current_map_x - half_square_size_map
+        query_max_x_map = current_map_x + half_square_size_map
+        query_min_y_map = current_map_y - half_square_size_map
+        query_max_y_map = current_map_y + half_square_size_map
 
-        # Find the overall min/max from all intersecting maps
+        global_min_x = min(global_min_x, query_min_x_map)
+        global_max_x = max(global_max_x, query_max_x_map)
+        global_min_y = min(global_min_y, query_min_y_map)
+        global_max_y = max(global_max_y, query_max_y_map)
+
+        # Find the overall min/max from all intersecting maps (which are now in map frame)
         for map_data in intersecting_maps_data:
             global_min_x = min(global_min_x, map_data["map_min_x"])
             global_max_x = max(global_max_x, map_data["map_max_x"])

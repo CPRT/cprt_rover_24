@@ -98,7 +98,7 @@ class CanElevationDownloader(Node):  # Renamed node
             self.get_parameter("dataset_names").get_parameter_value().string_array_value
         )
         self.get_logger().info(
-            f'Dataset names set to: {self.dataset_names}. Download DTMs on startup: {self.download_dtms}'
+            f"Dataset names set to: {self.dataset_names}. Download DTMs on startup: {self.download_dtms}"
         )
 
         # Retrieve new parameters for costmap calculation
@@ -290,9 +290,13 @@ class CanElevationDownloader(Node):  # Renamed node
                                     dtm_urls.append(dtm_url)
                                 break  # Found the DTM link for this placemark, move to the next placemark
             except ET.ParseError as e:
-                self.get_logger().error(f"Error parsing KML file {kml_extracted_path}: {e}")
+                self.get_logger().error(
+                    f"Error parsing KML file {kml_extracted_path}: {e}"
+                )
             except Exception as e:
-                self.get_logger().error(f"An unexpected error occurred while parsing KML: {e}")
+                self.get_logger().error(
+                    f"An unexpected error occurred while parsing KML: {e}"
+                )
 
         return dtm_urls
 
@@ -405,7 +409,9 @@ class CanElevationDownloader(Node):  # Renamed node
                    contains no valid data.
         """
         if elevation_data_2d is None or elevation_data_2d.size == 0:
-            self.get_logger().error("Input elevation data is empty or invalid for cost calculation.")
+            self.get_logger().error(
+                "Input elevation data is empty or invalid for cost calculation."
+            )
             return None, None, None
 
         # 1. Find the bounding box of valid (non-NaN) data
@@ -725,7 +731,9 @@ class CanElevationDownloader(Node):  # Renamed node
         )  # Bottom-right (col, row) -> (x, y) of the *cropped* image
 
         # Create a transformer from costmap_crs to WGS84 (lat/lon)
-        wgs84_transformer = Transformer.from_crs(costmap_crs, "EPSG:4326", always_xy=True)
+        wgs84_transformer = Transformer.from_crs(
+            costmap_crs, "EPSG:4326", always_xy=True
+        )
 
         # Convert corner bounds to Lat/Lon
         top_left_lon, top_left_lat = wgs84_transformer.transform(minx, maxy)
@@ -804,10 +812,7 @@ class CanElevationDownloader(Node):  # Renamed node
                 dataset_url_param_name = f"{dataset_name}_url"
 
                 try:
-                    self.declare_parameter(
-                        dataset_url_param_name,
-                        ""
-                    )
+                    self.declare_parameter(dataset_url_param_name, "")
                 except Exception as e:
                     self.get_logger().debug(
                         f"Parameter {dataset_url_param_name} already declared. Using existing value. {e}"

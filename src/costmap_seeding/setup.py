@@ -24,6 +24,7 @@ setup(
         "console_scripts": [
             "DownloadCanElevationMaps = costmap_seeding.download_can_elevation_maps:main",
             "LoadCanElevationMaps = costmap_seeding.load_can_elevation_maps:main",
+            "FakeGpsPublisher = costmap_seeding.fake_gps_publisher:main",
             "SeedCostmapV1 = costmap_seeding.SeedCostmapV1:main",
             "SeedCostmapV2 = costmap_seeding.SeedCostmapV2:main",
         ],

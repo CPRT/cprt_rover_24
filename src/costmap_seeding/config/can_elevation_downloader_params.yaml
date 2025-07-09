@@ -1,7 +1,7 @@
 can_elevation_downloader_node:
   ros__parameters:
     dataset_parent_dir: "/usr/local/cprt"
-    download_dtms: true
+    download_dtms: false
     dataset_names: ["Drumheller", "Ottawa_Gatineau"]
     Drumheller_url: "https://ftp.maps.canada.ca/pub/elevation/dem_mne/highresolution_hauteresolution/dtm_mnt/1m/AB/Drumheller/"
     Ottawa_Gatineau_url: "https://ftp.maps.canada.ca/pub/elevation/dem_mne/highresolution_hauteresolution/dsm_mns/1m/VILLE_OTTAWA/Ottawa_Gatineau_2020/"

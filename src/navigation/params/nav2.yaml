@@ -165,8 +165,8 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       rolling_window: false
-      height: 500
-      width: 500
+      height: 1000
+      width: 1000
       origin_x: -500.0
       origin_y: -500.0
       use_sim_time: True
