@@ -56,7 +56,8 @@ void TestCameraNode::start_video(
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
 
-  TestCameraNode::SharedPtr get_camera_node = std::make_shared<TestCameraNode>();
+  TestCameraNode::SharedPtr get_camera_node =
+      std::make_shared<TestCameraNode>();
 
   rclcpp::spin(get_camera_node);
   rclcpp::shutdown();

@@ -33,7 +33,7 @@
  * camera streaming application and displays them.
  */
 class MainWidget : public QWidget {
- Q_OBJECT
+  Q_OBJECT
 
  public:
   MainWidget(QWidget* parent = nullptr);

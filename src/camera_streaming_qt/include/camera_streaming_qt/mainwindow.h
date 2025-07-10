@@ -23,7 +23,7 @@
  * camera client GUI.
  */
 class MainWindow : public QMainWindow {
- Q_OBJECT
+  Q_OBJECT
 
  public:
   MainWindow(CameraClient* camera_client = nullptr, QWidget* parent = nullptr);

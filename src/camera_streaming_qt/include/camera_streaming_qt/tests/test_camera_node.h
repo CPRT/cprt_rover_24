@@ -15,7 +15,8 @@
 
 /**
  * @class TestCameraNode
- * @brief A class that contain test functions to simulate the get_cameras and start_video services.
+ * @brief A class that contain test functions to simulate the get_cameras and
+ * start_video services.
  */
 class TestCameraNode : public rclcpp::Node {
  public:
@@ -28,7 +29,7 @@ class TestCameraNode : public rclcpp::Node {
   void get_cameras(
       const std::shared_ptr<interfaces::srv::GetCameras::Request> request,
       std::shared_ptr<interfaces::srv::GetCameras::Response> response);
-  
+
   rclcpp::Service<interfaces::srv::GetCameras>::SharedPtr get_cameras_service_;
 
   /**

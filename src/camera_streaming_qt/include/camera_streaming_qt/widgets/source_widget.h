@@ -30,7 +30,7 @@
  * Y.
  */
 class SourceWidget : public QWidget {
- Q_OBJECT
+  Q_OBJECT
 
  public:
   SourceWidget(QWidget* parent = nullptr);

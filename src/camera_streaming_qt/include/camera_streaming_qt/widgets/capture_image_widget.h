@@ -26,7 +26,7 @@
  * an image of the video sources on the rover.
  */
 class CaptureImageWidget : public QWidget {
- Q_OBJECT
+  Q_OBJECT
 
  public:
   CaptureImageWidget(QWidget* parent = nullptr);

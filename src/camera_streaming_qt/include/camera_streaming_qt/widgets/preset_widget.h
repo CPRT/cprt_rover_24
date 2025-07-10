@@ -29,7 +29,7 @@
  * preset, mainly the list of sources.
  */
 class PresetWidget : public QWidget {
- Q_OBJECT
+  Q_OBJECT
 
  public:
   PresetWidget(QWidget* parent = nullptr);
