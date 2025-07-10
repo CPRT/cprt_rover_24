@@ -52,9 +52,6 @@ void EventHorizonPlanner::configure(
   node_->get_parameter(name_ + ".intermediate_tolerance",
                        intermediate_tolerance_);
 
-  angle_offset_increment =
-      interpolation_resolution_ / (2 * M_PI * horizon_distance_);
-
   // Create a publisher to a topic to help visualize the intermediate goal.
   new_goal_publisher_ =
       node_->create_publisher<geometry_msgs::msg::PoseStamped>(

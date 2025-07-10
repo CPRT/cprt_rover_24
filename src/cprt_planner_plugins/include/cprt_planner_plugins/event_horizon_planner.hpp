@@ -140,8 +140,6 @@ class EventHorizonPlanner : public nav2_smac_planner::SmacPlannerHybrid {
   float const DEFAULT_INTERMEDIATE_TOLERANCE = 10.0;
 
   rclcpp::Logger logger_{rclcpp::get_logger("RotationShimController")};
-
-  double angle_offset_increment;
 };
 
 }  // namespace cprt_planner_plugins
