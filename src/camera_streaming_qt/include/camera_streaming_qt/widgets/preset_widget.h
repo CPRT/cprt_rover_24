@@ -29,7 +29,7 @@
  * preset, mainly the list of sources.
  */
 class PresetWidget : public QWidget {
-  Q_OBJECT
+ Q_OBJECT
 
  public:
   PresetWidget(QWidget* parent = nullptr);
@@ -69,6 +69,10 @@ class PresetWidget : public QWidget {
   void receive_source_names(std::vector<std::string> sources);
 
  private slots:
+  /**
+   * @brief Called when clicking the refresh button in SourceWidget to get the
+   * source names
+   */
   void get_source_names();
 
  private:

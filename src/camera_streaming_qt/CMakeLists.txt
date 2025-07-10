@@ -46,7 +46,7 @@ set(SOURCES
 set(HEADERS
     include/${PROJECT_NAME}/camera_client.h
     include/${PROJECT_NAME}/mainwindow.h
-    include/${PROJECT_NAME}/tests/test_get_camera_node.h
+    include/${PROJECT_NAME}/tests/test_camera_node.h
     include/${PROJECT_NAME}/widgets/capture_image_widget.h
     include/${PROJECT_NAME}/widgets/main_widget.h
     include/${PROJECT_NAME}/widgets/preset_widget.h
@@ -57,7 +57,7 @@ set(HEADERS
 add_executable(camera_client_node src/camera_client.cpp ${SOURCES} ${HEADERS})
 
 # Test nodes
-add_executable(get_camera_node src/tests/test_get_camera_node.cpp)
+add_executable(test_camera_node src/tests/test_camera_node.cpp)
 
 # Link with the required libraries
 target_link_libraries(
@@ -70,7 +70,7 @@ target_link_libraries(
 )
 
 target_link_libraries(
- get_camera_node
+ test_camera_node
  rclcpp::rclcpp
 )
 
@@ -81,7 +81,7 @@ ament_target_dependencies(camera_client_node
     std_srvs
 )
 
-ament_target_dependencies(get_camera_node
+ament_target_dependencies(test_camera_node
     rclcpp 
     std_msgs
     interfaces
@@ -94,7 +94,7 @@ install(DIRECTORY include/
 
 install(TARGETS 
     camera_client_node
-    get_camera_node
+    test_camera_node
     DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -1,24 +1,24 @@
-#include "tests/test_get_camera_node.h"
+#include "tests/test_camera_node.h"
 
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
-GetCameraNode::GetCameraNode() : Node("get_camera_node") {
+TestCameraNode::TestCameraNode() : Node("test_camera_node") {
   get_cameras_service_ = this->create_service<interfaces::srv::GetCameras>(
-      "get_cameras", std::bind(&GetCameraNode::get_cameras, this,
+      "get_cameras", std::bind(&TestCameraNode::get_cameras, this,
                                std::placeholders::_1, std::placeholders::_2));
   RCLCPP_INFO(this->get_logger(), "Service ready: get_cameras");
 
   start_video_service_ = this->create_service<interfaces::srv::VideoOut>(
-      "start_video", std::bind(&GetCameraNode::start_video, this,
+      "start_video", std::bind(&TestCameraNode::start_video, this,
                                std::placeholders::_1, std::placeholders::_2));
   RCLCPP_INFO(this->get_logger(), "Service ready: start_video");
 }
 
-GetCameraNode::~GetCameraNode() {}
+TestCameraNode::~TestCameraNode() {}
 
-void GetCameraNode::get_cameras(
+void TestCameraNode::get_cameras(
     const std::shared_ptr<interfaces::srv::GetCameras::Request> request,
     std::shared_ptr<interfaces::srv::GetCameras::Response> response) {
   std::vector<std::string> names{"test source 1", "test source 2",
@@ -35,7 +35,7 @@ void GetCameraNode::get_cameras(
   }
 }
 
-void GetCameraNode::start_video(
+void TestCameraNode::start_video(
     const std::shared_ptr<interfaces::srv::VideoOut::Request> request,
     std::shared_ptr<interfaces::srv::VideoOut::Response> response) {
   RCLCPP_INFO(this->get_logger(),
@@ -56,7 +56,7 @@ void GetCameraNode::start_video(
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
 
-  GetCameraNode::SharedPtr get_camera_node = std::make_shared<GetCameraNode>();
+  TestCameraNode::SharedPtr get_camera_node = std::make_shared<TestCameraNode>();
 
   rclcpp::spin(get_camera_node);
   rclcpp::shutdown();

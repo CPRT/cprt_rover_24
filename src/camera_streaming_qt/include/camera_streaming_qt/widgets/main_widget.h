@@ -33,7 +33,7 @@
  * camera streaming application and displays them.
  */
 class MainWidget : public QWidget {
-  Q_OBJECT
+ Q_OBJECT
 
  public:
   MainWidget(QWidget* parent = nullptr);
@@ -61,7 +61,8 @@ class MainWidget : public QWidget {
 
  private slots:
   /**
-   * @brief Gets source names from the CameraClient
+   * @brief Called when clicking the refresh button in SourceWidget to get the
+   * source names
    */
   void get_source_names();
 
@@ -78,7 +79,7 @@ class MainWidget : public QWidget {
   QPushButton* drive_eef_preset_button_;
   QPushButton* eef_drive_preset_button_;
 
-  // Functions for sending presets to CameraClient
+  // Functions for sending hardcoded presets to CameraClient
   void send_drive_preset();
   void send_eef_preset();
   void send_microscope_preset();

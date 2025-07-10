@@ -16,36 +16,17 @@ std::vector<std::string> CameraClient::get_cameras() {
 
   auto request = std::make_shared<interfaces::srv::GetCameras::Request>();
 
-  std::chrono::seconds wait_interval(1);
-  int counter_ = 0;
-  while (!client->wait_for_service(wait_interval)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Interrupted while waiting for the service. Exiting.");
-      return std::vector<std::string>();
-    }
-
-    counter_++;
-    // 5 second timeout
-    if (counter_ >= 5) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Get camera service timed out.");
-      return std::vector<std::string>();
-    }
-
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-                "Service not available, waiting again...");
-  }
-
-  auto future = client->async_send_request(request);
-
-  // Wait for result
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(),
-                                         future, std::chrono::seconds(1)) !=
-      rclcpp::FutureReturnCode::SUCCESS) {
-    RCLCPP_ERROR(get_logger(), "Get Cameras service call failed.");
+  // Wait for service to be available
+  // If the service is never available, return empty vector
+  if (!wait_for_service<interfaces::srv::GetCameras>(client))
     return std::vector<std::string>();
-  }
+
+  rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture future =
+      client->async_send_request(request).future.share();
+
+  // Wait for result, if failed, then return
+  if (!wait_for_service_result<interfaces::srv::GetCameras>(future))
+    return std::vector<std::string>();
 
   std::vector<std::string> sources = future.get()->sources;
 
@@ -56,16 +37,6 @@ std::vector<std::string> CameraClient::get_cameras() {
   }
 
   return sources;
-
-  /*
-  std::chrono::seconds wait_interval(5);
-  auto status = result_future.wait_for(wait_interval);
-
-  if (status != std::future_status::ready) {
-    qDebug() << "Timeout exceeded: did not receive camera sources within given "
-                "time.";
-  }
-  */
 }
 
 void CameraClient::start_video(
@@ -77,33 +48,15 @@ void CameraClient::start_video(
   request->num_sources = num_sources;
   request->sources = sources;
 
-  std::chrono::seconds wait_interval(1);
-  int counter_ = 0;
-  while (!client->wait_for_service(wait_interval)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Interrupted while waiting for the service. Exiting.");
-    }
+  // Wait for service to be available
+  // If the service is never available, return
+  if (!wait_for_service<interfaces::srv::VideoOut>(client)) return;
 
-    counter_++;
-    // 5 second timeout
-    if (counter_ >= 5) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Start video service timed out.");
-    }
+  rclcpp::Client<interfaces::srv::VideoOut>::SharedFuture future =
+      client->async_send_request(request).future.share();
 
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-                "Service not available, waiting again...");
-  }
-
-  auto future = client->async_send_request(request);
-
-  // Wait for result
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(),
-                                         future, std::chrono::seconds(1)) !=
-      rclcpp::FutureReturnCode::SUCCESS) {
-    RCLCPP_ERROR(get_logger(), "Start video service call failed.");
-  }
+  // Wait for result, if failed, then return
+  if (!wait_for_service_result<interfaces::srv::VideoOut>(future)) return;
 
   RCLCPP_INFO(get_logger(), "Start video service call succeeded.");
 
@@ -132,7 +85,8 @@ void CameraClient::open_gst_widget() {
   // For some reason X11 sink needs time before we can assign to a window (even
   // though others don't) So need to use a bus to receive message when we can
   // assign the sink to the window
-  // This code was found from: https://stackoverflow.com/questions/68461714/gstreamer-ximagesink-doesnt-work-when-embedded-in-gtk-window
+  // This code was found from:
+  // https://stackoverflow.com/questions/68461714/gstreamer-ximagesink-doesnt-work-when-embedded-in-gtk-window
   GstBus* bus;
   bus = gst_element_get_bus(gst_data.pipeline);
   gst_bus_set_sync_handler(
@@ -154,6 +108,50 @@ GstBusSyncReply CameraClient::bus_sync_handler(GstBus* bus, GstMessage* msg,
                                       data->winId);
 
   return GST_BUS_PASS;
+}
+
+template <class T>
+bool CameraClient::wait_for_service(
+    typename rclcpp::Client<T>::SharedPtr client) {
+  // Poll the service every second for 5 seconds to check if it's available
+  // Times out after 5 seconds
+  std::chrono::seconds wait_interval(service_wait_interval_);
+  int counter_ = 0;
+  while (!client->wait_for_service(wait_interval)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Interrupted while waiting for the service. Exiting.");
+      return false;
+    }
+
+    counter_++;
+
+    // Check if timed out
+    if (counter_ >= service_timeout_) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Get camera service timed out.");
+      return false;
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+                "Service not available, waiting again...");
+  }
+
+  return true;
+}
+
+template <class T>
+bool CameraClient::wait_for_service_result(
+    typename rclcpp::Client<T>::SharedFuture future) {
+  if (rclcpp::spin_until_future_complete(
+          this->get_node_base_interface(), future,
+          std::chrono::seconds(service_result_timeout_)) !=
+      rclcpp::FutureReturnCode::SUCCESS) {
+    RCLCPP_ERROR(get_logger(), "Service call failed.");
+    return false;
+  }
+
+  return true;
 }
 
 int main(int argc, char** argv) {
