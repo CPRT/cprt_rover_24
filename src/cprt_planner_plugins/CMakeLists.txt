@@ -24,6 +24,7 @@ find_package(tf2_ros REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(nav2_smac_planner REQUIRED)
 
 include_directories(
   include
@@ -46,6 +47,7 @@ set(dependencies
   nav2_costmap_2d
   nav2_core
   pluginlib
+  nav2_smac_planner
 )
 
 add_library(${library_name} SHARED

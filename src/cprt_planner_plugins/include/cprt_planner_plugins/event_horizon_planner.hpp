@@ -12,6 +12,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_core/global_planner.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav2_smac_planner/smac_planner_hybrid.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -23,7 +24,7 @@ namespace cprt_planner_plugins {
  * @brief Create a path using another specified planner up to a specified
  * horizon before completing the rest with a straight line.
  */
-class EventHorizonPlanner : public nav2_core::GlobalPlanner {
+class EventHorizonPlanner : public nav2_smac_planner::SmacPlannerHybrid {
  public:
   /**
    * @brief Constructor for planner::EventHorizonPlanner
@@ -73,6 +74,19 @@ class EventHorizonPlanner : public nav2_core::GlobalPlanner {
       const geometry_msgs::msg::PoseStamped& start,
       const geometry_msgs::msg::PoseStamped& goal) override;
 
+  /**
+   * @brief Setter for the tolerance parameter.
+   * @param value Value to set the tolerance to.
+   * @return true if inputted value is within accepted range.
+   */
+  bool setTolerance(float value);
+
+  /**
+   * @brief Getter for the tolerance parameter.
+   * @return Value of tolerance parameter.
+   */
+  float getTolerance();
+
  private:
   /**
    * @brief Provides a new goal pose that is on/within the horizon on the line
@@ -120,6 +134,10 @@ class EventHorizonPlanner : public nav2_core::GlobalPlanner {
   double horizon_distance_;
 
   double const DEFAULT_HORIZON_DISTANCE = std::numeric_limits<double>::max();
+
+  float intermediate_tolerance_;
+
+  float const DEFAULT_INTERMEDIATE_TOLERANCE = 10.0;
 
   rclcpp::Logger logger_{rclcpp::get_logger("RotationShimController")};
 
