@@ -25,9 +25,9 @@
       </joint>
       <joint name="Joint_2">
         <param name="can_id">11</param>
-        <param name="kP">10.0</param>
+        <param name="kP">24.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">10.0</param>
+        <param name="kD">3.5</param>
         <param name="kF">204.3</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
@@ -41,9 +41,9 @@
       </joint>
       <joint name="Joint_3">
         <param name="can_id">14</param>
-        <param name="kP">30.0</param>
+        <param name="kP">50.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">3.0</param>
+        <param name="kD">1.5</param>
         <param name="kF">178.6</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
@@ -57,9 +57,9 @@
       </joint>
       <joint name="Joint_4">
         <param name="can_id">15</param>
-        <param name="kP">2.0</param>
+        <param name="kP">4.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">0.0</param>
+        <param name="kD">0.2</param>
         <param name="kF">2.903</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
@@ -73,9 +73,9 @@
       </joint>
       <joint name="Joint_5">
         <param name="can_id">12</param>
-        <param name="kP">20.0</param>
+        <param name="kP">40.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">0.0</param>
+        <param name="kD">0.5</param>
         <param name="kF">102.8</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
@@ -89,9 +89,9 @@
       </joint>
       <joint name="Joint_6">
         <param name="can_id">13</param>
-        <param name="kP">0.012</param>
+        <param name="kP">0.02</param>
         <param name="kI">0.0</param>
-        <param name="kD">0.0</param>
+        <param name="kD">0.005</param>
         <param name="kF">0.023222</param>
         <param name="sensor_type">quadrature</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">1163000</param> <!-- TODO: this number is close but not quite -->
