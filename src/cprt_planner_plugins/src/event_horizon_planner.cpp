@@ -6,6 +6,11 @@
 
 #include "nav2_util/node_utils.hpp"
 
+using nav2_costmap_2d::FREE_SPACE;
+using nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::NO_INFORMATION;
+
 namespace cprt_planner_plugins {
 
 EventHorizonPlanner::EventHorizonPlanner()
@@ -34,27 +39,18 @@ void EventHorizonPlanner::configure(
   node_->get_parameter(name_ + ".interpolation_resolution",
                        interpolation_resolution_);
 
-  // Primary Planner
-  nav2_util::declare_parameter_if_not_declared(
-      node_, name_ + ".primary_planner", rclcpp::PARAMETER_STRING);
-  primary_planner =
-      node_->get_parameter(name_ + ".primary_planner").as_string();
-
   // Horizon Distance
   nav2_util::declare_parameter_if_not_declared(
       node_, name_ + ".horizon_distance",
       rclcpp::ParameterValue(DEFAULT_HORIZON_DISTANCE));
   node_->get_parameter(name_ + ".horizon_distance", horizon_distance_);
 
-  try {
-    primary_planner_ = lp_loader_.createUniqueInstance(primary_planner);
-  } catch (const pluginlib::PluginlibException& ex) {
-    RCLCPP_FATAL(logger_, "Failed to create planner instance. Exception: %s",
-                 ex.what());
-    return;
-  }
-
-  primary_planner_->configure(parent, name, tf, costmap_ros);
+  // Intermediate Tolerance
+  nav2_util::declare_parameter_if_not_declared(
+      node_, name_ + ".intermediate_tolerance",
+      rclcpp::ParameterValue(DEFAULT_INTERMEDIATE_TOLERANCE));
+  node_->get_parameter(name_ + ".intermediate_tolerance",
+                       intermediate_tolerance_);
 
   // Create a publisher to a topic to help visualize the intermediate goal.
   new_goal_publisher_ =
@@ -66,25 +62,18 @@ void EventHorizonPlanner::configure(
 void EventHorizonPlanner::cleanup() {
   RCLCPP_INFO(logger_, "Cleaning up plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  primary_planner_->cleanup();
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::activate() {
   RCLCPP_INFO(logger_, "Activating plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  if (!primary_planner_) {
-    RCLCPP_FATAL(logger_, "primary_planner_ is null in activate(). Aborting.");
-    std::terminate();
-  }
-  primary_planner_->activate();
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::deactivate() {
   RCLCPP_INFO(logger_, "Deactivating plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  primary_planner_->deactivate();
 }
 
 nav_msgs::msg::Path EventHorizonPlanner::createPlan(
@@ -111,13 +100,16 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
   global_path.header.stamp = node_->now();
   global_path.header.frame_id = global_frame_;
 
-  // get updated goal for primary planner
+  // get updated goal in case it is beyond the horizon
   const geometry_msgs::msg::PoseStamped new_goal = getNewGoal(start, goal);
 
-  // get path from primary planner
-  global_path = primary_planner_->createPlan(start, new_goal);
-
   if (goal != new_goal) {
+    // change tolerance before planning to intermediate goal on horizon
+    float original_tolerance = getTolerance();
+    setTolerance(intermediate_tolerance_);
+
+    global_path = SmacPlannerHybrid::createPlan(start, new_goal);
+
     // create a straight line from new_goal on the horizon to the original goal
 
     int total_number_of_loop =
@@ -141,6 +133,10 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
         pose.header.frame_id = global_frame_;
         global_path.poses.push_back(pose);
       }
+
+      setTolerance(original_tolerance);
+    } else {
+      global_path = SmacPlannerHybrid::createPlan(start, new_goal);
     }
 
     geometry_msgs::msg::PoseStamped goal_pose = goal;
@@ -185,6 +181,17 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
 
   return new_goal;
 }
+
+bool EventHorizonPlanner::setTolerance(float value) {
+  if (value >= 0) {
+    _tolerance = value;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+float EventHorizonPlanner::getTolerance() { return _tolerance; }
 
 geometry_msgs::msg::Quaternion EventHorizonPlanner::EulerToQuaternion(
     float roll, float pitch, float yaw) {
