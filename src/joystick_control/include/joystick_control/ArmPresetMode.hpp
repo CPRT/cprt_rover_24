@@ -59,7 +59,7 @@ class ArmPresetMode : public Mode {
    * @param target_pose The target pose to move to.
    * @return True if planning and execution succeeded.
    */
-  bool moveToPose(const geometry_msgs::msg::Pose& target_pose);
+  bool moveToPose(const geometry_msgs::msg::PoseStamped& target_pose);
 };
 
 #endif  // JOYSTICK_CONTROL__ARMPRESET_MODE_HPP_
