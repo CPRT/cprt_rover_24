@@ -1,4 +1,4 @@
-ouster/os_driver:
+/**:
   ros__parameters:
     # sensor_hostname[required]: hostname or IP address of the sensor (IP4 or
     # IP6).

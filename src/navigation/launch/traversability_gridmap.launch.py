@@ -37,11 +37,8 @@ profiles = {
             "ouster_elevation_mapping.yaml",
             "postprocessing_traversability.yaml",
         ],
-        "input_sources": [
-            "zed2i_pointcloud",
-            "ouster_OS0_32U_pointcloud"
-        ]
-    }
+        "input_sources": ["zed2i_pointcloud", "ouster_OS0_32U_pointcloud"],
+    },
 }
 
 default_profile = "lidar_only"
