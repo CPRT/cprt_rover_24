@@ -19,6 +19,7 @@ find_package(ament_cmake REQUIRED)
 find_package(grid_map_core REQUIRED)
 find_package(grid_map_ros REQUIRED)
 find_package(grid_map_msgs REQUIRED)
+find_package(filters REQUIRED)
 find_package(kindr REQUIRED)
 find_package(kindr_ros REQUIRED)
 find_package(message_filters REQUIRED)
@@ -42,6 +43,7 @@ set(DEPENDENCIES
   grid_map_core
   grid_map_ros
   grid_map_msgs
+  filters
   kindr
   kindr_ros
   message_filters
@@ -119,7 +121,8 @@ ament_target_dependencies(${PROJECT_NAME}_library
 target_link_libraries(${PROJECT_NAME}_library
   ${PROJECT_NAME}_pcl_types
   ${Boost_LIBRARIES}
-  pthread  
+  pthread   
+  ${filters_LIBRARIES}
 )
 
 ##############

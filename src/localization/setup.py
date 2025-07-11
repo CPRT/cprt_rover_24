@@ -33,6 +33,7 @@ setup(
         "console_scripts": [
             "imu_filter = localization.imu_filter:main",
             "repub_odom = localization.republish_odometry:main",
+            "record_lidar_image = localization.record_lidar_image:main",
         ],
     },
 )

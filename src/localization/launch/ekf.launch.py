@@ -35,7 +35,7 @@ ekf_profiles = {
     "indoors": {
         "local": "indoors_ekf_local.yaml",
         "global": "indoors_ekf_global.yaml",
-    }
+    },
 }
 default_profile = "gps"
 
@@ -44,7 +44,7 @@ def launch_setup(context):
     # This function is executed at launch time
 
     use_sim_time = LaunchConfiguration("use_sim_time").perform(context)
-    profile = LaunchConfiguration("profile").perform(context)
+    profile = LaunchConfiguration("profileA").perform(context)
 
     if profile not in ekf_profiles:
         raise ValueError(
@@ -114,7 +114,7 @@ def generate_launch_description():
     )
 
     profile_cmd = DeclareLaunchArgument(
-        "profile",
+        "profileA",
         default_value=default_profile,
         description="Select the EKF profile to use (gps, lidar)",
     )

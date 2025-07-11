@@ -56,6 +56,7 @@ create_alias_with_echo openWebCode 'code $WEB_DIR'
 create_alias_with_echo rvizMoveit 'rviz2 -d $ROVER_DIR/src/arm_srdf/config/moveit.rviz'
 create_alias_with_echo rvizArmMoveIt 'rviz2 -d $ROVER_DIR/src/arm_srdf/config/moveit.rviz'
 create_alias_with_echo rvizNav 'rviz2 -d $ROVER_DIR/src/navigation/rviz/nav2_cprt.rviz'
+create_alias_with_echo rvizElevationMapping 'rviz2 -d $ROVER_DIR/src/navigation/rviz/traversibility_gridmap.rviz'
 
 
 # Launch helpers

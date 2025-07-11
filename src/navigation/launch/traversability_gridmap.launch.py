@@ -23,7 +23,7 @@ profiles = {
     "lidar_only": {
         "config_files": [
             "spike_robot.yaml",
-            "zed2i_elevation_mapping.yaml",
+            "ouster_elevation_mapping.yaml",
             "ouster_OS0_32U_sensor_processor.yaml",
             "postprocessing_traversability.yaml",
         ],
@@ -31,9 +31,20 @@ profiles = {
             "ouster_OS0_32U_pointcloud",
         ],
     },
+    "all": {
+        "config_files": [
+            "spike_robot.yaml",
+            "ouster_elevation_mapping.yaml",
+            "postprocessing_traversability.yaml",
+        ],
+        "input_sources": [
+            "zed2i_pointcloud",
+            "ouster_OS0_32U_pointcloud"
+        ]
+    }
 }
 
-default_profile = "zed_only"
+default_profile = "lidar_only"
 
 
 def launch_setup(context):

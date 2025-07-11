@@ -41,10 +41,10 @@ profiles = {
             ("odom", "odometry/filtered/local"),
             ("imu", "zed/zed_node/imu/data"),
             ("map", "map"),
-        ]
+        ],
     },
     "lidar_only": {
-        "parameters":       {
+        "parameters": {
             "frame_id": "base_link",
             "subscribe_depth": False,
             "subscribe_rgb": False,
@@ -76,11 +76,12 @@ profiles = {
             ("odom", "odometry/filtered/local"),
             ("goal", "goal_pose"),
             ("map", "map"),
-        ]
-    }
+        ],
+    },
 }
 
 default_profile = "zed_only"
+
 
 def launch_setup(context):
     # This function is executed at launch time
@@ -92,24 +93,26 @@ def launch_setup(context):
 
     # Validate the selected profile
     if selected_profile not in profiles:
-        raise ValueError(f"Unknown RTAB-Map profile: '{selected_profile}'. Available profiles are: {list(profiles.keys())}")
+        raise ValueError(
+            f"Unknown RTAB-Map profile: '{selected_profile}'. Available profiles are: {list(profiles.keys())}"
+        )
 
     profile_data = profiles[selected_profile]
-    
+
     # Path to the config directory in your custom package
     config_dir = os.path.join(get_package_share_directory("localization"), "config")
-    
+
     # The rtabmap.yaml file typically contains parameters for rtabmap_viz itself,
     # or general parameters that overlay with the node-specific ones.
-    params_file = os.path.join(config_dir, "rtabmap.yaml") 
+    params_file = os.path.join(config_dir, "rtabmap.yaml")
 
     # Combine profile-specific parameters with use_sim_time
-    # Note: parameters is a list of dictionaries in ROS 2 launch, 
+    # Note: parameters is a list of dictionaries in ROS 2 launch,
     # so we wrap the profile_data["parameters"] in a list.
-    parameters_for_node = [profile_data["parameters"]] 
-    
+    parameters_for_node = [profile_data["parameters"]]
+
     # Add use_sim_time parameter to the main RTAB-Map node
-    parameters_for_node[0]["use_sim_time"] = use_sim_time == "true" # Convert string to boolean
+    parameters_for_node[0]["use_sim_time"] = use_sim_time == "true"
 
     remappings_for_node = profile_data["remappings"]
 
