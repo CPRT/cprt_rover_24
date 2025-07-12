@@ -34,6 +34,12 @@ def generate_launch_description():
         "driver_params.yaml",
     )
 
+    mask_file = os.path.join(
+        get_package_share_directory("navigation"),
+        "lidar_masks",
+        "ouster_mask_combined_shifted.png",
+    )
+
     ouster_ns = LaunchConfiguration("ouster_ns")
     ouster_ns_arg = DeclareLaunchArgument("ouster_ns", default_value="ouster")
 
@@ -44,33 +50,17 @@ def generate_launch_description():
     auto_start_arg = DeclareLaunchArgument("auto_start", default_value="True")
 
     # Define Composable Nodes for Ouster
-    os_sensor = ComposableNode(
+    os_driver = ComposableNode(
         package="ouster_ros",
-        plugin="ouster_ros::OusterSensor",
-        name="os_sensor",
+        plugin="ouster_ros::OusterDriver",
+        name="os_driver",
         namespace=ouster_ns,
-        parameters=[params_file, {"auto_start": auto_start}],
-    )
-
-    os_cloud = ComposableNode(
-        package="ouster_ros",
-        plugin="ouster_ros::OusterCloud",
-        name="os_cloud",
-        namespace=ouster_ns,
-        parameters=[params_file],
-    )
-
-    os_image = ComposableNode(
-        package="ouster_ros",
-        plugin="ouster_ros::OusterImage",
-        name="os_image",
-        namespace=ouster_ns,
-        parameters=[params_file],
+        parameters=[params_file, {"auto_start": auto_start, "mask_path": mask_file}],
     )
 
     # Load into an existing container
     load_ouster_nodes_into_zed_container = LoadComposableNodes(
-        composable_node_descriptions=[os_sensor, os_cloud, os_image],
+        composable_node_descriptions=[os_driver],
         target_container="/zed/zed_container",
     )
 

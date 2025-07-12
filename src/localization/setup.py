@@ -34,6 +34,7 @@ setup(
             "imu_filter = localization.imu_filter:main",
             "repub_odom = localization.republish_odometry:main",
             "record_lidar_image = localization.record_lidar_image:main",
+            "lidar_mask_tool = localization.lidar_mask_tool:main",
         ],
     },
 )

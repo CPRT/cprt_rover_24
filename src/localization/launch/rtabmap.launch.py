@@ -58,21 +58,23 @@ profiles = {
             "wait_for_transform": 0.3,
             "Grid/DepthDecimation": "2",
             "Grid/RangeMin": "1.5",
-            "Grid/RangeMax": "10.0",
-            "Grid/MinClusterSize": "20",
+            "Grid/RangeMax": "25.0",
+            "Grid/MinClusterSize": "4",
             "Grid/MaxGroundAngle": "35",
             "Grid/NormalK": "20",
             "Grid/CellSize": "0.1",
             "Grid/FlatObstacleDetected": "false",
             "GridGlobal/UpdateError": "0.01",
             "GridGlobal/MinSize": "200",
+            "GridGlobal/OccupancyThr": "0.5",
             "Reg/Strategy": "1",
         },
         "remappings": [
             ("scan_cloud", "ouster/points"),
-            ("rgb/camera_info", "camera/camera_info"),
-            ("depth/image", "zed/depth_image"),
-            ("imu", "ouster/imu"),
+            # ("rgb/camera_info", "camera/camera_info"),
+            # ("depth/image", "zed/depth_image"),
+            # ("imu", "ouster/imu"),
+            ("imu", "zed/zed_node/imu/data"),
             ("odom", "odometry/filtered/local"),
             ("goal", "goal_pose"),
             ("map", "map"),
@@ -80,7 +82,7 @@ profiles = {
     },
 }
 
-default_profile = "zed_only"
+default_profile = "lidar_only"
 
 
 def launch_setup(context):

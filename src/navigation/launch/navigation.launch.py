@@ -40,7 +40,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "use_sim_time": use_sim_time,
-            "use_composition": "True",
+            "use_composition": "False",
         }.items(),
     )
 
@@ -64,7 +64,7 @@ def generate_launch_description():
     # Include Ouster lidar launch if enabled
     ouster_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_navigation, "launch", "ouster.launch.py")
+            os.path.join(pkg_navigation, "launch", "ouster_composable.launch.py")
         ),
         condition=IfCondition(launch_ouster),
         # launch_arguments={"use_sim_time": use_sim_time}.items(),
