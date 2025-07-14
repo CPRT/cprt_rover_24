@@ -66,22 +66,6 @@ class CameraClient : public rclcpp::Node {
                                    GstData* data);
 
   /**
-   * @brief Runs a timer that checks if a service is available. Returns true if
-   * service is available and false if not.
-   *
-   * @param client The client that is trying to connect to the service
-   */
-  template <class T>
-  bool wait_for_service(typename rclcpp::Client<T>::SharedPtr client);
-
-  // How often to poll the service (in seconds)
-  const int service_wait_interval_ = 1;
-
-  // How long to wait before timing out when waiting for a service to be
-  // available (in seconds)
-  const int service_timeout_ = 5;
-
-  /**
    * @brief Waits for the result from the service. If no result after
    * service_result_timeout_ seconds, then stop.
    */

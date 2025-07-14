@@ -16,11 +16,6 @@ std::vector<std::string> CameraClient::get_cameras() {
 
   auto request = std::make_shared<interfaces::srv::GetCameras::Request>();
 
-  // Wait for service to be available
-  // If the service is never available, return empty vector
-  if (!wait_for_service<interfaces::srv::GetCameras>(client))
-    return std::vector<std::string>();
-
   rclcpp::Client<interfaces::srv::GetCameras>::SharedFuture future =
       client->async_send_request(request).future.share();
 
@@ -47,10 +42,6 @@ void CameraClient::start_video(
   auto request = std::make_shared<interfaces::srv::VideoOut::Request>();
   request->num_sources = num_sources;
   request->sources = sources;
-
-  // Wait for service to be available
-  // If the service is never available, return
-  if (!wait_for_service<interfaces::srv::VideoOut>(client)) return;
 
   rclcpp::Client<interfaces::srv::VideoOut>::SharedFuture future =
       client->async_send_request(request).future.share();
@@ -108,36 +99,6 @@ GstBusSyncReply CameraClient::bus_sync_handler(GstBus* bus, GstMessage* msg,
                                       data->winId);
 
   return GST_BUS_PASS;
-}
-
-template <class T>
-bool CameraClient::wait_for_service(
-    typename rclcpp::Client<T>::SharedPtr client) {
-  // Poll the service every second for 5 seconds to check if it's available
-  // Times out after 5 seconds
-  std::chrono::seconds wait_interval(service_wait_interval_);
-  int counter_ = 0;
-  while (!client->wait_for_service(wait_interval)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Interrupted while waiting for the service. Exiting.");
-      return false;
-    }
-
-    counter_++;
-
-    // Check if timed out
-    if (counter_ >= service_timeout_) {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
-                   "Get camera service timed out.");
-      return false;
-    }
-
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-                "Service not available, waiting again...");
-  }
-
-  return true;
 }
 
 template <class T>
