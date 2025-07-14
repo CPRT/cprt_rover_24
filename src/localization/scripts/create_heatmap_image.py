@@ -2,7 +2,10 @@ import cv2
 import numpy as np
 import os
 
-def create_and_save_heatmap(image_path, output_directory=".", lower_threshold=0, upper_threshold=None):
+
+def create_and_save_heatmap(
+    image_path, output_directory=".", lower_threshold=0, upper_threshold=None
+):
     """
     Opens an image, converts it to a heatmap based on specified thresholds, and saves it.
 
@@ -24,7 +27,9 @@ def create_and_save_heatmap(image_path, output_directory=".", lower_threshold=0,
 
     # Convert to grayscale if it's a color image
     if img.ndim == 3:
-        print("Warning: Loaded a color image. Converting to grayscale for heatmap generation.")
+        print(
+            "Warning: Loaded a color image. Converting to grayscale for heatmap generation."
+        )
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Determine upper_threshold based on image data type if not provided
@@ -34,7 +39,9 @@ def create_and_save_heatmap(image_path, output_directory=".", lower_threshold=0,
         elif img.dtype == np.uint16:
             upper_threshold = 65535
         else:
-            print(f"Warning: Unexpected image data type: {img.dtype}. Defaulting upper threshold to 65535.")
+            print(
+                f"Warning: Unexpected image data type: {img.dtype}. Defaulting upper threshold to 65535."
+            )
             upper_threshold = 65535
 
     # Ensure output directory exists
@@ -57,7 +64,9 @@ def create_and_save_heatmap(image_path, output_directory=".", lower_threshold=0,
             colormap_input_values = np.full_like(values_in_range, 127, dtype=np.uint8)
         else:
             # Normalize to 0-255 range for applyColorMap
-            colormap_input_values = ((values_in_range - min_val) / (max_val - min_val) * 255).astype(np.uint8)
+            colormap_input_values = (
+                (values_in_range - min_val) / (max_val - min_val) * 255
+            ).astype(np.uint8)
 
         # Apply JET colormap
         heatmap_colors = cv2.applyColorMap(colormap_input_values, cv2.COLORMAP_JET)
@@ -68,7 +77,9 @@ def create_and_save_heatmap(image_path, output_directory=".", lower_threshold=0,
         # Place the heatmap colors onto the processed_image at the masked locations
         processed_image[mask] = heatmap_colors
     else:
-        print("No pixels found within the specified threshold range. Outputting a black image.")
+        print(
+            "No pixels found within the specified threshold range. Outputting a black image."
+        )
 
     # Construct the output filename
     base_name = os.path.basename(image_path)
@@ -79,6 +90,7 @@ def create_and_save_heatmap(image_path, output_directory=".", lower_threshold=0,
     # Save the heatmap image
     cv2.imwrite(output_path, processed_image)
     print(f"Heatmap saved to: {output_path}")
+
 
 if __name__ == "__main__":
     # Example Usage:
@@ -108,6 +120,11 @@ if __name__ == "__main__":
             exit()
 
     # Call the function to create and save the heatmap
-    create_and_save_heatmap(path_input, output_directory="./output_heatmaps", lower_threshold=0, upper_threshold=15000)
+    create_and_save_heatmap(
+        path_input,
+        output_directory="./output_heatmaps",
+        lower_threshold=0,
+        upper_threshold=15000,
+    )
     # You can also use default thresholds:
     # create_and_save_heatmap(path_input, output_directory="./output_heatmaps")

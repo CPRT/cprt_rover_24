@@ -15,7 +15,7 @@
   <joint name="zed_camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="zed_camera_link"/>
-    <origin xyz="0.555 -0.03 0.135 " rpy="0.0 0.29915 0.0"/>
+    <origin xyz="0.555 -0.03 0.11 " rpy="0.0 0.33 0.0"/>
   </joint>
 
   <joint name="ouster_lidar_joint" type="fixed">

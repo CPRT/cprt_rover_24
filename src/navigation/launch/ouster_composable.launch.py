@@ -13,9 +13,15 @@ from launch.actions import (
     IncludeLaunchDescription,
     LogInfo,
 )
-from launch.conditions import IfCondition
+from launch.conditions import (
+    IfCondition,
+    UnlessCondition,
+)  # Import UnlessCondition for clarity if preferred
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import (
+    LaunchConfiguration,
+    PythonExpression,
+)  # Import PythonExpression
 import os
 
 
@@ -37,7 +43,7 @@ def generate_launch_description():
     mask_file = os.path.join(
         get_package_share_directory("navigation"),
         "lidar_masks",
-        "ouster_mask_combined_shifted.png",
+        "ouster_mask_3_shifted.png",
     )
 
     ouster_ns = LaunchConfiguration("ouster_ns")
@@ -49,19 +55,39 @@ def generate_launch_description():
     auto_start = LaunchConfiguration("auto_start")
     auto_start_arg = DeclareLaunchArgument("auto_start", default_value="True")
 
+    # NEW: Declare launch argument for independent container
+    independent_container = LaunchConfiguration("independent_container")
+    independent_container_arg = DeclareLaunchArgument(
+        "independent_container",
+        default_value="False",
+        description="If true, launch Ouster nodes in their own container. Otherwise, load into /zed/zed_container.",
+    )
+
     # Define Composable Nodes for Ouster
     os_driver = ComposableNode(
         package="ouster_ros",
         plugin="ouster_ros::OusterDriver",
         name="os_driver",
         namespace=ouster_ns,
-        parameters=[params_file, {"auto_start": auto_start, "mask_path": mask_file}],
+        parameters=[params_file, {"auto_start": auto_start, "mask_path": mask_file, "use_intra_process_comms": True}],
     )
 
-    # Load into an existing container
+    # Load into an existing container (conditional)
     load_ouster_nodes_into_zed_container = LoadComposableNodes(
         composable_node_descriptions=[os_driver],
         target_container="/zed/zed_container",
+        condition=IfCondition(PythonExpression(["not ", independent_container])),
+    )
+
+    # Create a new container for Ouster (conditional)
+    ouster_container = ComposableNodeContainer(
+        name="ouster_container",
+        namespace="",
+        package="rclcpp_components",
+        executable="component_container",
+        composable_node_descriptions=[os_driver],
+        condition=IfCondition(independent_container),
+        output="screen",
     )
 
     # RViz Launch file inclusion
@@ -76,8 +102,9 @@ def generate_launch_description():
             ouster_ns_arg,
             rviz_enable_arg,
             auto_start_arg,
+            independent_container_arg,  # Add the new argument
             rviz_launch,
-            LogInfo(msg="Waiting to compose Ouster nodes into /zed/zed_container"),
             load_ouster_nodes_into_zed_container,
+            ouster_container,  # Add the new container
         ]
     )

@@ -189,6 +189,30 @@ class PointCloudMasker(Node):
             except Exception as e:
                 self.get_logger().error(f"Error saving combined mask: {e}")
 
+        # Save an extra index for only the front
+        index_save = 3
+        if index_save in self.masks and self.masks is not None:
+            try:
+                cv2.imwrite(self._get_mask_filename(index_save), self.masks[index_save])
+                self.get_logger().debug(
+                    f"Saved front mask to {self._get_mask_filename(index_save)}"
+                )
+
+                # Shift the front mask to the right by a fraction of the width based on shift_degrees
+                shift_degrees = -10.0
+                mask = self.masks[index_save]
+                shift = int(mask.shape[1] * (shift_degrees / 360.0))
+                shifted_mask = np.roll(mask, shift, axis=1)
+                shifted_filename = self._get_mask_filename(index_save).replace(
+                    ".png", f"_shifted.png"
+                )
+                cv2.imwrite(shifted_filename, shifted_mask)
+                self.get_logger().info(
+                    f"Saved shifted front mask to {shifted_filename}"
+                )
+            except Exception as e:
+                self.get_logger().error(f"Error saving front mask: {e}")
+
         # Save individual masks (indices > 0)
         for index, mask in self.masks.items():
             if index > 0 and mask is not None:

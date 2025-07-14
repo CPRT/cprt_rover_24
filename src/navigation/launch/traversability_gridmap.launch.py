@@ -41,7 +41,7 @@ profiles = {
     },
 }
 
-default_profile = "lidar_only"
+default_profile = "all"
 
 
 def launch_setup(context):
