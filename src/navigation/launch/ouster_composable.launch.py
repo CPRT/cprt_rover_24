@@ -69,7 +69,14 @@ def generate_launch_description():
         plugin="ouster_ros::OusterDriver",
         name="os_driver",
         namespace=ouster_ns,
-        parameters=[params_file, {"auto_start": auto_start, "mask_path": mask_file, "use_intra_process_comms": True}],
+        parameters=[
+            params_file,
+            {
+                "auto_start": auto_start,
+                "mask_path": mask_file,
+                "use_intra_process_comms": True,
+            },
+        ],
     )
 
     # Load into an existing container (conditional)
