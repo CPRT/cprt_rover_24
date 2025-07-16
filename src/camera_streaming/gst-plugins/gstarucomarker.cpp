@@ -3,6 +3,8 @@
 struct _GstArucoMarker {
   GstVideoFilter parent;
   cv::Ptr<cv::aruco::Dictionary> dictionary;
+  std::vector<int> ids;
+  std::vector<std::vector<cv::Point2f>> corners;
   guint frame_count;
   guint detect_every;  // Detect markers every N frames
 };
@@ -11,6 +13,8 @@ static void gst_arucomarker_init(GstArucoMarker *self) {
   self->dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
   self->frame_count = 0;
   self->detect_every = 1;
+  self->ids = std::vector<int>();
+  self->corners = std::vector<std::vector<cv::Point2f>>();
 }
 
 G_DEFINE_TYPE(GstArucoMarker, gst_arucomarker, GST_TYPE_VIDEO_FILTER)
@@ -33,8 +37,9 @@ static GstFlowReturn gst_arucomarker_transform_frame(GstVideoFilter *filter,
 
   cv::Mat frame(inframe->info.height, inframe->info.width, CV_8UC3,
                 GST_VIDEO_FRAME_PLANE_DATA(inframe, 0));
-  std::vector<int> ids;
-  std::vector<std::vector<cv::Point2f>> corners;
+  auto &ids = self->ids;
+  auto &corners = self->corners;
+
   if (self->frame_count % self->detect_every == 0) {
     ids.clear();
     corners.clear();
