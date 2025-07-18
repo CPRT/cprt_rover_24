@@ -17,6 +17,7 @@
 #include <interfaces/srv/video_out.hpp>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/int32.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
 #include <vector>
@@ -73,6 +74,7 @@ class WebRTCStreamer : public rclcpp::Node {
     std::string path;
     CameraType type;
     bool encoded;
+    bool aruco;
   };
 
  private:
@@ -207,6 +209,8 @@ class WebRTCStreamer : public rclcpp::Node {
       get_cams_service_; /**< ROS2 service for getting camera list */
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr
       restart_service_; /**< ROS2 service for restarting the video pipeline */
+  rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr
+      marker_pub_; /**< ROS2 publisher for marker detection messages */
   GstUniquePtr<GstBus> bus_; /**< GStreamer bus for message handling */
   std::map<std::string, GstUniquePtr<GstPad>>
       source_pads_; /**< Maps camera names to compositor pads*/

@@ -51,6 +51,7 @@ pip3 install adafruit-circuitpython-bme280
 pip3 install adafruit-circuitpython-ens160
 pip3 install adafruit-circuitpython-busdevice
 pip3 install adafruit-circuitpython-register
+pip3 install adafruit-circuitpython-neopixel-spi
 pip3 install pyubx2
 pip3 install numpy
 pip3 install pyusb==1.2.1

@@ -33,6 +33,8 @@ WebRTCStreamer::WebRTCStreamer()
   restart_service_ = this->create_service<std_srvs::srv::Trigger>(
       "reset_video", std::bind(&WebRTCStreamer::restart_pipeline, this,
                                std::placeholders::_1, std::placeholders::_2));
+  marker_pub_ = this->create_publisher<std_msgs::msg::Int32>(
+      "marker_detected", rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
 
   start();
   GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(pipeline_.get()), GST_DEBUG_GRAPH_SHOW_ALL,
@@ -54,11 +56,15 @@ bool WebRTCStreamer::start() {
     this->get_parameter(name + ".type", camera_type);
     bool encoded;
     this->get_parameter(name + ".encoded", encoded);
+    bool aruco;
+    this->get_parameter(name + ".aruco", aruco);
     CameraSource source;
     source.name = name;
     source.path = camera_path;
     source.type = static_cast<CameraType>(camera_type);
     source.encoded = encoded;
+    source.aruco = aruco;
+
     if (source.type != CameraType::TestSrc && camera_path.empty()) {
       RCLCPP_ERROR(this->get_logger(), "Camera path not set for %s",
                    name.c_str());
@@ -132,6 +138,8 @@ void WebRTCStreamer::declare_parameters() {
     this->declare_parameter(name + ".type",
                             static_cast<int>(CameraType::V4l2Src));
     this->declare_parameter(name + ".encoded", false);
+    this->declare_parameter(name + ".aruco", false);
+    this->declare_parameter(name + ".aruco_detect_interval", 1);
   }
 }
 
@@ -349,6 +357,24 @@ GstElement *WebRTCStreamer::add_element_chain(
   }
   return nullptr;
 }
+
+static void on_marker_detected(GstElement *element, gint marker_id,
+                               gpointer user_data) {
+  auto *marker_pub =
+      static_cast<rclcpp::Publisher<std_msgs::msg::Int32> *>(user_data);
+  std_msgs::msg::Int32 msg;
+  msg.data = marker_id;
+  RCLCPP_INFO(rclcpp::get_logger("webrtc_node"), "Marker detected with ID: %d",
+              marker_id);
+  if (!marker_pub) {
+    RCLCPP_ERROR(
+        rclcpp::get_logger("webrtc_node"),
+        "Marker publisher is not initialized, cannot publish marker ID");
+    return;
+  }
+  marker_pub->publish(msg);
+}
+
 GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   std::vector<GstElement *> elements;
 
@@ -402,9 +428,28 @@ GstElement *WebRTCStreamer::create_source(const CameraSource &src) {
   g_object_set(G_OBJECT(elements.back()), "max-size-buffers", 1, nullptr);
   g_object_set(G_OBJECT(elements.back()), "leaky", 2, nullptr);
 
+  if (src.aruco) {
+    elements.emplace_back(create_element("videoconvert"));
+    elements.emplace_back(create_element("arucomarker"));
+    if (!elements.back()) {
+      elements.pop_back();
+      RCLCPP_WARN(this->get_logger(),
+                  "Failed to create aruco marker element, skipping aruco "
+                  "processing");
+    } else {
+      int aruco_detect_interval;
+      this->get_parameter(name + ".aruco_detect_interval",
+                          aruco_detect_interval);
+      g_object_set(G_OBJECT(elements.back()), "detect-every",
+                   aruco_detect_interval, nullptr);
+      g_signal_connect(elements.back(), "marker-detected",
+                       G_CALLBACK(on_marker_detected), marker_pub_.get());
+    }
+    elements.emplace_back(create_element("videoconvert"));
+  }
+
   // Add video converter
   elements.emplace_back(create_vid_conv());
-
   // Add tee to connect screen capture to
   elements.emplace_back(create_element("tee", name));
 
