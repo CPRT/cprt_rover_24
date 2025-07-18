@@ -64,8 +64,8 @@ class EventHorizonPlanner : public nav2_smac_planner::SmacPlannerHybrid {
   void deactivate() override;
 
   /**
-   * @brief Create plan using primary planner up to the horizon, then a straight
-   * line to the final goal if needed.
+   * @brief Create plan using parent smac planner function up to the horizon,
+   * then a straight line to the final goal if needed.
    * @param start Start pose
    * @param goal Goal pose
    * @return Path to goal pose from start pose
@@ -111,10 +111,6 @@ class EventHorizonPlanner : public nav2_smac_planner::SmacPlannerHybrid {
                                                           float yaw);
 
   // parameters
-
-  pluginlib::ClassLoader<nav2_core::GlobalPlanner> lp_loader_;
-
-  nav2_core::GlobalPlanner::Ptr primary_planner_;
 
   std::shared_ptr<tf2_ros::Buffer> tf_;
 
