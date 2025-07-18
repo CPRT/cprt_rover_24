@@ -9,7 +9,8 @@ def generate_launch_description():
 
     Heading_config_file = os.path.join(config_dir, "Heading_config.ubx")
     heading = (
-        "ubxload --port /dev/ttyUSB0 --baudrate 115200 --infile " + Heading_config_file
+        "ubxload --port /dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D30I1LY5-if00-port0 --baudrate 115200 --infile "
+        + Heading_config_file
     )
     # TODO: Uncomment the line below to configure the rover GPS on startup
     # os.system(heading)
@@ -24,7 +25,9 @@ def generate_launch_description():
                     {"frame_id": "gps_link"},
                     {"Freq": 5.0},  # Publish rate (hz)
                     {"Baudrate": 115200},
-                    {"Device": "/dev/ttyUSB0"},
+                    {
+                        "Device": "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_D30I1LY5-if00-port0"
+                    },
                 ],
                 remappings=[("heading", "gps/heading")],
             ),

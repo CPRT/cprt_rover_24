@@ -45,7 +45,7 @@ class IncrementalGpsCommander(Node):
         self.get_logger().info(f"Look for aruco: {self.lookForAruco}")
 
         # Distance in meters to the intermediate goal
-        self.declare_parameter("incremental_distance", 25.0)
+        self.declare_parameter("incremental_distance", 200.0)
         self.incremental_distance = (
             self.get_parameter("incremental_distance")
             .get_parameter_value()

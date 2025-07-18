@@ -105,7 +105,7 @@ def generate_launch_description():
             launch_desc_cmd,
             rviz_cmd,
             gps_cmd,
-            slam_cmd,
+            # slam_cmd,
             ekf_cmd,
             desc_cmd,
             navsat_node,
