@@ -6,7 +6,8 @@ struct _GstArucoMarker {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   guint frame_count;
-  guint detect_every;  // Detect markers every N frames
+  guint detect_every;     // Detect markers every N frames
+  gboolean draw_markers;  // Whether to draw detected markers
 };
 
 static void gst_arucomarker_init(GstArucoMarker *self) {
@@ -15,6 +16,7 @@ static void gst_arucomarker_init(GstArucoMarker *self) {
   self->detect_every = 1;
   self->ids = std::vector<int>();
   self->corners = std::vector<std::vector<cv::Point2f>>();
+  self->draw_markers = TRUE;
 }
 
 G_DEFINE_TYPE(GstArucoMarker, gst_arucomarker, GST_TYPE_VIDEO_FILTER)
@@ -48,7 +50,7 @@ static GstFlowReturn gst_arucomarker_transform_frame(GstVideoFilter *filter,
       g_signal_emit_by_name(self, "marker-detected", id);
     }
   }
-  if (!ids.empty()) {
+  if (!ids.empty() && self->draw_markers) {
     cv::aruco::drawDetectedMarkers(frame, corners, ids);
   }
   frame.copyTo(cv::Mat(outframe->info.height, outframe->info.width, CV_8UC3,
@@ -64,6 +66,9 @@ static void gst_arucomarker_set_property(GObject *object, guint prop_id,
     case 1:
       self->detect_every = g_value_get_uint(value);
       break;
+    case 2:
+      self->draw_markers = g_value_get_boolean(value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
       break;
@@ -76,6 +81,9 @@ static void gst_arucomarker_get_property(GObject *object, guint prop_id,
   switch (prop_id) {
     case 1:
       g_value_set_uint(value, self->detect_every);
+      break;
+    case 2:
+      g_value_set_boolean(value, self->draw_markers);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -111,6 +119,12 @@ static void gst_arucomarker_class_init(GstArucoMarkerClass *klass) {
       g_param_spec_uint(
           "detect-every", "Detect Every",
           "Run detection every N frames (1 = every frame)", 1, G_MAXUINT, 1,
+          (GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
+  g_object_class_install_property(
+      G_OBJECT_CLASS(klass), 2,
+      g_param_spec_boolean(
+          "draw-markers", "Draw Markers",
+          "Whether to draw detected markers on the frame", TRUE,
           (GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 }
 static gboolean plugin_init(GstPlugin *plugin) {
