@@ -14,6 +14,12 @@
     position_x: 0.0
     position_y: 0.0
     resolution: 0.1
+
+    track_point_frame_id: "zed_left_camera_frame"
+    track_point_x: 5.0
+    track_point_y: 0.0
+    track_point_z: -0.5
+
     min_variance: 0.0001
     max_variance: 0.05
     mahalanobis_distance_threshold: 2.5
