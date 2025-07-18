@@ -216,12 +216,12 @@ planner_server:
 
     GridBased:
       plugin: "cprt_planner_plugins::EventHorizonPlanner" # In Iron and older versions, "/" was used instead of "::"
-      primary_planner: "nav2_smac_planner/SmacPlannerHybrid"
       interpolation_resolution: 0.1       
-      horizon_distance: 20.0
+      horizon_distance: 20.0              # distance from start pose for which an intermediate goal should be created by EventHorizonPlanner
       downsample_costmap: true            # whether or not to downsample the map
       downsampling_factor: 2              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
       tolerance: 0.5                      # dist-to-goal heuristic cost (distance) for valid tolerance endpoints if exact goal cannot be found.
+      intermediate_tolerance: 10.0        # tolerance value for intermediate goal created by EventHorizonPlanner
       allow_unknown: true                 # allow traveling in unknown space
       goal_heading_mode: "ALL_DIRECTION"  # For “ALL_DIRECTION” mode, the planner will plan the goal with the orientation of the goal pose and all the possible orientation based on the angle quantization bins
       use_final_approach_orientation: false

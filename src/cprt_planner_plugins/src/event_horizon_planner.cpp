@@ -6,11 +6,14 @@
 
 #include "nav2_util/node_utils.hpp"
 
+using nav2_costmap_2d::FREE_SPACE;
+using nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::NO_INFORMATION;
+
 namespace cprt_planner_plugins {
 
-EventHorizonPlanner::EventHorizonPlanner()
-    : lp_loader_("nav2_core", "nav2_core::GlobalPlanner"),
-      primary_planner_(nullptr) {}
+EventHorizonPlanner::EventHorizonPlanner() {}
 
 void EventHorizonPlanner::configure(
     const rclcpp_lifecycle::LifecycleNode::WeakPtr& parent, std::string name,
@@ -23,8 +26,6 @@ void EventHorizonPlanner::configure(
   global_frame_ = costmap_ros->getGlobalFrameID();
   logger_ = node_->get_logger();
 
-  std::string primary_planner;
-
   // Parameter initialization
 
   // Interpolation resolution
@@ -34,27 +35,18 @@ void EventHorizonPlanner::configure(
   node_->get_parameter(name_ + ".interpolation_resolution",
                        interpolation_resolution_);
 
-  // Primary Planner
-  nav2_util::declare_parameter_if_not_declared(
-      node_, name_ + ".primary_planner", rclcpp::PARAMETER_STRING);
-  primary_planner =
-      node_->get_parameter(name_ + ".primary_planner").as_string();
-
   // Horizon Distance
   nav2_util::declare_parameter_if_not_declared(
       node_, name_ + ".horizon_distance",
       rclcpp::ParameterValue(DEFAULT_HORIZON_DISTANCE));
   node_->get_parameter(name_ + ".horizon_distance", horizon_distance_);
 
-  try {
-    primary_planner_ = lp_loader_.createUniqueInstance(primary_planner);
-  } catch (const pluginlib::PluginlibException& ex) {
-    RCLCPP_FATAL(logger_, "Failed to create planner instance. Exception: %s",
-                 ex.what());
-    return;
-  }
-
-  primary_planner_->configure(parent, name, tf, costmap_ros);
+  // Intermediate Tolerance
+  nav2_util::declare_parameter_if_not_declared(
+      node_, name_ + ".intermediate_tolerance",
+      rclcpp::ParameterValue(DEFAULT_INTERMEDIATE_TOLERANCE));
+  node_->get_parameter(name_ + ".intermediate_tolerance",
+                       intermediate_tolerance_);
 
   // Create a publisher to a topic to help visualize the intermediate goal.
   new_goal_publisher_ =
@@ -66,25 +58,18 @@ void EventHorizonPlanner::configure(
 void EventHorizonPlanner::cleanup() {
   RCLCPP_INFO(logger_, "Cleaning up plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  primary_planner_->cleanup();
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::activate() {
   RCLCPP_INFO(logger_, "Activating plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  if (!primary_planner_) {
-    RCLCPP_FATAL(logger_, "primary_planner_ is null in activate(). Aborting.");
-    std::terminate();
-  }
-  primary_planner_->activate();
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::deactivate() {
   RCLCPP_INFO(logger_, "Deactivating plugin %s of type EventHorizonPlanner",
               name_.c_str());
-  primary_planner_->deactivate();
 }
 
 nav_msgs::msg::Path EventHorizonPlanner::createPlan(
@@ -111,32 +96,42 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
   global_path.header.stamp = node_->now();
   global_path.header.frame_id = global_frame_;
 
-  // get updated goal for primary planner
+  // get updated goal in case it is beyond the horizon
   const geometry_msgs::msg::PoseStamped new_goal = getNewGoal(start, goal);
 
-  // get path from primary planner
-  global_path = primary_planner_->createPlan(start, new_goal);
-
   if (goal != new_goal) {
-    // create a straight line from new_goal on the horizon to the original goal
+    // change tolerance before planning to intermediate goal on horizon
+    float original_tolerance = getTolerance();
+    setTolerance(intermediate_tolerance_);
 
+    global_path = SmacPlannerHybrid::createPlan(start, new_goal);
+
+    setTolerance(original_tolerance);
+
+    // get the last pose planned by the smac planner in case it was unable to
+    // plan exactly to new_goal.
+    geometry_msgs::msg::PoseStamped horizon_pose = global_path.poses.back();
+
+    // create a straight line from goal on the horizon to the original goal
     int total_number_of_loop =
-        std::hypot(goal.pose.position.x - new_goal.pose.position.x,
-                   goal.pose.position.y - new_goal.pose.position.y) /
+        std::hypot(goal.pose.position.x - horizon_pose.pose.position.x,
+                   goal.pose.position.y - horizon_pose.pose.position.y) /
         interpolation_resolution_;
 
     if (total_number_of_loop > 0) {
-      double x_increment = (goal.pose.position.x - new_goal.pose.position.x) /
-                           total_number_of_loop;
-      double y_increment = (goal.pose.position.y - new_goal.pose.position.y) /
-                           total_number_of_loop;
+      double x_increment =
+          (goal.pose.position.x - horizon_pose.pose.position.x) /
+          total_number_of_loop;
+      double y_increment =
+          (goal.pose.position.y - horizon_pose.pose.position.y) /
+          total_number_of_loop;
 
       for (int i = 0; i < total_number_of_loop; ++i) {
         geometry_msgs::msg::PoseStamped pose;
-        pose.pose.position.x = new_goal.pose.position.x + x_increment * i;
-        pose.pose.position.y = new_goal.pose.position.y + y_increment * i;
+        pose.pose.position.x = horizon_pose.pose.position.x + x_increment * i;
+        pose.pose.position.y = horizon_pose.pose.position.y + y_increment * i;
         pose.pose.position.z = 0.0;
-        pose.pose.orientation = new_goal.pose.orientation;
+        pose.pose.orientation = horizon_pose.pose.orientation;
         pose.header.stamp = node_->now();
         pose.header.frame_id = global_frame_;
         global_path.poses.push_back(pose);
@@ -147,6 +142,8 @@ nav_msgs::msg::Path EventHorizonPlanner::createPlan(
     goal_pose.header.stamp = node_->now();
     goal_pose.header.frame_id = global_frame_;
     global_path.poses.push_back(goal_pose);
+  } else {
+    global_path = SmacPlannerHybrid::createPlan(start, goal);
   }
 
   return global_path;
@@ -185,6 +182,17 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
 
   return new_goal;
 }
+
+bool EventHorizonPlanner::setTolerance(float value) {
+  if (value >= 0) {
+    _tolerance = value;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+float EventHorizonPlanner::getTolerance() { return _tolerance; }
 
 geometry_msgs::msg::Quaternion EventHorizonPlanner::EulerToQuaternion(
     float roll, float pitch, float yaw) {
