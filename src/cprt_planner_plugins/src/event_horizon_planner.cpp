@@ -52,22 +52,27 @@ void EventHorizonPlanner::configure(
   new_goal_publisher_ =
       node_->create_publisher<geometry_msgs::msg::PoseStamped>(
           "intermediate_goal", 10);
+
+  SmacPlannerHybrid::configure(parent, name, tf, costmap_ros);
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::cleanup() {
+  SmacPlannerHybrid::cleanup();
   RCLCPP_INFO(logger_, "Cleaning up plugin %s of type EventHorizonPlanner",
               name_.c_str());
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::activate() {
+  SmacPlannerHybrid::activate();
   RCLCPP_INFO(logger_, "Activating plugin %s of type EventHorizonPlanner",
               name_.c_str());
 }
 
 // taken from ros-navigation/navigation2_tutorials
 void EventHorizonPlanner::deactivate() {
+  SmacPlannerHybrid::deactivate();
   RCLCPP_INFO(logger_, "Deactivating plugin %s of type EventHorizonPlanner",
               name_.c_str());
 }
