@@ -1,0 +1,20 @@
+Parent_config:
+    ros__parameters:
+    servos_used: 1
+    servo_num: 0
+    # Tilt
+    servo0:
+      min: 350
+      max: 2500
+      rom: 360
+    # PAN
+    servo1:
+      min: 350
+      max: 2500
+      rom: 360
+    # GRIPPER
+    servo3:
+      min: 500
+      max: 2500
+      rom: 180
+      
