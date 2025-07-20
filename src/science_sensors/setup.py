@@ -37,6 +37,7 @@ setup(
             "pi_gpio_controller = science_sensors.pi_gpio_controller:main",
             "pi_gpio_reader = science_sensors.pi_gpio_reader:main",
             "panoramic = science_sensors.panoramic:main",
+            "can_module_sensor = science_sensors.can_module_sensor:main",
         ],
     },
 )
