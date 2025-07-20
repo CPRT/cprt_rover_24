@@ -23,8 +23,8 @@ def generate_launch_description():
         ("camera_streaming", "webRTC.launch.py"),
         ("gps", "rover.launch.py"),
         ("joystick_control", "controller.launch.py"),
-        ("science_sensors", "talon.launch.py"),
         ("servo_pkg", "usb_servo_launch.launch.py"),
         ("science_sensors", "panoramic.launch.py"),
+        ("science_sensors", "can_module_reader.launch.py"),
     ]
     return LaunchDescription(get_included_launch_descriptions(launch_files))
