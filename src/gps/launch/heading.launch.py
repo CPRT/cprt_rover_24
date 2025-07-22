@@ -7,9 +7,9 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     config_dir = os.path.join(get_package_share_directory("gps"), "config")
 
-    Heading_config_file = os.path.join(config_dir, "Heading_config.ubx")
+    heading_config_file = os.path.join(config_dir, "Heading_config.ubx")
     heading = (
-        "ubxload --port /dev/ttyUSB0 --baudrate 115200 --infile " + Heading_config_file
+        "ubxload --port /dev/ttyUSB0 --baudrate 115200 --infile " + heading_config_file
     )
     os.system(heading)
 
