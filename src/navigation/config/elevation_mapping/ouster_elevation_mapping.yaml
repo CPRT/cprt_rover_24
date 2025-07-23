@@ -13,10 +13,10 @@
     length_in_y: 8.0
     position_x: 0.0
     position_y: 0.0
-    resolution: 0.1
+    resolution: 0.2
 
     track_point_frame_id: "zed_left_camera_frame"
-    track_point_x: 5.0
+    track_point_x: 4.5
     track_point_y: 0.0
     track_point_z: -0.5
 
@@ -28,5 +28,5 @@
     enable_skip_lower_points: true
     scanning_duration: 0.01
     remove_penetrated_points_rate: 5.0
-    visibility_cleanup_rate: 10.0
+    visibility_cleanup_rate: 5.0
     enable_continuous_cleanup: false
