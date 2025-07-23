@@ -18,6 +18,7 @@ def generate_launch_description():
     svo_path = LaunchConfiguration("svo_path")
     launch_transversability = LaunchConfiguration("launch_transversability")
     launch_zed = LaunchConfiguration("launch_zed")
+    launch_ouster = LaunchConfiguration("launch_ouster")
 
     # Declare launch arguments
     declare_use_sim_time = DeclareLaunchArgument("use_sim_time", default_value="false")
@@ -25,6 +26,7 @@ def generate_launch_description():
         "launch_transversability", default_value="True"
     )
     declare_zed = DeclareLaunchArgument("launch_zed", default_value="True")
+    declare_ouster = DeclareLaunchArgument("launch_ouster", default_value="True")
     declare_svo_path = DeclareLaunchArgument(
         "svo_path",
         default_value=TextSubstitution(text="live"),
@@ -58,14 +60,25 @@ def generate_launch_description():
         condition=IfCondition(launch_zed),
         launch_arguments={"use_sim_time": use_sim_time, "svo_path": svo_path}.items(),
     )
+
+    # Include Ouster lidar launch if enabled
+    ouster_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_navigation, "launch", "ouster_composable.launch.py")
+        ),
+        condition=IfCondition(launch_ouster),
+        # launch_arguments={"use_sim_time": use_sim_time}.items(),
+    )
     return LaunchDescription(
         [
             declare_use_sim_time,
             declare_svo_path,
             declare_transversability,
             declare_zed,
+            declare_ouster,
             nav2_cmd,
             transversability_cmd,
             zed_cmd,
+            ouster_cmd,
         ]
     )
