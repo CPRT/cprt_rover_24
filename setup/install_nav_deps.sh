@@ -20,3 +20,6 @@ cd build
 cmake .. -DUSE_CMAKE=true
 sudo make install
 echo "Finished building Kindr ..."
+
+sudo mkdir -p /usr/local/cprt
+sudo chown $USER:$USER /usr/local/cprt
