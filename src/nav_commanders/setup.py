@@ -24,6 +24,7 @@ setup(
         "console_scripts": [
             "gps_commander_node = nav_commanders.nav_to_gps_coords:main",
             "incremental_gps_commander_node = nav_commanders.incremental_gps_commander:main",
+            "aruco_gps_commander_node = nav_commanders.nav_to_gps_aruco:main",
         ],
     },
 )
