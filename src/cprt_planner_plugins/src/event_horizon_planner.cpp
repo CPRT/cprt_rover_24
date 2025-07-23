@@ -182,8 +182,8 @@ const geometry_msgs::msg::PoseStamped EventHorizonPlanner::getNewGoal(
   // Publish the new goal
   new_goal_publisher_->publish(new_goal);
 
-  RCLCPP_INFO(logger_, "Intermediate goal: %f, %f", new_goal.pose.position.x,
-              new_goal.pose.position.y);
+  RCLCPP_INFO(logger_, "~~~~~\nIntermediate goal: %f, %f \n~~~~~~",
+              new_goal.pose.position.x, new_goal.pose.position.y);
 
   return new_goal;
 }

@@ -1,4 +1,4 @@
-# Copyright (C) 2023  Miguel Ángel González Santamarta
+# Copyright (C) 2023  Miguel Ángel González Santamaría
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ def generate_launch_description():
     use_respawn = LaunchConfiguration("use_respawn")
     cmd_vel_topic = LaunchConfiguration("cmd_vel_topic")
     default_bt_xml_filename = LaunchConfiguration("default_nav_to_pose_bt_xml")
+    use_intra_process_comms = LaunchConfiguration("use_intra_process_comms")
 
     lifecycle_nodes = [
         "controller_server",
@@ -71,6 +72,7 @@ def generate_launch_description():
         "use_sim_time": use_sim_time,
         "default_nav_to_pose_bt_xml": default_bt_xml_filename,
         "autostart": autostart,
+        "use_intra_process_comms": use_intra_process_comms,
     }
 
     configured_params = RewrittenYaml(
@@ -84,6 +86,7 @@ def generate_launch_description():
         "RCUTILS_LOGGING_BUFFERED_STREAM", "1"
     )
 
+    # Declare launch arguments
     declare_namespace_cmd = DeclareLaunchArgument(
         "namespace", default_value="", description="Top-level namespace"
     )
@@ -115,7 +118,7 @@ def generate_launch_description():
     declare_container_name_cmd = DeclareLaunchArgument(
         "container_name",
         default_value="nav2_container",
-        description="the name of conatiner that nodes will load in if use composition",
+        description="the name of container that nodes will load in if use composition",
     )
 
     declare_use_respawn_cmd = DeclareLaunchArgument(
@@ -136,6 +139,13 @@ def generate_launch_description():
         description="Full path to the behavior tree xml file to use",
     )
 
+    declare_use_intra_process_comms_cmd = DeclareLaunchArgument(
+        "use_intra_process_comms",
+        default_value="True",
+        description="Use intra-process communication if True",
+    )
+
+    # Group of actions to load nodes when composition is disabled
     load_nodes = GroupAction(
         condition=IfCondition(PythonExpression(["not ", use_composition])),
         actions=[
@@ -207,6 +217,7 @@ def generate_launch_description():
                     {"use_sim_time": use_sim_time},
                     {"autostart": autostart},
                     {"node_names": lifecycle_nodes},
+                    {"use_intra_process_comms": use_intra_process_comms},
                 ],
             ),
             Node(
@@ -221,6 +232,17 @@ def generate_launch_description():
         ],
     )
 
+    # Node to create the container for composed nodes
+    # This node needs to be launched when use_composition is true
+    container = Node(
+        package="rclcpp_components",
+        executable="component_container",
+        name=container_name,
+        output="screen",
+        condition=IfCondition(use_composition),
+    )
+
+    # Group of actions to load composable nodes when composition is enabled
     load_composable_nodes = LoadComposableNodes(
         condition=IfCondition(use_composition),
         target_container=container_name,
@@ -229,42 +251,60 @@ def generate_launch_description():
                 package="nav2_controller",
                 plugin="nav2_controller::ControllerServer",
                 name="controller_server",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
                 remappings=remappings,
             ),
             ComposableNode(
                 package="nav2_smoother",
                 plugin="nav2_smoother::SmootherServer",
                 name="smoother_server",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
                 remappings=remappings,
             ),
             ComposableNode(
                 package="nav2_planner",
                 plugin="nav2_planner::PlannerServer",
                 name="planner_server",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
                 remappings=remappings,
             ),
             ComposableNode(
                 package="nav2_behaviors",
                 plugin="behavior_server::BehaviorServer",
                 name="behavior_server",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
                 remappings=remappings,
             ),
             ComposableNode(
                 package="nav2_bt_navigator",
                 plugin="nav2_bt_navigator::BtNavigator",
                 name="bt_navigator",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
                 remappings=remappings,
             ),
             ComposableNode(
                 package="nav2_waypoint_follower",
                 plugin="nav2_waypoint_follower::WaypointFollower",
                 name="waypoint_follower",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
                 remappings=remappings,
             ),
             ComposableNode(
@@ -276,6 +316,7 @@ def generate_launch_description():
                         "use_sim_time": use_sim_time,
                         "autostart": autostart,
                         "node_names": lifecycle_nodes,
+                        "use_intra_process_comms": use_intra_process_comms,
                     }
                 ],
             ),
@@ -283,7 +324,10 @@ def generate_launch_description():
                 package="nav2_velocity_smoother",
                 plugin="nav2_velocity_smoother::VelocitySmoother",
                 name="velocity_smoother",
-                parameters=[configured_params],
+                parameters=[
+                    configured_params,
+                    {"use_intra_process_comms": use_intra_process_comms},
+                ],
             ),
         ],
     )
@@ -304,6 +348,10 @@ def generate_launch_description():
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(cmd_vel_topic_cmd)
     ld.add_action(default_bt_xml_filename_cmd)
+    ld.add_action(declare_use_intra_process_comms_cmd)
+
+    # Add the action to launch the container for composed nodes
+    ld.add_action(container)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(load_nodes)
