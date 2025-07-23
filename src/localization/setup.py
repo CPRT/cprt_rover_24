@@ -13,6 +13,10 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         (os.path.join("share", package_name, "config"), glob("config/*.yaml")),
         (
+            os.path.join("share", package_name, "config", "ekf"),
+            glob("config/ekf/*.yaml"),
+        ),
+        (
             os.path.join("share", package_name, "config", "urdf"),
             glob("config/urdf/*.xml"),
         ),
@@ -29,6 +33,7 @@ setup(
         "console_scripts": [
             "imu_filter = localization.imu_filter:main",
             "repub_odom = localization.republish_odometry:main",
+            "lidar_mask_tool = localization.lidar_mask_tool:main",
         ],
     },
 )
