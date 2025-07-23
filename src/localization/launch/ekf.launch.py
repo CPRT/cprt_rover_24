@@ -1,4 +1,4 @@
-# Copyright (C) 2023  Miguel Ángel González Santamarta
+# Copyright (C) 2023  Miguel Ángel González Santamaría
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,30 +14,49 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import os
+
 from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from nav2_common.launch import RewrittenYaml
-import os
+
+ekf_profiles = {
+    "gps": {
+        "local": "gps_ekf_local.yaml",
+        "global": "gps_ekf_global.yaml",
+    },
+}
+default_profile = "gps"
 
 
-def generate_launch_description():
+def launch_setup(context):
+    # This function is executed at launch time
 
-    use_sim_time = LaunchConfiguration("use_sim_time")
-    use_sim_time_cmd = DeclareLaunchArgument(
-        "use_sim_time",
-        default_value="False",
-        description="Use simulation (Gazebo) clock if True",
-    )
+    use_sim_time = LaunchConfiguration("use_sim_time").perform(context)
+    profile = LaunchConfiguration("profile").perform(context)
 
+    if profile not in ekf_profiles:
+        raise ValueError(
+            f"Unknown EKF profile: '{profile}'. Available profiles are: {list(ekf_profiles.keys())}"
+        )
+
+    # Load the EKF parameters based on the profile
     local_params_file = os.path.join(
-        get_package_share_directory("localization"), "config", "ekf_local.yaml"
+        get_package_share_directory("localization"),
+        "config",
+        "ekf",
+        ekf_profiles[profile]["local"],
     )
     global_params_file = os.path.join(
-        get_package_share_directory("localization"), "config", "ekf_global.yaml"
+        get_package_share_directory("localization"),
+        "config",
+        "ekf",
+        ekf_profiles[profile]["global"],
     )
+    print(f"Using EKF profile: {profile}")
 
     param_substitutions = {"use_sim_time": use_sim_time}
 
@@ -76,4 +95,26 @@ def generate_launch_description():
         ],
     )
 
-    return LaunchDescription([use_sim_time_cmd, local_ekf_cmd, global_ekf_cmd])
+    return [local_ekf_cmd, global_ekf_cmd]
+
+
+def generate_launch_description():
+    use_sim_time_cmd = DeclareLaunchArgument(
+        "use_sim_time",
+        default_value="False",
+        description="Use simulation (Gazebo) clock if True",
+    )
+
+    profile_cmd = DeclareLaunchArgument(
+        "profile",
+        default_value=default_profile,
+        description="Select the EKF profile to use (gps, lidar)",
+    )
+
+    return LaunchDescription(
+        [
+            use_sim_time_cmd,
+            profile_cmd,
+            OpaqueFunction(function=launch_setup),
+        ]
+    )
