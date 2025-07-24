@@ -7,13 +7,9 @@ from servo_pkg import maestro
 from config import Config
 
 NUM_PORTS = 12
-DEFAULT_MIN = 512
-DEFAULT_MAX = 2400
+DEFAULT_MIN = 512.0
+DEFAULT_MAX = 2400.0
 DEFAULT_MAX_DEGREES = 180
-
-
-
-
 
 def convert_from_radians(angle: float, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
@@ -49,28 +45,18 @@ class USB_Servo(Config):
     def load_port_config(self):
         self.load_config()
         for port in range(NUM_PORTS):
-            min_us = self.get_parameter(f"servo{port}.min").get_parameter_value().double_value
-            max_us = self.get_parameter(f"servo{port}.max").get_parameter_value().double_value
-            rom = self.get_parameter(f"servo{port}.rom").get_parameter_value().double_value
-            
             # Convert microseconds to quarter-microseconds
-            min_qus = min_us * 4
-            max_qus = max_us * 4
-
-            self.servo_info[port_number] = Servo_Info(
-                port_number, min_qus, max_qus, rom
-            )
+            min_qus = self.servo_info[port].min * 4
+            max_qus = self.servo_info[port].max * 4
             self.get_logger().info(
-                f"Port {port_number} -> Min: {min_qus}, Max: {max_qus}"
+                f"Port {port} -> Min: {min_qus}, Max: {max_qus}"
             )
-            self.servo.setRange(port_number, min_qus, max_qus)
+            self.servo.setRange(port, min_qus, max_qus)
 
     def set_position(self):
         port = self.port
         self.check_valid_servo(port)
-
         servo_info = self.servo_info[port]
-
         target_value = convert_from_radians(request.pos, servo_info)
         current_position = convert_to_radians(self.servo.getPosition(port), servo_info)
 
