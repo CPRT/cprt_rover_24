@@ -53,9 +53,10 @@ class PointCloudMasker(Node):
         # New parameter: Amount to shift the combined mask in degrees (e.g., -10.0 for 10 degrees left)
         self.declare_parameter("shifted_mask_degrees", -10.0)
         self.shifted_mask_degrees = (
-            self.get_parameter("shifted_mask_degrees").get_parameter_value().double_value
+            self.get_parameter("shifted_mask_degrees")
+            .get_parameter_value()
+            .double_value
         )
-
 
         self.bridge = CvBridge()
         # Dictionary to store masks: {name/index: numpy_array_mask}
@@ -178,13 +179,17 @@ class PointCloudMasker(Node):
                     and loaded_combined_mask.shape == self.original_mask_shape
                 ):
                     self.masks[0] = loaded_combined_mask
-                    self.get_logger().info(f"Loaded combined mask from {combined_filename}")
+                    self.get_logger().info(
+                        f"Loaded combined mask from {combined_filename}"
+                    )
                 else:
                     self.get_logger().warn(
                         f"Skipping {combined_filename}: Invalid or shape mismatch. Expected {self.original_mask_shape}, got {loaded_combined_mask.shape if loaded_combined_mask is not None else 'None'}."
                     )
             except Exception as e:
-                self.get_logger().warn(f"Error loading combined mask {combined_filename}: {e}")
+                self.get_logger().warn(
+                    f"Error loading combined mask {combined_filename}: {e}"
+                )
 
         # Load individual masks based on self.mask_names
         for mask_name in self.mask_names:
@@ -197,25 +202,30 @@ class PointCloudMasker(Node):
                         and loaded_mask.shape == self.original_mask_shape
                     ):
                         self.masks[mask_name] = loaded_mask
-                        self.get_logger().info(f"Loaded mask '{mask_name}' from {filename}")
+                        self.get_logger().info(
+                            f"Loaded mask '{mask_name}' from {filename}"
+                        )
                     else:
                         self.get_logger().warn(
                             f"Skipping {filename}: Invalid or shape mismatch. Expected {self.original_mask_shape}, got {loaded_mask.shape if loaded_mask is not None else 'None'}."
                         )
                 except Exception as e:
-                    self.get_logger().warn(f"Error loading '{mask_name}' from {filename}: {e}")
+                    self.get_logger().warn(
+                        f"Error loading '{mask_name}' from {filename}: {e}"
+                    )
             else:
                 self.get_logger().info(
                     f"No existing mask found for '{mask_name}'. Creating a new blank one."
                 )
-                self.masks[mask_name] = np.zeros(self.original_mask_shape, dtype=np.uint8)
+                self.masks[mask_name] = np.zeros(
+                    self.original_mask_shape, dtype=np.uint8
+                )
 
         # Set initial display index
         if len(self.mask_names) > 0:
-            self.current_mask_display_index = 0 # Start with combined mask
+            self.current_mask_display_index = 0  # Start with combined mask
         else:
             self.get_logger().warn("No mask names defined. Cannot set initial mask.")
-
 
     def _save_all_masks(self):
         """Saves all currently held masks (shifted combined, and individual) to disk."""
@@ -229,7 +239,9 @@ class PointCloudMasker(Node):
                 # Use the new parameter for shift_degrees
                 shift = int(mask.shape[1] * (self.shifted_mask_degrees / 360.0))
                 shifted_mask = np.roll(mask, shift, axis=1)
-                shifted_filename = self._get_mask_filename(self.shifted_combined_mask_filename)
+                shifted_filename = self._get_mask_filename(
+                    self.shifted_combined_mask_filename
+                )
                 cv2.imwrite(shifted_filename, shifted_mask)
                 self.get_logger().info(
                     f"Saved shifted combined mask to {shifted_filename}"
@@ -241,13 +253,14 @@ class PointCloudMasker(Node):
         for mask_name in self.mask_names:
             if mask_name in self.masks and self.masks[mask_name] is not None:
                 try:
-                    cv2.imwrite(self._get_mask_filename(mask_name), self.masks[mask_name])
+                    cv2.imwrite(
+                        self._get_mask_filename(mask_name), self.masks[mask_name]
+                    )
                     self.get_logger().debug(
                         f"Saved individual mask '{mask_name}' to {self._get_mask_filename(mask_name)}"
                     )
                 except Exception as e:
                     self.get_logger().error(f"Error saving mask '{mask_name}': {e}")
-
 
     def _generate_combined_mask(self):
         """Generates the combined mask (logical OR of all individual masks) and stores it at key 0."""
@@ -274,10 +287,15 @@ class PointCloudMasker(Node):
         display_name = ""
 
         if self.current_mask_display_index == 0:
-            current_mask_key = 0 # Combined mask
+            current_mask_key = 0  # Combined mask
             display_name = "Combined Mask (Read-Only)"
-        elif self.current_mask_display_index > 0 and self.current_mask_display_index <= len(self.mask_names):
-            current_mask_key = self.mask_names[self.current_mask_display_index - 1] # Get name from list
+        elif (
+            self.current_mask_display_index > 0
+            and self.current_mask_display_index <= len(self.mask_names)
+        ):
+            current_mask_key = self.mask_names[
+                self.current_mask_display_index - 1
+            ]  # Get name from list
             display_name = f"Mask: {current_mask_key}"
         else:
             self.get_logger().warn(
@@ -394,17 +412,21 @@ class PointCloudMasker(Node):
         if key == ord("a"):  # 'a' key for previous mask
             if self.current_mask_display_index > 0:
                 self.current_mask_display_index -= 1
-                current_display_name = "Combined Mask" if self.current_mask_display_index == 0 else self.mask_names[self.current_mask_display_index - 1]
+                current_display_name = (
+                    "Combined Mask"
+                    if self.current_mask_display_index == 0
+                    else self.mask_names[self.current_mask_display_index - 1]
+                )
                 self.get_logger().info(f"Switched to {current_display_name}")
                 self._display_mask()
             else:
-                self.get_logger().info(
-                    "Already at combined mask. Cannot go lower."
-                )
+                self.get_logger().info("Already at combined mask. Cannot go lower.")
         elif key == ord("d"):  # 'd' key for next mask
             if self.current_mask_display_index < len(self.mask_names):
                 self.current_mask_display_index += 1
-                current_display_name = self.mask_names[self.current_mask_display_index - 1]
+                current_display_name = self.mask_names[
+                    self.current_mask_display_index - 1
+                ]
                 self.get_logger().info(f"Switched to {current_display_name}")
                 self._display_mask()
             else:
@@ -454,11 +476,20 @@ class PointCloudMasker(Node):
         # Determine the current mask key based on the display index
         current_mask_key = None
         if self.current_mask_display_index == 0:
-            current_mask_key = 0 # Combined mask
-        elif self.current_mask_display_index > 0 and self.current_mask_display_index <= len(self.mask_names):
-            current_mask_key = self.mask_names[self.current_mask_display_index - 1] # Get name from list
+            current_mask_key = 0  # Combined mask
+        elif (
+            self.current_mask_display_index > 0
+            and self.current_mask_display_index <= len(self.mask_names)
+        ):
+            current_mask_key = self.mask_names[
+                self.current_mask_display_index - 1
+            ]  # Get name from list
 
-        if current_mask_key is None or current_mask_key not in self.masks or self.masks[current_mask_key] is None:
+        if (
+            current_mask_key is None
+            or current_mask_key not in self.masks
+            or self.masks[current_mask_key] is None
+        ):
             self.get_logger().warn(
                 f"Currently displayed mask (key: {current_mask_key}) is not available. Skipping point cloud processing."
             )
@@ -466,7 +497,7 @@ class PointCloudMasker(Node):
 
         self.process_point_cloud(
             points_msg,
-            self.masks[current_mask_key], # Pass the currently displayed mask
+            self.masks[current_mask_key],  # Pass the currently displayed mask
             image_msg.width,
             image_msg.height,
         )

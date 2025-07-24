@@ -27,6 +27,7 @@ class MissionState(Enum):
     """
     Defines the possible states of the robot's navigation mission.
     """
+
     DO_NOTHING = auto()
     NAV_TO_GOAL = auto()  # Robot is actively navigating to a GPS goal.
     FOUND_ARUCO_MARKER = auto()  # Robot stopped navigation due to Aruco tag detection.
@@ -51,7 +52,9 @@ class IncrementalGpsCommander(Node):
         )
         self.get_logger().info(f"Aruco topic set to: {self.aruco_topic}")
 
-        self.declare_parameter("frequency", 1 / 5.0)  # Frequency in Hz (default: 5 seconds per cycle)
+        self.declare_parameter(
+            "frequency", 1 / 5.0
+        )  # Frequency in Hz (default: 5 seconds per cycle)
         self.frequency = (
             self.get_parameter("frequency").get_parameter_value().double_value
         )
@@ -68,23 +71,34 @@ class IncrementalGpsCommander(Node):
         # New parameters for Aruco detection window and minimum detections
         self.declare_parameter("aruco_detection_window_sec", 5.0)
         self.aruco_detection_window_sec = (
-            self.get_parameter("aruco_detection_window_sec").get_parameter_value().double_value
+            self.get_parameter("aruco_detection_window_sec")
+            .get_parameter_value()
+            .double_value
         )
-        self.get_logger().info(f"Aruco detection window: {self.aruco_detection_window_sec} seconds")
+        self.get_logger().info(
+            f"Aruco detection window: {self.aruco_detection_window_sec} seconds"
+        )
 
         self.declare_parameter("aruco_min_detections", 5)
         self.aruco_min_detections = (
-            self.get_parameter("aruco_min_detections").get_parameter_value().integer_value
+            self.get_parameter("aruco_min_detections")
+            .get_parameter_value()
+            .integer_value
         )
         self.get_logger().info(f"Aruco minimum detections: {self.aruco_min_detections}")
-
 
         self.qos_profile = QoSProfile(reliability=ReliabilityPolicy.RELIABLE, depth=10)
 
         # --- Topic Names and Service Names ---
-        self.nav_fix_service_name = "fromLL"  # Service for converting Lat/Lon to map coordinates
-        self.geopose_service_name = "commander/nav_to_gps_geopose"  # Service to receive new GPS goals
-        self.cancel_nav_service_name = "commander/cancel_nav"  # Service to cancel active navigation
+        self.nav_fix_service_name = (
+            "fromLL"  # Service for converting Lat/Lon to map coordinates
+        )
+        self.geopose_service_name = (
+            "commander/nav_to_gps_geopose"  # Service to receive new GPS goals
+        )
+        self.cancel_nav_service_name = (
+            "commander/cancel_nav"  # Service to cancel active navigation
+        )
         self.lights_topic = "/light"  # Topic to publish light codes for robot status
 
         # Light codes for different navigation states
@@ -104,7 +118,9 @@ class IncrementalGpsCommander(Node):
 
         # --- Clients, Services, Subscriptions, Publishers ---
         self.localizer_client = self.create_client(
-            FromLL, self.nav_fix_service_name, callback_group=self.localizer_callback_group
+            FromLL,
+            self.nav_fix_service_name,
+            callback_group=self.localizer_callback_group,
         )
         self.geopose_service = self.create_service(
             NavToGPSGeopose,
@@ -148,7 +164,9 @@ class IncrementalGpsCommander(Node):
         self.final_lat_lon = None  # Stores the final GPS goal
         self.current_robot_pose = None  # Stores the robot's current odometry pose
         self.goal_handle = None  # Handle for the active navigation goal
-        self.aruco_stop_triggered_id = None  # Stores the ID of the Aruco tag that triggered a stop
+        self.aruco_stop_triggered_id = (
+            None  # Stores the ID of the Aruco tag that triggered a stop
+        )
 
         # --- Timer ---
         # The main timer for periodic checks and state management.
@@ -157,7 +175,9 @@ class IncrementalGpsCommander(Node):
         )
 
         # --- Initialization Checks ---
-        self.get_logger().info("Nav fix service name: " + str(self.nav_fix_service_name))
+        self.get_logger().info(
+            "Nav fix service name: " + str(self.nav_fix_service_name)
+        )
         self.get_logger().info(f"Waiting for {self.nav_fix_service_name} to be active")
         # Wait until the /fromLL service is available
         while not self.localizer_client.wait_for_service(timeout_sec=2.0):
@@ -185,18 +205,23 @@ class IncrementalGpsCommander(Node):
         if self.mission_state != MissionState.NAV_TO_GOAL:
             return
 
-        current_time = self.get_clock().now().nanoseconds / 1e9  # Current time in seconds
+        current_time = (
+            self.get_clock().now().nanoseconds / 1e9
+        )  # Current time in seconds
 
         # Filter out old detections from the buffer based on the configured window
         self.aruco_detections_buffer = [
-            (ts, tag_id) for ts, tag_id in self.aruco_detections_buffer
+            (ts, tag_id)
+            for ts, tag_id in self.aruco_detections_buffer
             if (current_time - ts) <= self.aruco_detection_window_sec
         ]
 
         # Add new detections from the current message to the buffer
         for detected_id in msg.data:
             self.aruco_detections_buffer.append((current_time, detected_id))
-            self.get_logger().debug(f"Aruco ID {detected_id} detected. Buffer size: {len(self.aruco_detections_buffer)}")
+            self.get_logger().debug(
+                f"Aruco ID {detected_id} detected. Buffer size: {len(self.aruco_detections_buffer)}"
+            )
 
         # Count occurrences of each unique tag ID in the current detection window
         tag_ids_in_window = [tag_id for ts, tag_id in self.aruco_detections_buffer]
@@ -208,17 +233,22 @@ class IncrementalGpsCommander(Node):
                 self.get_logger().info(
                     f"Aruco ID {tag_id} detected {count} times within {self.aruco_detection_window_sec} seconds! Stopping navigation."
                 )
-                self.mission_state = MissionState.FOUND_ARUCO_MARKER  # Update mission state
-                self.aruco_stop_triggered_id = tag_id  # Store the ID that caused the stop
+                self.mission_state = (
+                    MissionState.FOUND_ARUCO_MARKER
+                )  # Update mission state
+                self.aruco_stop_triggered_id = (
+                    tag_id  # Store the ID that caused the stop
+                )
                 self.navigator.cancelTask()  # Cancel the current navigation goal
                 self.reset()  # Reset state variables, which will clear the Aruco buffer
                 # Publish light code to indicate completion/stop
                 light_msg = Int8()
                 light_msg.data = self.nav_completed_light_code
                 self.lights_publisher.publish(light_msg)
-                self.get_logger().info(f"Found Aruco Tag: {tag_id}") # Confirm which tag was found
+                self.get_logger().info(
+                    f"Found Aruco Tag: {tag_id}"
+                )  # Confirm which tag was found
                 return  # Stop processing if a tag has triggered the stop
-
 
     def geopose_server(
         self, request: NavToGPSGeopose.Request, response: NavToGPSGeopose.Response
@@ -235,7 +265,9 @@ class IncrementalGpsCommander(Node):
             request.goal.orientation,
         )
         self.reset()  # Reset any previous state, including Aruco buffer and triggered ID
-        self.mission_state = MissionState.NAV_TO_GOAL  # Set state to navigate to the final goal
+        self.mission_state = (
+            MissionState.NAV_TO_GOAL
+        )  # Set state to navigate to the final goal
         response.success = True  # Acknowledge receipt of the goal
 
         # Reset the timer to trigger immediately and process the new goal
@@ -248,7 +280,9 @@ class IncrementalGpsCommander(Node):
 
         return response
 
-    def cancel_nav_server(self, request: Trigger.Request, response: Trigger.Response) -> Trigger.Response:
+    def cancel_nav_server(
+        self, request: Trigger.Request, response: Trigger.Response
+    ) -> Trigger.Response:
         """
         Service server to cancel the current navigation task.
         Sets the mission state to NAV_CANCELLED and publishes a cancellation light code.
@@ -265,7 +299,9 @@ class IncrementalGpsCommander(Node):
 
         self.get_logger().info("Navigation cancelled.")
         response.success = True  # Indicate successful cancellation for Trigger service
-        response.message = "Navigation cancelled by user."  # Provide a descriptive message
+        response.message = (
+            "Navigation cancelled by user."  # Provide a descriptive message
+        )
         return response
 
     def convert_lat_lon_to_pose(self, latitude, longitude, altitude, orientation):
@@ -310,10 +346,14 @@ class IncrementalGpsCommander(Node):
                     )
                     return target_pose
                 else:
-                    self.get_logger().error("Failed to convert lat/lon to map pose: Service returned no result.")
+                    self.get_logger().error(
+                        "Failed to convert lat/lon to map pose: Service returned no result."
+                    )
                     return None
             else:
-                self.get_logger().error("Failed to convert lat/lon to map pose: Service call timed out.")
+                self.get_logger().error(
+                    "Failed to convert lat/lon to map pose: Service call timed out."
+                )
                 return None
         except Exception as e:
             self.get_logger().error(f"Error during lat/lon conversion: {e}")
@@ -403,9 +443,13 @@ class IncrementalGpsCommander(Node):
                 elif result == TaskResult.CANCELED:
                     # This block is reached if navigation was cancelled (e.g., by Aruco detection or user service call).
                     if self.aruco_stop_triggered_id is not None:
-                        self.get_logger().info(f"Found Aruco Tag {self.aruco_stop_triggered_id}, stopping navigation.")
+                        self.get_logger().info(
+                            f"Found Aruco Tag {self.aruco_stop_triggered_id}, stopping navigation."
+                        )
                     else:
-                        self.get_logger().info("Final goal was canceled by user request or other reason!")
+                        self.get_logger().info(
+                            "Final goal was canceled by user request or other reason!"
+                        )
                     msg = Int8()
                     msg.data = self.nav_cancelled_light_code
                     self.lights_publisher.publish(msg)
