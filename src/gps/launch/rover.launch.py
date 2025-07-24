@@ -15,7 +15,7 @@ def generate_launch_description():
 
     rover_config_file = os.path.join(config_dir, "Rover_config.ubx")
     rover_gps = (
-        "ubxload --port /dev/ttyACM0 --baudrate 9600 --infile " + rover_config_file
+        "ubxload --port /dev/serial/by-id/usb-u-blox_AG_-_www.u-blox.com_u-blox_GNSS_receiver-if00 --baudrate 9600 --infile " + rover_config_file
     )
     os.system(rover_gps)
 
