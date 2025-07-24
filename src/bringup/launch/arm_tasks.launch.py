@@ -26,5 +26,6 @@ def generate_launch_description():
         ("gps", "rover.launch.py"),
         ("joystick_control", "controller.launch.py"),
         ("servo_pkg", "usb_servo_launch.launch.py"),
+        ("science_sensors", "geiger_counter.launch.py"),
     ]
     return LaunchDescription(get_included_launch_descriptions(launch_files))
