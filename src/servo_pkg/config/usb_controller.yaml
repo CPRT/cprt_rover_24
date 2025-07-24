@@ -16,3 +16,7 @@ USB_Servo_node:
       min: 500
       max: 2500
       rom: 180
+
+    # Lights
+    enable_pwm_pin: true
+    pwm_frequency: 11700  # Frequency for PWM control

@@ -97,6 +97,26 @@ class Controller:
         # Record Target value
         self.Targets[chan] = target
 
+    def setPwm(self, freq, duty):
+        period_us = int(1000000 / freq)  # period in microseconds
+        on_time_us = int((duty / 100.0) * period_us)
+        # Units are in 1/48us
+        period = int(period_us * 48)
+        on_time = int(on_time_us * 48)
+
+        on_time_lsb = on_time & 0x7F  # 7 bits for least significant byte
+        on_time_msb = (on_time >> 7) & 0x7F  # shift 7 and take next 7 bits for msb
+        period_lsb = period & 0x7F  # 7 bits for least significant byte
+        period_msb = (period >> 7) & 0x7F  # shift 7 and take next 7 bits for msb
+        cmd = (
+            chr(0x0A)
+            + chr(on_time_lsb)
+            + chr(on_time_msb)
+            + chr(period_lsb)
+            + chr(period_msb)
+        )
+        self.sendCmd(cmd)
+
     # Set speed of channel
     # Speed is measured as 0.25microseconds/10milliseconds
     # For the standard 1ms pulse width change to move a servo between extremes, a speed

@@ -10,6 +10,8 @@ DriveMode::DriveMode(rclcpp::Node* node)
       node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
   servo_client_ =
       node_->create_client<interfaces::srv::MoveServo>("servo_service");
+  pwm_pub_ =
+      node_->create_publisher<std_msgs::msg::Float32>("servo_pwm_control", 10);
 
   // Wait for the service to be available
   if (servo_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -24,6 +26,7 @@ void DriveMode::processJoystickInput(
   handleTwist(joystickMsg);
   handleCam(joystickMsg);
   handleVideo(joystickMsg);
+  handlePWM(joystickMsg);
 }
 
 double DriveMode::getThrottleValue(
@@ -91,6 +94,22 @@ void DriveMode::handleCam(
   }
 }
 
+void DriveMode::handlePWM(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
+  bool publish_pwm = false;
+  if (joystickMsg->buttons[kLightsUp] == 1) {
+    current_light_pwm_ = std::min(current_light_pwm_ + 1, 100.0);
+    publish_pwm = true;
+  } else if (joystickMsg->buttons[kLightsDown] == 1) {
+    current_light_pwm_ = std::max(current_light_pwm_ - 1, 0.0);
+    publish_pwm = true;
+  }
+  if (publish_pwm) {
+    auto pwm_msg = std_msgs::msg::Float32();
+    pwm_msg.data = current_light_pwm_;
+    pwm_pub_->publish(pwm_msg);
+  }
+}
+
 void DriveMode::setServoPosition(int port, int position) const {
   if (camera_service_available_) {
     auto request = std::make_shared<interfaces::srv::MoveServo::Request>();
@@ -112,8 +131,8 @@ void DriveMode::declareParameters(rclcpp::Node* node) {
   node->declare_parameter("drive_mode.cam_tilt_axis", 3);
   node->declare_parameter("drive_mode.cam_pan_axis", 4);
   node->declare_parameter("drive_mode.cam_reset", 5);
-  node->declare_parameter("drive_mode.cam_next", 6);
-  node->declare_parameter("drive_mode.cam_prev", 7);
+  node->declare_parameter("drive_mode.lights_up", 6);
+  node->declare_parameter("drive_mode.lights_down", 7);
   node->declare_parameter("drive_mode.cruise_control", 8);
   node->declare_parameter("drive_mode.max_linear", 2.0);
   node->declare_parameter("drive_mode.max_angular", 2.0);
@@ -135,8 +154,8 @@ void DriveMode::loadParameters() {
   node_->get_parameter("drive_mode.cam_tilt_axis", kCamTiltAxis);
   node_->get_parameter("drive_mode.cam_pan_axis", kCamPanAxis);
   node_->get_parameter("drive_mode.cam_reset", kCamReset);
-  node_->get_parameter("drive_mode.cam_next", kCamNext);
-  node_->get_parameter("drive_mode.cam_prev", kCamPrev);
+  node_->get_parameter("drive_mode.lights_up", kLightsUp);
+  node_->get_parameter("drive_mode.lights_down", kLightsDown);
   node_->get_parameter("drive_mode.cruise_control", kCruiseControl);
   node_->get_parameter("drive_mode.max_linear", kMaxLinear);
   node_->get_parameter("drive_mode.max_angular", kMaxAngular);

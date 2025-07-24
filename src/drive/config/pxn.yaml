@@ -18,8 +18,8 @@ flightstick_control:
       cam_tilt_axis: 5
       cam_pan_axis: 4
       cam_reset: 1
-      cam_next: 3
-      cam_prev: 2
+      lights_up: 5
+      lights_down: 3
       camera_speed: 3.0
       cruise_control: 0
       max_linear: 2.0

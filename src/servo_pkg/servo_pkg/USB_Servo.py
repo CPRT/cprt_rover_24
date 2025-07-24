@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
+from std_msgs.msg import Float32
 from servo_pkg import maestro
 
 NUM_PORTS = 12
@@ -74,6 +75,21 @@ class USB_Servo(Node):
             self.get_logger().info(
                 f"Port {port_number} -> Min: {min_qus}, Max: {max_qus}"
             )
+        self.declare_parameter("enable_pwm_pin", False)
+        enable_pwm_pin = (
+            self.get_parameter("enable_pwm_pin").get_parameter_value().bool_value
+        )
+        if enable_pwm_pin:
+            self.declare_parameter("pwm_frequency", 10000)
+            self.pwm_frequency = (
+                self.get_parameter("pwm_frequency").get_parameter_value().integer_value
+            )
+            self.pwm_sub = self.create_subscription(
+                Float32, "servo_pwm_control", self.pwm_callback, 10
+            )
+
+    def pwm_callback(self, msg):
+        self.servo.setPwm(duty=msg.data, freq=self.pwm_frequency)
 
     def set_position(self, request: MoveServo, response: MoveServo) -> MoveServo:
         port = request.port
