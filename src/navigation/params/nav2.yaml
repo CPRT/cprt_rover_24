@@ -96,7 +96,7 @@ controller_server:
 
       transform_tolerance: 1.0
 
-      desired_linear_vel: 0.8 # Increased from 0.5 to 1.0 as requested
+      desired_linear_vel: 0.5 # Increased from 0.5 to 1.0 as requested
       # max_robot_pose_search_dist: 10.0 # Default is calculated based on costmap size
 
       lookahead_dist: 1.0

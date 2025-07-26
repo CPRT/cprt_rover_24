@@ -9,7 +9,10 @@ import sys
 import time
 from robot_localization.srv import FromLL
 from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped, Quaternion # Import Quaternion for direct use
+from geometry_msgs.msg import (
+    PoseStamped,
+    Quaternion,
+)  # Import Quaternion for direct use
 from nav_msgs.msg import Odometry
 from geographic_msgs.msg import GeoPose
 from interfaces.srv import NavToGPSGeopose
@@ -91,7 +94,7 @@ class IncrementalGpsCommander(Node):
 
         # --- Topic Names and Service Names ---
         self.nav_fix_service_name = (
-            "fromLL"  # Service for converting Lat/Lon to map coordinates
+            "/fromLL"  # Service for converting Lat/Lon to map coordinates
         )
         self.geopose_service_name = (
             "commander/nav_to_gps_geopose"  # Service to receive new GPS goals
@@ -166,9 +169,7 @@ class IncrementalGpsCommander(Node):
         self.final_lat_lon = None  # Stores the final GPS goal
         self.current_robot_pose = None  # Stores the robot's current odometry pose
         self.goal_handle = None  # Handle for the active navigation goal
-        self.aruco_stop_triggered_id = (
-            None  # Stores the ID of the Aruco tag that triggered a stop for the current navigation
-        )
+        self.aruco_stop_triggered_id = None  # Stores the ID of the Aruco tag that triggered a stop for the current navigation
 
         # --- Timer ---
         # The main timer for periodic checks and state management.
@@ -238,7 +239,7 @@ class IncrementalGpsCommander(Node):
                     self.get_logger().info(
                         f"Aruco ID {tag_id} detected {count} times, but it is in the ignored list. Continuing navigation."
                     )
-                    continue # Ignore this tag and check for others
+                    continue  # Ignore this tag and check for others
 
                 self.get_logger().info(
                     f"Aruco ID {tag_id} detected {count} times within {self.aruco_detection_window_sec} seconds! Stopping navigation."
@@ -246,10 +247,10 @@ class IncrementalGpsCommander(Node):
                 self.mission_state = (
                     MissionState.FOUND_ARUCO_MARKER
                 )  # Update mission state
-                self.aruco_stop_triggered_id = (
-                    tag_id  # Store the ID that caused the stop for the current navigation
-                )
-                self.ignored_aruco_ids.add(tag_id) # Add this ID to the persistent ignored list
+                self.aruco_stop_triggered_id = tag_id  # Store the ID that caused the stop for the current navigation
+                self.ignored_aruco_ids.add(
+                    tag_id
+                )  # Add this ID to the persistent ignored list
                 self.navigator.cancelTask()  # Cancel the current navigation goal
                 self.reset()  # Reset temporary state variables, which will clear the Aruco buffer and current triggered ID
                 # Publish light code to indicate completion/stop
@@ -286,13 +287,19 @@ class IncrementalGpsCommander(Node):
                 request.goal.position.latitude,
                 request.goal.position.longitude,
                 request.goal.position.altitude,
-                request.goal.orientation, # Dummy orientation, only position is relevant
+                request.goal.orientation,  # Dummy orientation, only position is relevant
             )
 
             if target_map_pose_for_heading is not None:
                 # Calculate the vector from current robot position to target position
-                dx = target_map_pose_for_heading.pose.position.x - self.current_robot_pose.pose.position.x
-                dy = target_map_pose_for_heading.pose.position.y - self.current_robot_pose.pose.position.y
+                dx = (
+                    target_map_pose_for_heading.pose.position.x
+                    - self.current_robot_pose.pose.position.x
+                )
+                dy = (
+                    target_map_pose_for_heading.pose.position.y
+                    - self.current_robot_pose.pose.position.y
+                )
 
                 # Calculate the yaw angle (heading) from this vector
                 yaw = math.atan2(dy, dx)
@@ -304,12 +311,18 @@ class IncrementalGpsCommander(Node):
                 new_orientation.z = math.sin(yaw / 2.0)
                 new_orientation.w = math.cos(yaw / 2.0)
 
-                self.get_logger().info(f"Calculated new orientation based on heading: yaw={math.degrees(yaw):.2f} deg")
+                self.get_logger().info(
+                    f"Calculated new orientation based on heading: yaw={math.degrees(yaw):.2f} deg"
+                )
                 calculated_orientation = new_orientation
             else:
-                self.get_logger().warn("Could not convert goal to map pose for heading calculation. Using requested orientation.")
+                self.get_logger().warn(
+                    "Could not convert goal to map pose for heading calculation. Using requested orientation."
+                )
         else:
-            self.get_logger().warn("Current robot pose not available for heading calculation. Using requested orientation.")
+            self.get_logger().warn(
+                "Current robot pose not available for heading calculation. Using requested orientation."
+            )
 
         # Store the final GPS goal with the (potentially) newly calculated orientation
         self.final_lat_lon = (
@@ -318,7 +331,7 @@ class IncrementalGpsCommander(Node):
             request.goal.position.altitude,
             calculated_orientation,
         )
-        
+
         self.mission_state = (
             MissionState.NAV_TO_GOAL
         )  # Set state to navigate to the final goal
@@ -430,7 +443,9 @@ class IncrementalGpsCommander(Node):
         self.goal_handle = None
         self.final_lat_lon = None
         self.aruco_detections_buffer = []  # Clear Aruco buffer on reset
-        self.aruco_stop_triggered_id = None  # Clear the triggered Aruco ID for the current nav
+        self.aruco_stop_triggered_id = (
+            None  # Clear the triggered Aruco ID for the current nav
+        )
         self.mission_state = MissionState.DO_NOTHING  # Default to DO_NOTHING
 
     def timer_callback(self):
