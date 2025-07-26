@@ -40,7 +40,7 @@ const std::string TWIST_TOPIC = "/servo_node/delta_twist_cmds";
 const std::string JOINT_TOPIC = "/servo_node/delta_joint_cmds";
 const size_t ROS_QUEUE_SIZE = 10;
 const std::string EEF_FRAME_ID = "Link_7";
-const std::string BASE_FRAME_ID = "Link_1";
+const std::string BASE_FRAME_ID = "Link_2";
 
 // A class for reading the key inputs from the terminal
 class KeyboardReader {

@@ -493,8 +493,7 @@ GstElement *WebRTCStreamer::initialize_pipeline() {
   GstElement *webrtcsink = elements.back();
   assert(webrtcsink != nullptr);
   g_object_set(G_OBJECT(webrtcsink), "run-signalling-server", TRUE, nullptr);
-  auto video_caps =
-      GstUniquePtr<GstCaps>(gst_caps_from_string("video/x-h265; video/x-h264"));
+  auto video_caps = GstUniquePtr<GstCaps>(gst_caps_from_string("video/x-av1"));
   g_object_set(G_OBJECT(webrtcsink), "video-caps", video_caps.get(), nullptr);
   if (web_server_) {
     g_object_set(G_OBJECT(webrtcsink), "run-web-server", TRUE, nullptr);

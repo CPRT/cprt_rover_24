@@ -11,10 +11,15 @@ MoveGroupAsyncWrapper::MoveGroupAsyncWrapper(rclcpp::Node* node,
                                              const std::string& group_name)
     : node_(node), running_(false), last_status_(-1), group_name_(group_name) {
   client_ = rclcpp_action::create_client<moveit_msgs::action::MoveGroup>(
-      node_, "move_group");
-  while (!client_->wait_for_action_server(std::chrono::seconds(2))) {
-    RCLCPP_WARN(node_->get_logger(), "Waiting for move_group action server...");
+      node_->get_node_base_interface(), node_->get_node_graph_interface(),
+      node_->get_node_logging_interface(),
+      node_->get_node_waitables_interface(), "move_group");
+  if (!client_->wait_for_action_server(std::chrono::seconds(2))) {
+    RCLCPP_ERROR(node_->get_logger(),
+                 "MoveGroup action server not available for group %s",
+                 group_name.c_str());
   }
+  RCLCPP_INFO(node_->get_logger(), "Connected to MoveGroup action server");
 
   timer_ = node_->create_wall_timer(
       std::chrono::milliseconds(200),

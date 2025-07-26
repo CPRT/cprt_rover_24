@@ -58,7 +58,7 @@ void ArmManualMode::handleTwist(
   joint_msg_.header = joystickMsg->header;
 
   // Base (might want a deadzone. TBD)
-  joint_msg_.velocities[0] = -joystickMsg->axes[kBaseAxis] * throttle;
+  joint_msg_.velocities[0] = joystickMsg->axes[kBaseAxis] * throttle;
 
   // Simple straight movement (NOT inverse kin)
   // some scaling to move in a straight line
