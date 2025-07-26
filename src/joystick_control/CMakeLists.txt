@@ -30,6 +30,7 @@ add_executable(flightstick_control
   src/ArmDummyMode.cpp
   src/ScienceMode.cpp
   src/ArmPresetMode.cpp
+  src/MoveGroupAsyncWrapper.cpp
   )
 
 # Link the dependencies to the executable

@@ -1,7 +1,10 @@
 #ifndef JOYSTICK_CONTROL__ARMPRESET_MODE_HPP_
 #define JOYSTICK_CONTROL__ARMPRESET_MODE_HPP_
 
+#include <action_msgs/msg/goal_status.hpp>
+
 #include "Mode.hpp"
+#include "MoveGroupAsyncWrapper.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "moveit/move_group_interface/move_group_interface.h"
 #include "rclcpp/rclcpp.hpp"
@@ -19,7 +22,7 @@ class ArmPresetMode : public Mode {
    * @param node A shared pointer to the ROS node.
    * @param planning_group The MoveIt planning group name (e.g., "arm").
    */
-  ArmPresetMode(rclcpp::Node* node, const std::string& planning_group);
+  ArmPresetMode(rclcpp::Node* node);
 
   /**
    * @brief Process joystick input to move to a preset pose if a button is
@@ -34,32 +37,27 @@ class ArmPresetMode : public Mode {
   static void declareParameters(rclcpp::Node* node);
 
  private:
-  moveit::planning_interface::MoveGroupInterface move_group_;
-  rclcpp::Node* node_;  // store for access in member functions
+  struct PresetPose {
+    std::string name;               ///< Name of the preset.
+    int button;                     ///< Button index for the preset.
+    geometry_msgs::msg::Pose pose;  ///< The pose to move to.
+  };
+  std::vector<PresetPose> presets_;  ///< List of preset poses.
+  rclcpp::Node* node_;
+  std::shared_ptr<MoveGroupAsyncWrapper>
+      move_group_;          ///< Move group interface for arm control.
+  std::string group_name_;  ///< The planning group name.
 
-  // Button bindings
   int preset_1_button_;
   int preset_2_button_;
   int preset_3_button_;
   int preset_4_button_;
-
-  // Poses
-  geometry_msgs::msg::Pose preset_1_pose_;
-  geometry_msgs::msg::Pose preset_2_pose_;
-  geometry_msgs::msg::Pose preset_3_pose_;
-  geometry_msgs::msg::Pose preset_4_pose_;
+  int cancel_button_;
 
   /**
    * @brief Load preset parameters from the ROS parameter server.
    */
   void loadParameters();
-
-  /**
-   * @brief Plan and execute motion to the given pose.
-   * @param target_pose The target pose to move to.
-   * @return True if planning and execution succeeded.
-   */
-  bool moveToPose(const geometry_msgs::msg::PoseStamped& target_pose);
 };
 
 #endif  // JOYSTICK_CONTROL__ARMPRESET_MODE_HPP_

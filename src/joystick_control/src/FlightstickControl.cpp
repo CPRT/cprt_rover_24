@@ -114,7 +114,7 @@ bool FlightstickControl::changeMode(ModeType mode) {
       break;
     case ModeType::PRESET:
       RCLCPP_INFO(this->get_logger(), "Entering Preset Mode");
-      mode_ = std::make_unique<ArmPresetMode>(this, "rover_arm");
+      mode_ = std::make_unique<ArmPresetMode>(this);
       message.data = "Preset";
       status_pub_->publish(message);
       break;
