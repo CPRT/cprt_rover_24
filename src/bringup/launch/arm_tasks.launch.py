@@ -21,7 +21,6 @@ def generate_launch_description():
     launch_files = [
         ("drive", "talon.launch.py"),
         ("arm_srdf", "servo.launch.py"),
-        ("arm_srdf", "talon.launch.py"),
         ("camera_streaming", "webRTC.launch.py"),
         ("gps", "rover.launch.py"),
         ("joystick_control", "controller.launch.py"),
