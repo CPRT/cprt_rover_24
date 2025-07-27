@@ -55,10 +55,10 @@ void ArmManualMode::processJoystickInput(
 void ArmManualMode::handleTwist(
     std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
   double throttle = getThrottleValue(joystickMsg);
-  joint_msg_.header = joystickMsg->header;
+  joint_msg_.header.stamp = node_->get_clock()->now();
 
   // Base (might want a deadzone. TBD)
-  joint_msg_.velocities[0] = -joystickMsg->axes[kBaseAxis] * throttle;
+  joint_msg_.velocities[0] = joystickMsg->axes[kBaseAxis] * throttle;
 
   // Simple straight movement (NOT inverse kin)
   // some scaling to move in a straight line
