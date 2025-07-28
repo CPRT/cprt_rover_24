@@ -9,16 +9,16 @@
       </hardware>
       <joint name="Joint_1">
         <param name="can_id">10</param>
-        <param name="kP">3.0</param>
+        <param name="kP">5.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">1.0</param>
-        <param name="kF">0.5</param>
+        <param name="kD">0.0</param>
+        <param name="kF">13.0</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
-        <param name="sensor_offset">0.0</param>
+        <param name="sensor_offset">3.14</param>
         <param name="crossover">true</param> <!-- or "continuous" -->
-        <param name="invert">false</param>
-        <param name="invert_sensor">true</param>
+        <param name="invert">true</param>
+        <param name="invert_sensor">false</param>
         <command_interface name="velocity"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
@@ -79,7 +79,7 @@
         <param name="kF">7.8</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
-        <param name="sensor_offset">2.48</param>
+        <param name="sensor_offset">4.6</param>
         <param name="crossover">true</param> <!-- or "continuous" -->
         <param name="invert">true</param>
         <param name="invert_sensor">true</param>
