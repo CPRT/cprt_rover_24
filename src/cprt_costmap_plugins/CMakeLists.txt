@@ -37,6 +37,7 @@ include_directories(
 
 add_library(${library_name} SHARED
             src/gridmap_layer.cpp
+            src/footprint_clearing_layer.cpp
 )
 
 target_link_libraries(${library_name}

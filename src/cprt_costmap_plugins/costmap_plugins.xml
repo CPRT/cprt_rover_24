@@ -2,4 +2,7 @@
   <class type="cprt_costmap_plugins::GridmapLayer"  base_class_type="nav2_costmap_2d::Layer">
     <description>Creates a costmap layer from a gridmap layer</description>
   </class>
+  <class type="cprt_costmap_plugins::FootprintClearingLayer"  base_class_type="nav2_costmap_2d::Layer">
+    <description>Clears the costmap footprint</description>
+  </class>
 </library>
