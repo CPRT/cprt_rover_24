@@ -167,7 +167,7 @@ global_costmap:
       lethal_cost_threshold: 200
       unknown_cost_value: 255 # 255 is special key for unknown value
       # plugins: [static_layer, inflation_layer, obstacle_layer]
-      plugins: [obstacle_layer]
+      plugins: [obstacle_layer, footprint_clearing_layer]
       # plugins: [static_layer, inflation_layer]
       # static_layer: 
       #   enabled: true
@@ -185,6 +185,11 @@ global_costmap:
         enabled: true
         map_topic: "/trasversability_map"
         layer_name: "inflated_traversability"
+      footprint_clearing_layer:
+        plugin: "cprt_costmap_plugins::FootprintClearingLayer"
+        enabled: true
+        footprint_clearing_enabled: True
+        clear_cost: 0 # 0 for FREE_SPACE, 255 for unknown
       always_send_full_costmap: True
 
 map_server:
