@@ -39,6 +39,9 @@ class FootprintClearingLayer : public nav2_costmap_2d::CostmapLayer {
 
   // Declare using the explicit ROS 2 message type
   std::vector<geometry_msgs::msg::Point> transformed_footprint_;
+
+  // New parameter to override the default footprint
+  std::string override_footprint_str_;
 };
 
 }  // namespace cprt_costmap_plugins
