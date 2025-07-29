@@ -24,7 +24,7 @@ local_ekf:
     pose0: /zed/zed_node/pose_with_covariance
     pose0_config: [
         # position
-        false, false, false,
+        true, true, true,
         # orientation
         false, false, false,
         # lineal vel 

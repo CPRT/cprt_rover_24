@@ -1,5 +1,6 @@
 #include "cprt_costmap_plugins/footprint_clearing_layer.hpp"
 
+#include <algorithm>  // Required for std::min
 #include <geometry_msgs/msg/point.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <vector>
@@ -8,7 +9,9 @@
 #include "nav2_costmap_2d/costmap_math.hpp"
 
 using nav2_costmap_2d::FREE_SPACE;
+using nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
 using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::MapLocation;
 using nav2_costmap_2d::NO_INFORMATION;
 
 namespace cprt_costmap_plugins {
@@ -32,6 +35,21 @@ void FootprintClearingLayer::onInitialize() {
   int temp_clear_cost;
   node->get_parameter(name_ + "." + "clear_cost", temp_clear_cost);
   clear_cost_ = static_cast<unsigned char>(temp_clear_cost);
+
+  // Ensure clear_cost_ is not set to NO_INFORMATION or LETHAL_OBSTACLE
+  // A good default for this new logic would be LETHAL_OBSTACLE - 10, or
+  // similar. The parameter `clear_cost` from YAML will now act as the maximum
+  // cost that a cell can be reduced to by this layer. It's recommended to set
+  // this in the YAML to a value like 243 (LETHAL_OBSTACLE - 10) or a lower
+  // value if you want the cleared path to be more traversable.
+  if (clear_cost_ == NO_INFORMATION || clear_cost_ >= LETHAL_OBSTACLE) {
+    RCLCPP_WARN(
+        node->get_logger(),
+        "FootprintClearingLayer: 'clear_cost' parameter should be "
+        "less than LETHAL_OBSTACLE (253) and not NO_INFORMATION (255) "
+        "for min-based clearing. Using LETHAL_OBSTACLE - 10 (243) as default.");
+    clear_cost_ = LETHAL_OBSTACLE - 10;  // Default to a safe high cost
+  }
 
   current_ = true;
 }
@@ -93,7 +111,52 @@ void FootprintClearingLayer::updateCosts(
     return;
   }
 
-  master_grid.setConvexPolygonCost(transformed_footprint_, clear_cost_);
+  unsigned char target_clear_cost = clear_cost_;
+
+  // Convert the world-coordinate footprint to map-coordinate polygon
+  std::vector<MapLocation> map_polygon;
+  for (const auto& pt : transformed_footprint_) {
+    MapLocation loc;
+    if (master_grid.worldToMap(pt.x, pt.y, loc.x, loc.y)) {
+      map_polygon.push_back(loc);
+    } else {
+      // If any point of the footprint is outside the map, we cannot clear it
+      // reliably. This might happen if the robot is partially off the costmap.
+      // For this layer, we'll just skip clearing if the footprint is out of
+      // bounds.
+      RCLCPP_WARN(node_.lock()->get_logger(),
+                  "Footprint point (%.2f, %.2f) is outside costmap bounds. "
+                  "Skipping footprint clearing.",
+                  pt.x, pt.y);
+      return;
+    }
+  }
+
+  // Ensure the polygon has at least 3 points to be valid for filling
+  if (map_polygon.size() < 3) {
+    RCLCPP_WARN(
+        node_.lock()->get_logger(),
+        "Transformed footprint has less than 3 points, cannot fill polygon.");
+    return;
+  }
+
+  // Get all cells that fill the polygon
+  std::vector<MapLocation> polygon_cells;
+  master_grid.convexFillCells(map_polygon, polygon_cells);
+
+  // Set the cost of those cells using the min logic, preserving NO_INFORMATION
+  for (const auto& cell_loc : polygon_cells) {
+    unsigned char current_cost = master_grid.getCost(cell_loc.x, cell_loc.y);
+
+    // If the cell is NO_INFORMATION, leave it as NO_INFORMATION.
+    // Otherwise, apply the min logic.
+    if (current_cost == NO_INFORMATION) {
+      // Do nothing, leave it as NO_INFORMATION
+    } else {
+      unsigned char new_cost = std::min(current_cost, target_clear_cost);
+      master_grid.setCost(cell_loc.x, cell_loc.y, new_cost);
+    }
+  }
 }
 
 }  // namespace cprt_costmap_plugins
