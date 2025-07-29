@@ -189,7 +189,7 @@ global_costmap:
         plugin: "cprt_costmap_plugins::FootprintClearingLayer"
         enabled: true
         footprint_clearing_enabled: True
-        clear_cost: 0 # 0 for FREE_SPACE, 255 for unknown
+        clear_cost: 100 # 0 for FREE_SPACE, 255 for unknown
       always_send_full_costmap: True
 
 map_server:
