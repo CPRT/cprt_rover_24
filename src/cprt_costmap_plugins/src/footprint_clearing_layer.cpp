@@ -7,6 +7,7 @@
 
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_math.hpp"
+#include "nav2_costmap_2d/footprint.hpp"  // Required for makeFootprintFromString
 
 using nav2_costmap_2d::FREE_SPACE;
 using nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
@@ -28,6 +29,9 @@ void FootprintClearingLayer::onInitialize() {
   declareParameter("enabled", rclcpp::ParameterValue(true));
   declareParameter("footprint_clearing_enabled", rclcpp::ParameterValue(true));
   declareParameter("clear_cost", rclcpp::ParameterValue((int)FREE_SPACE));
+  // Declare the new override_footprint parameter
+  declareParameter("override_footprint",
+                   rclcpp::ParameterValue(std::string("")));
 
   node->get_parameter(name_ + "." + "enabled", enabled_);
   node->get_parameter(name_ + "." + "footprint_clearing_enabled",
@@ -35,6 +39,9 @@ void FootprintClearingLayer::onInitialize() {
   int temp_clear_cost;
   node->get_parameter(name_ + "." + "clear_cost", temp_clear_cost);
   clear_cost_ = static_cast<unsigned char>(temp_clear_cost);
+  // Get the value of the new override_footprint parameter
+  node->get_parameter(name_ + "." + "override_footprint",
+                      override_footprint_str_);
 
   // Ensure clear_cost_ is not set to NO_INFORMATION or LETHAL_OBSTACLE
   // A good default for this new logic would be LETHAL_OBSTACLE - 10, or
@@ -68,16 +75,30 @@ void FootprintClearingLayer::updateBounds(double robot_x, double robot_y,
     return;
   }
 
-  // Get the robot's footprint from the layered costmap.
-  // It returns std::vector<geometry_msgs::msg::Point> in ROS 2.
-  const std::vector<geometry_msgs::msg::Point>& footprint =
-      layered_costmap_->getFootprint();
+  // Determine which footprint to use
+  std::vector<geometry_msgs::msg::Point> active_footprint;
+  if (override_footprint_str_.empty()) {
+    // Use the default footprint from the layered costmap
+    active_footprint = layered_costmap_->getFootprint();
+  } else {
+    // Parse and use the custom footprint from the parameter
+    // makeFootprintFromString returns a bool and modifies the second argument
+    // by reference
+    if (!nav2_costmap_2d::makeFootprintFromString(override_footprint_str_,
+                                                  active_footprint)) {
+      RCLCPP_ERROR(node_.lock()->get_logger(),
+                   "FootprintClearingLayer: Failed to parse override_footprint "
+                   "string '%s'. "
+                   "Falling back to default footprint.",
+                   override_footprint_str_.c_str());
+      active_footprint =
+          layered_costmap_->getFootprint();  // Fallback to default
+    }
+  }
 
-  // Transform the footprint to the current robot pose.
-  // The function takes 'const std::vector<geometry_msgs::msg::Point>&' as
-  // input.
-  nav2_costmap_2d::transformFootprint(robot_x, robot_y, robot_yaw, footprint,
-                                      transformed_footprint_);
+  // Transform the chosen footprint to the current robot pose.
+  nav2_costmap_2d::transformFootprint(robot_x, robot_y, robot_yaw,
+                                      active_footprint, transformed_footprint_);
 
   // Update bounds to include the robot's footprint
   double min_by_x = std::numeric_limits<double>::infinity();
