@@ -1,8 +1,11 @@
 import rclpy
 from rclpy.node import Node
 from interfaces.srv import MoveServo
-
+import math
 from rpi_hardware_pwm import HardwarePWM
+from config import Config
+from std_msgs.msg import Float32
+from config import Servo_Info
 
 
 def to_channel(pin: int) -> int:
@@ -14,67 +17,43 @@ def to_channel(pin: int) -> int:
 
 
 class Servo:
-    def __init__(
-        self, channel: int, min_pos: float, max_pos: float, frequency: int, rom: int
-    ):
-        self.channel = channel
-        self.min_pos = min_pos
-        self.max_pos = max_pos
+    def __init__(self, servo_info, frequency: int, rom: int):
+        self.servo_info = servo_info
         self.frequency = frequency
-        self.rom = rom
-
         self.pwm_pin = HardwarePWM(pwm_channel=self.channel, hz=self.frequency, chip=0)
         self.pwm_pin.start(0)
 
-    def set_position(self, degree: int):
-        if degree < 0 or degree > self.rom:
-            raise ValueError(f"Degree out of range: {degree}")
+    def set_position(self, angle: float):
+        if angle < 0 or angle > self.rom:
+            raise ValueError(f"Angle out of range: {angle}")
 
-        duty_cycle = self.convert_to_pwm(degree)
+        duty_cycle = self.convert_to_pwm(angle)
         self.pwm_pin.change_duty_cycle(duty_cycle)
 
-    def convert_to_pwm(self, degree: int) -> float:
-        return float(degree / (self.rom / (self.max_pos - self.min_pos)) + self.min_pos)
+    def convert_to_pwm(self, angle: float) -> float:
+        return float(convert_rad_to_deg(angle) / (self.rom / (self.max_pos - self.min_pos)) + self.min_pos)
 
     def stop(self):
         self.pwm_pin.stop()
 
 
-class pi_Servo(Node):
+class pi_Servo(Config):
     def __init__(self):
         super().__init__("pi_servo")
-        self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
-        self.servos = {}
+        # self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
+        self.sub = self.create_subscription(Int64, "")
         self.load_params()
 
     def load_params(self):
-        self.declare_parameter("servos_used", 0)
-        num_servos = (
-            self.get_parameter("servos_used").get_parameter_value().integer_value
-        )
-        if num_servos <= 0:
-            self.get_logger().error("Invalid number of ports")
-            raise ValueError("Invalid number of ports")
 
+        self.load_config()
         for i in range(num_servos):
             self.declare_parameter(f"servo{i}.frequency", 50)
-            self.declare_parameter(f"servo{i}.min", 0.0)
-            self.declare_parameter(f"servo{i}.max", 100.0)
-            self.declare_parameter(f"servo{i}.rom", 180)
             self.declare_parameter(f"servo{i}.out_pin", 0)
             frequency = (
                 self.get_parameter(f"servo{i}.frequency")
                 .get_parameter_value()
                 .integer_value
-            )
-            min_pos = (
-                self.get_parameter(f"servo{i}.min").get_parameter_value().double_value
-            )
-            max_pos = (
-                self.get_parameter(f"servo{i}.max").get_parameter_value().double_value
-            )
-            rom = (
-                self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
             )
             outpin = (
                 self.get_parameter(f"servo{i}.out_pin")
@@ -84,14 +63,8 @@ class pi_Servo(Node):
             if outpin < 0:
                 self.get_logger().error(f"Invalid pin number for port {i}")
                 raise ValueError(f"Invalid pin number for port {i}")
-
-            self.servos[i] = Servo(
-                channel=to_channel(outpin),
-                min_pos=min_pos,
-                max_pos=max_pos,
-                frequency=frequency,
-                rom=rom,
-            )
+            self.servo_list[i].channel = to_channel(outpin)
+            self.servos[i] = Servo(servo_info=self.servo_info[i], frequency=frequency)
 
     def set_position(self, request, response) -> MoveServo:
         port = request.port

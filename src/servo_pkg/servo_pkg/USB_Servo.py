@@ -11,14 +11,15 @@ DEFAULT_MIN = 512.0
 DEFAULT_MAX = 2400.0
 DEFAULT_MAX_DEGREES = 180
 
+
 def convert_from_radians(angle: float, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
-    return int(servo_info.min + (total_range * angle * 180 / (servo_info.rom * math.pi)))
+    return convert_deg_to_rad(servo_info.min + (total_range * degrees / servo_info.rom))
 
 
 def convert_to_radians(value: int, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
-    return float(servo_info.rom * (value - servo_info.min)  * math.pi / (total_range * 180))
+    return self.convert_deg_to_rad(servo_info.rom * (value - servo_info.min) / total_range)
 
 
 class USB_Servo(Config):
@@ -30,17 +31,16 @@ class USB_Servo(Config):
             self.get_parameter("serial_port").get_parameter_value().string_value
         )
         self.servo = maestro.Controller(serial_port)
-        self.declare_parameter("port", 0)
-        self.port = self.get_parameter("port").get_parameter_value().integer_value
-        
+
         # self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
-        self.sub = self.create_subscription(Int64, , self.set_position)
+        self.sub = self.create_subscription(
+            Float32, f"servo{self.servo}.name", self.set_position
+        )
 
         self.load_port_config()
 
         for port, servo in self.servo_info.items():
             self.servo.setRange(port, servo.min, servo.max)
-
 
     def load_port_config(self):
         self.load_config()
@@ -48,9 +48,7 @@ class USB_Servo(Config):
             # Convert microseconds to quarter-microseconds
             min_qus = self.servo_info[port].min * 4
             max_qus = self.servo_info[port].max * 4
-            self.get_logger().info(
-                f"Port {port} -> Min: {min_qus}, Max: {max_qus}"
-            )
+            self.get_logger().info(f"Port {port} -> Min: {min_qus}, Max: {max_qus}")
             self.servo.setRange(port, min_qus, max_qus)
 
     def set_position(self):
@@ -72,9 +70,7 @@ class USB_Servo(Config):
             current_position = convert_to_radians(
                 self.servo.getPosition(port), servo_info
             )
-            self.get_logger().info(
-                f"Servo {port} moved to angle: {current_position}"
-            )
+            self.get_logger().info(f"Servo {port} moved to angle: {current_position}")
 
 
 def main(args=None):

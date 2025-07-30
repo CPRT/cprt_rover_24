@@ -7,6 +7,7 @@ from interfaces.srv import MoveServo
 import board
 from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
+from config import Config
 
 
 class i2c_Servo(Node):
@@ -18,7 +19,7 @@ class i2c_Servo(Node):
         self.pca = PCA9685(self.i2c)
         self.pca.frequency = 50
 
-        self.maxrom = 180  # max range of motion of the servo, default 180
+        self.maxrom = math.pi  # max range of motion of the servo, default pi
         self.servo_list = [None] * 16
 
     def set_position(self, request, response) -> MoveServo:
