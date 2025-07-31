@@ -44,7 +44,9 @@ class pi_Servo(Config):
     def __init__(self):
         super().__init__("pi_servo")
         # self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
-        self.sub = self.create_subscription(Float32, f"servo{self.servo}.name", self.set_position)
+        self.sub = self.create_subscription(
+            Float32, f"servo{self.servo}.name", self.set_position
+        )
         self.load_params()
 
     def load_params(self):
@@ -58,10 +60,8 @@ class pi_Servo(Config):
                 .get_parameter_value()
                 .integer_value
             )
-            rom = (
-                self.convert_deg_to_rad(self.get_parameter(f"servo{i}.rom")
-                .get_parameter_value().
-                integer_value)
+            rom = self.convert_deg_to_rad(
+                self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
             )
             outpin = (
                 self.get_parameter(f"servo{i}.out_pin")
@@ -72,7 +72,9 @@ class pi_Servo(Config):
                 self.get_logger().error(f"Invalid pin number for port {i}")
                 raise ValueError(f"Invalid pin number for port {i}")
             self.servo_list[i].channel = to_channel(outpin)
-            self.servo_list[i] = Servo(servo_info=self.servo_info[i], frequency=frequency, rom=rom)
+            self.servo_list[i] = Servo(
+                servo_info=self.servo_info[i], frequency=frequency, rom=rom
+            )
 
     def set_position(self, msg):
         port = self.servo
