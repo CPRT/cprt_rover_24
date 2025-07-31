@@ -21,21 +21,14 @@ class i2c_Servo(Config):
 
         self.maxrom = math.pi  # max range of motion of the servo, default pi
 
-    def set_position(self) -> MoveServo:
-        if request.max != None:
-            self.maxrom = request.max
-        if self.servo_list[request.port - 1] == None:
-            self.servo_list[request.port] = servo.Servo(
-                self.pca.channels[request.port], actuation_range=self.maxrom
+    def set_position(self, msg):
+        if self.servo_list[self.servo - 1] == None:
+            self.servo_list[self.servo] = servo.Servo(
+                self.pca.channels[self.servo], actuation_range=self.maxrom
             )
-
-        s = self.servo_list[request.port]
-        s.angle = request.pos
-
-        response.status = True
-        response.status_msg = f"Servo {request.port} moving to {request.pos} degrees"
-
-        return response
+        s = self.servo_list[self.servo]
+        s.angle = msg.data
+        self.get_logger().info(f"Servo {request.port} moving to {request.pos} degrees")
 
 
 def main(args=None):
