@@ -60,9 +60,9 @@ class Config(Node):  # one motor per port
             self.get_logger().error("Invalid servo")
             return False
         return True
-    
+
     def convert_deg_to_rad(angle):
         return angle * math.pi / 180
-    
+
     def convert_rad_to_deg(angle):
         return angle * 180 / math.pi

@@ -17,7 +17,7 @@ def to_channel(pin: int) -> int:
 
 
 class Servo:
-    def __init__(self, servo_info, frequency: int, rom: int):
+    def __init__(self, servo_info, frequency: int, rom: float):
         self.servo_info = servo_info
         self.frequency = frequency
         self.pwm_pin = HardwarePWM(pwm_channel=self.channel, hz=self.frequency, chip=0)
@@ -31,7 +31,10 @@ class Servo:
         self.pwm_pin.change_duty_cycle(duty_cycle)
 
     def convert_to_pwm(self, angle: float) -> float:
-        return float(convert_rad_to_deg(angle) / (self.rom / (self.max_pos - self.min_pos)) + self.min_pos)
+        return float(
+            convert_rad_to_deg(angle) / (self.rom / (self.max_pos - self.min_pos))
+            + self.min_pos
+        )
 
     def stop(self):
         self.pwm_pin.stop()
@@ -41,19 +44,24 @@ class pi_Servo(Config):
     def __init__(self):
         super().__init__("pi_servo")
         # self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
-        self.sub = self.create_subscription(Int64, "")
+        self.sub = self.create_subscription(Float32, f"servo{self.servo}.name", self.set_position)
         self.load_params()
 
     def load_params(self):
-
         self.load_config()
         for i in range(num_servos):
             self.declare_parameter(f"servo{i}.frequency", 50)
+            self.declare_parameter(f"servo{i}.rom", 180)
             self.declare_parameter(f"servo{i}.out_pin", 0)
             frequency = (
                 self.get_parameter(f"servo{i}.frequency")
                 .get_parameter_value()
                 .integer_value
+            )
+            rom = (
+                self.convert_deg_to_rad(self.get_parameter(f"servo{i}.rom")
+                .get_parameter_value().
+                integer_value)
             )
             outpin = (
                 self.get_parameter(f"servo{i}.out_pin")
@@ -64,29 +72,17 @@ class pi_Servo(Config):
                 self.get_logger().error(f"Invalid pin number for port {i}")
                 raise ValueError(f"Invalid pin number for port {i}")
             self.servo_list[i].channel = to_channel(outpin)
-            self.servos[i] = Servo(servo_info=self.servo_info[i], frequency=frequency)
+            self.servo_list[i] = Servo(servo_info=self.servo_info[i], frequency=frequency, rom=rom)
 
-    def set_position(self, request, response) -> MoveServo:
-        port = request.port
-        if port not in self.servos:
-            response.status = False
-            response.status_msg = f"Invalid port: {port}"
-            self.get_logger().error(response.status_msg)
-            return response
-
-        servo = self.servos[port]
-        degree = request.pos
+    def set_position(self, msg):
+        port = self.servo
+        servo = self.servo_info[port]
+        angle = msg.data
         try:
-            servo.set_position(degree)
+            servo.set_position(angle)
         except ValueError as e:
-            response.status = False
-            response.status_msg = str(e)
             self.get_logger().error(f"Error setting position {str(e)}")
-            return response
-        response.status = True
-        response.status_msg = f"Moved to {degree} degrees"
-        self.get_logger().info(response.status_msg)
-        return response
+        self.get_logger().info(f"Moved to angle: {angle}")
 
     def destroy_node(self):
         for servo in self.servos.values():
