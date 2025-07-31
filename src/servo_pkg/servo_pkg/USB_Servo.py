@@ -54,11 +54,11 @@ class USB_Servo(Config):
             self.get_logger().info(f"Port {port} -> Min: {min_qus}, Max: {max_qus}")
             self.servo_controller.setRange(port, min_qus, max_qus)
 
-    def set_position(self):
+    def set_position(self, msg):
         port = self.port
         self.check_valid_servo(port)
         servo_info = self.servo_info[port]
-        target_value = convert_from_radians(request.pos, servo_info)
+        target_value = convert_from_radians(msg.data, servo_info)
         current_position = convert_to_radians(self.servo_controller.getPosition(port), servo_info)
 
         if not (servo_info.min <= target_value <= servo_info.max):
