@@ -97,10 +97,10 @@ void DriveMode::handleCam(
 void DriveMode::handlePWM(std::shared_ptr<sensor_msgs::msg::Joy> joystickMsg) {
   bool publish_pwm = false;
   if (joystickMsg->buttons[kLightsUp] == 1) {
-    current_light_pwm_ = std::min(current_light_pwm_ + 1, 100.0);
+    current_light_pwm_ = std::min(current_light_pwm_ + 2, 100.0);
     publish_pwm = true;
   } else if (joystickMsg->buttons[kLightsDown] == 1) {
-    current_light_pwm_ = std::max(current_light_pwm_ - 1, 0.0);
+    current_light_pwm_ = std::max(current_light_pwm_ - 2, 0.0);
     publish_pwm = true;
   }
   if (publish_pwm) {

@@ -5,9 +5,10 @@ webrtc_node:
     camera_name:
     - "Drive"
     - "EndEffector"
-    - "Bottom"
+    # - "Bottom"
     - "Microscope"
     - "Panoramic"
+    - "IR"
     Drive:
       path: "/dev/drive_camera"
       type: 0
@@ -15,6 +16,10 @@ webrtc_node:
       aruco_detect_interval: 30
     EndEffector:
       path: "/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN5100-video-index0"
+      type: 0
+      encoded: true
+    IR:
+      path: "/dev/v4l/by-id/usb-USB_Camera_Manufacture_H264_USB_Camera_2020052801-video-index0"
       type: 0
       encoded: true
     Bottom:
