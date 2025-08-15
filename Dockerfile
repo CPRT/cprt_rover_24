@@ -27,26 +27,14 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-# Cache apt archives only, avoid /var/lib/apt lock issues
-RUN --mount=type=cache,target=/var/cache/apt/archives-base \
+# Per-arch APT cache
+RUN --mount=type=cache,target=/var/cache/apt/archives-${TARGETARCH} \
     apt-get update && apt-get install -y --no-install-recommends \
-        locales \
-        apt-utils \
-        curl \
-        lsb-release \
-        gnupg2 \
-        libc6-dev \
-        software-properties-common \
-        iproute2 \
-        busybox \
-        build-essential \
-        python3-dev \
-        python3-setuptools \
-        python3-wheel \
+        locales apt-utils curl lsb-release gnupg2 \
+        software-properties-common build-essential python3-dev python3-pip \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ROS 2 repo
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
@@ -55,15 +43,15 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
     http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
     > /etc/apt/sources.list.d/ros2.list
 
-# Install ROS 2 base
-RUN --mount=type=cache,target=/var/cache/apt/archives-base \
+RUN --mount=type=cache,target=/var/cache/apt/archives-${TARGETARCH} \
     apt-get update && apt-get install -y --no-install-recommends \
-        python3-dev python3-pip ros-humble-ros-base && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+        ros-humble-ros-base python3-setuptools python3-wheel \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies
+# Python dependencies (per-arch pip cache)
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip3 install --no-cache-dir -r requirements.txt
 
 ############################
 # Stage 2: ROS deps scan
@@ -72,9 +60,9 @@ FROM ros2_humble-base AS ros2_humble-rosdeps
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
-RUN --mount=type=cache,target=/var/cache/apt/archives-rosdeps \
-    apt-get update && apt-get install -y python3-rosdep && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt/archives-${TARGETARCH} \
+    apt-get update && apt-get install -y python3-rosdep \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY src/**/package.xml src/**/setup.py src/**/CMakeLists.txt ./src
 ARG FILE=/opt/rosdeps.sh
@@ -86,7 +74,7 @@ RUN rosdep init && rosdep update && \
 ############################
 FROM base AS ros2_humble-gstreamer
 
-RUN --mount=type=cache,target=/var/cache/apt/archives-gst \
+RUN --mount=type=cache,target=/var/cache/apt/archives-${TARGETARCH} \
     apt-get update && apt-get install -y \
         zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip \
         flex bison libglib2.0-dev libmount-dev libsrt-openssl-dev \
@@ -96,19 +84,23 @@ RUN --mount=type=cache,target=/var/cache/apt/archives-gst \
 RUN python3 -m pip install --upgrade --user pip meson
 
 WORKDIR /gstreamer
-RUN git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git && \
+RUN --mount=type=cache,target=/root/.cache/gstreamer \
+    --mount=type=cache,target=/root/.cache/meson \
+    git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git && \
     cd gstreamer && \
     git checkout 1.24 && \
     ~/.local/bin/meson setup builddir --prefix=/opt/gstreamer --libdir=lib && \
     ~/.local/bin/meson compile -C builddir && \
     ~/.local/bin/meson install -C builddir --destdir /target
 
+# Build GStreamer Rust plugins
 WORKDIR /gst-plugins-rs
-ENV LD_LIBRARY_PATH=/target/opt/gstreamer/lib:$LD_LIBRARY_PATH 
-ENV LIBRARY_PATH=/target/opt/gstreamer/lib:$LIBRARY_PATH 
-ENV PKG_CONFIG_PATH=/target/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH 
+ENV LD_LIBRARY_PATH=/target/opt/gstreamer/lib:$LD_LIBRARY_PATH
+ENV LIBRARY_PATH=/target/opt/gstreamer/lib:$LIBRARY_PATH
+ENV PKG_CONFIG_PATH=/target/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+RUN --mount=type=cache,target=/root/.cargo \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     . "$HOME/.cargo/env" && \
     git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git && \
     cd gst-plugins-rs && \
@@ -125,14 +117,12 @@ FROM ros2_humble-base AS runtime
 ARG ROSDEP_FILE=/opt/rosdeps.sh
 COPY --from=ros2_humble-rosdeps ${ROSDEP_FILE} ${ROSDEP_FILE}
 COPY --from=ros2_humble-gstreamer /target /
-# Setup GStreamer environment
 ENV PATH=/opt/gstreamer/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
-RUN --mount=type=cache,target=/var/cache/rosdeps \
-    chmod +x ${ROSDEP_FILE} && \
-    ${ROSDEP_FILE}
 
+RUN --mount=type=cache,target=/var/cache/apt/archives-${TARGETARCH} \
+    chmod +x ${ROSDEP_FILE} && ${ROSDEP_FILE}
 
 CMD ["/bin/bash"]
 
@@ -140,7 +130,7 @@ CMD ["/bin/bash"]
 # Stage 5: Dev Environment
 ############################
 FROM runtime AS dev
-RUN --mount=type=cache,target=/var/cache/apt/archives-runtime \
+RUN --mount=type=cache,target=/var/cache/apt/archives-${TARGETARCH} \
     apt-get update && apt-get install -y --no-install-recommends \
         git x11-apps ros-humble-desktop ros-dev-tools \
         ros-humble-ament-cmake python3-colcon-common-extensions \
@@ -162,13 +152,11 @@ FROM dev AS builder
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
-# Copy source code into the builder
 COPY src/ ${DIR}/src/
 
-# Install any additional dependencies if needed
 RUN rosdep install -i -r -y --from-paths src
 
-# Build the ROS 2 workspace
+# Cache colcon builds
 RUN --mount=type=cache,target=${DIR}/colcon-cache \
     colcon build --symlink-install
 
