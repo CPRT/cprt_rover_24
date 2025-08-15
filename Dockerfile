@@ -4,20 +4,16 @@
 # Pick the Base Image
 # This Dockerfile supports both amd64 and jetson architectures.
 ############################
+ARG TARGETARCH
 ARG UBUNTU_BASE=ubuntu:22.04
 ARG L4T_BASE=nvcr.io/nvidia/l4t-jetpack:r35.3.1
-ARG TARGETARCH
 
-
-# Define arch-specific stages
+# Base image selection per arch
 FROM ${UBUNTU_BASE} AS base_amd64
-FROM ${L4T_BASE}    AS base_arm64
+FROM ${L4T_BASE} AS base_arm64
 
-# Select the right one for the current build target
+# Select the correct base
 FROM base_${TARGETARCH} AS base
-RUN case "${TARGETARCH}" in amd64|arm64) ;; \
-    *) echo "Unsupported TARGETARCH=${TARGETARCH}" && exit 1 ;; esac
-
 
 ############################
 # Stage 1: Minimal ROS 2 Base

@@ -1,4 +1,4 @@
-name: Docker CI/CD
+name: Docker CI/CD Multi-Arch
 
 on:
   push:
@@ -9,9 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64, arm64]
+    env:
+      IMAGE_NAME: cprtsoftware/rover
 
     steps:
       - name: Checkout code
@@ -25,49 +24,42 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.arch }}-${{ hashFiles('Dockerfile', 'requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ matrix.arch }}-
-
-      - name: Build base image
-        run: |
-          docker buildx build \
-            --platform linux/${{ matrix.arch }} \
-            --target ros2_humble-base \
-            --build-arg TARGETARCH=${{ matrix.arch }} \
-            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            -t cprtsoftware/ros2_humble-base:latest \
-            -t cprtsoftware/ros2_humble-base:${{ github.sha }} \
-            .
-
-      - name: Build dev image
-        run: |
-          docker buildx build \
-            --platform linux/${{ matrix.arch }} \
-            --target dev \
-            --build-arg TARGETARCH=${{ matrix.arch }} \
-            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            -t cprtsoftware/ros2_humble-dev:latest \
-            -t cprtsoftware/ros2_humble-dev:${{ github.sha }} \
-            .
-
       - name: Log in to Docker Hub
-        if: github.event_name == 'push'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push images
-        if: github.event_name == 'push'
+      - name: Build amd64 image
         run: |
-          docker push cprtsoftware/ros2_humble-base:latest
-          docker push cprtsoftware/ros2_humble-base:${{ github.sha }}
-          docker push cprtsoftware/ros2_humble-dev:latest
-          docker push cprtsoftware/ros2_humble-dev:${{ github.sha }}
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg TARGETARCH=amd64 \
+            -t $IMAGE_NAME:amd64 \
+            -t $IMAGE_NAME:${{ github.sha }}-amd64 \
+            --load \
+            .
+
+      - name: Build arm64 image
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --build-arg TARGETARCH=arm64 \
+            -t $IMAGE_NAME:arm64 \
+            -t $IMAGE_NAME:${{ github.sha }}-arm64 \
+            --load \
+            .
+
+      - name: Create multi-arch manifest for latest
+        run: |
+          docker manifest create $IMAGE_NAME:latest \
+            $IMAGE_NAME:amd64 \
+            $IMAGE_NAME:arm64
+          docker manifest push $IMAGE_NAME:latest
+
+      - name: Create multi-arch manifest for commit SHA
+        run: |
+          docker manifest create $IMAGE_NAME:${{ github.sha }} \
+            $IMAGE_NAME:${{ github.sha }}-amd64 \
+            $IMAGE_NAME:${{ github.sha }}-arm64
+          docker manifest push $IMAGE_NAME:${{ github.sha }}
