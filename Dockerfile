@@ -29,18 +29,23 @@ ENV LC_ALL=en_US.UTF-8
 
 # Cache apt archives only, avoid /var/lib/apt lock issues
 RUN --mount=type=cache,target=/var/cache/apt/archives-base \
-    apt-get update && apt-get install -y \
-    locales \
-    apt-utils \
-    curl \
-    lsb-release \
-    gnupg2 \
-    libc6-dev \
-    software-properties-common \
-    iproute2 \
-    busybox \
+    apt-get update && apt-get install -y --no-install-recommends \
+        locales \
+        apt-utils \
+        curl \
+        lsb-release \
+        gnupg2 \
+        libc6-dev \
+        software-properties-common \
+        iproute2 \
+        busybox \
+        build-essential \
+        python3-dev \
+        python3-setuptools \
+        python3-wheel \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # ROS 2 repo
