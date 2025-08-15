@@ -73,16 +73,16 @@ RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
     --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
     rosdep install -i -r -y --rosdistro humble --from-paths src -s --skip-keys="$ROSDEP_SKIP_KEYS" \
     | tee /opt/rosdep.plan && \
-    awk '/apt(-get)? install/ {
-           for (i=1;i<=NF;i++) {
-             if ($i !~ /^(sudo|apt(-get)?|install|-y|--no-install-recommends)$/) print $i
-           }
-         }' /opt/rosdep.plan | sort -u > /opt/apt-packages.txt && \
-    awk '/^pip3? install/ {
-           for (i=1;i<=NF;i++) {
-             if ($i !~ /^(sudo|pip3?|install|-r)$/) print $i
-           }
-         }' /opt/rosdep.plan | sort -u > /opt/pip-requirements.txt || true
+    sh -c "awk '/apt(-get)? install/ {
+              for (i=1;i<=NF;i++) {
+                if (\$i !~ /^(sudo|apt(-get)?|install|-y|--no-install-recommends)$/) print \$i
+              }
+            }' /opt/rosdep.plan | sort -u > /opt/apt-packages.txt" && \
+    sh -c "awk '/^pip3? install/ {
+              for (i=1;i<=NF;i++) {
+                if (\$i !~ /^(sudo|pip3?|install|-r)$/) print \$i
+              }
+            }' /opt/rosdep.plan | sort -u > /opt/pip-requirements.txt" || true
 
 ############################
 # Stage 3: GStreamer Build
