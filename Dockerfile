@@ -151,19 +151,23 @@ CMD ["/bin/bash"]
 # Stage 6: Builder
 ############################
 FROM dev AS builder
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]   # <-- ensure we have 'source'
+ARG TARGETARCH
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
 COPY src/ ${DIR}/src/
 
-# Cache rosdep metadata during install
+# rosdep with ROS env loaded (uses cached rosdep/rosdistro)
 RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
     --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    apt-get update && rosdep init && rosdep update && \
+    source /opt/ros/humble/setup.bash && \
+    rosdep init && rosdep update && \
     rosdep install -i -r -y --from-paths src
 
-# Use ccache for compiles and persist its contents across builds
+# colcon build with ROS env + ccache
 RUN --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharing=locked \
+    source /opt/ros/humble/setup.bash && \
     colcon build --symlink-install
 
 ############################
