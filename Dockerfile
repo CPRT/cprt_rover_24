@@ -19,7 +19,7 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 # Per-arch APT cache (mount to the real apt cache path; keep per-arch id)
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH} \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         locales apt-utils curl lsb-release gnupg2 \
         software-properties-common build-essential python3-dev python3-pip \
@@ -34,7 +34,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
     http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
     > /etc/apt/sources.list.d/ros2.list
 
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH} \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         ros-humble-ros-base python3-setuptools python3-wheel \
     && rm -rf /var/lib/apt/lists/*
@@ -51,7 +51,7 @@ FROM ros2_humble-base AS ros2_humble-rosdeps
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH} \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y python3-rosdep \
     && rm -rf /var/lib/apt/lists/*
 
@@ -71,7 +71,7 @@ RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
 ############################
 FROM base AS ros2_humble-gstreamer
 
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH} \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y \
         zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip \
         flex bison libglib2.0-dev libmount-dev libsrt-openssl-dev \
@@ -119,7 +119,7 @@ ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
 
 # Execute rosdep install script with apt cache
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH} \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     chmod +x ${ROSDEP_FILE} && ${ROSDEP_FILE}
 
 CMD ["/bin/bash"]
@@ -128,7 +128,7 @@ CMD ["/bin/bash"]
 # Stage 5: Dev Environment
 ############################
 FROM runtime AS dev
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH} \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         git x11-apps ros-humble-desktop ros-dev-tools \
         ros-humble-ament-cmake python3-colcon-common-extensions \
