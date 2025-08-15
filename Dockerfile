@@ -121,7 +121,27 @@ RUN --mount=type=cache,target=/root/.cargo,id=cargo-home-${TARGETARCH} \
     cargo cinstall -p gst-plugin-rtp    --prefix=/opt/gstreamer --destdir /target --libdir=lib --release
 
 ############################
-# Stage 4: Minimal Runtime Base
+# Stage 4: kindr
+############################
+FROM base AS kindr_build
+ARG TARGETARCH
+WORKDIR /work
+
+# deps: cmake + toolchain + Eigen
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-kindr,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+      git cmake build-essential libeigen3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# build & "install" into a staging dir (/target)
+RUN git clone --depth=1 https://github.com/ANYbotics/kindr.git src && \
+    cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF && \
+    cmake --build build -j"$(nproc)" && \
+    DESTDIR=/kindr-out cmake --install build --prefix /usr/local && \
+    mkdir -p /target && cp -a /kindr-out/usr/local /target/usr/local
+
+############################
+# Stage 5: Minimal Runtime Base
 ############################
 FROM ros2_humble-base AS runtime
 ARG TARGETARCH
@@ -129,6 +149,7 @@ ARG TARGETARCH
 COPY --from=ros2_humble-depsplan /opt/apt-packages.txt /opt/apt-packages.txt
 COPY --from=ros2_humble-depsplan /opt/pip-requirements.txt /opt/pip-requirements.txt
 COPY --from=ros2_humble-gstreamer /target /
+COPY --from=kindr_build /target/usr/local/ /usr/local/
 
 ENV PATH=/opt/gstreamer/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
@@ -145,7 +166,7 @@ RUN --mount=type=cache,target=/root/.cache/pip,id=pip-${TARGETARCH},sharing=lock
     if [ -s /opt/pip-requirements.txt ]; then pip3 install -r /opt/pip-requirements.txt; fi
 
 ############################
-# Stage 5: Dev Environment
+# Stage 6: Dev Environment
 ############################
 FROM runtime AS dev
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
@@ -168,7 +189,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/bin/bash"]
 
 ############################
-# Stage 6: Builder
+# Stage 7: Builder
 ############################
 FROM dev AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]   # <-- ensure we have 'source'
@@ -192,7 +213,7 @@ RUN --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharin
     colcon build --symlink-install
 
 ############################
-# Stage 7: Runtime Application
+# Stage 8: Runtime Application
 ############################
 FROM runtime AS rover
 ARG DIR=/cprt_rover_24
