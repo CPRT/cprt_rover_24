@@ -1,7 +1,7 @@
 # Directories
-install/
+install*/
 log/
-build/
+build*/
 *.vscode
 raman/
 
@@ -14,3 +14,5 @@ camera_setup/images/*
 
 # macOS Directory Information
 .DS_Store
+
+upgrade_pkg.tar.*

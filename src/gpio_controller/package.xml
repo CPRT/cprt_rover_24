@@ -6,6 +6,7 @@
   <description>TODO: Package description</description>
   <maintainer email="christopherrusu1@gmail.com">chris</maintainer>
   <license>Apache-2.0</license>
+  <depend>rclpy</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
@@ -13,9 +14,7 @@
   <test_depend>python3-pytest</test_depend>
 
   
-  <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
-  <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <export>
     <build_type>ament_python</build_type>
