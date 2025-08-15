@@ -154,7 +154,8 @@ WORKDIR ${DIR}
 
 COPY src/ ${DIR}/src/
 
-RUN rosdep install -i -r -y --from-paths src
+RUN rosdep init && rosdep update && \
+    rosdep install -i -r -y --from-paths src
 
 # Cache colcon builds
 RUN --mount=type=cache,target=${DIR}/colcon-cache \
