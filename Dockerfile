@@ -123,7 +123,7 @@ RUN --mount=type=cache,target=/root/.cargo,id=cargo-home-${TARGETARCH} \
 ############################
 # Stage 4: kindr
 ############################
-FROM base AS kindr_build
+FROM ros2_humble-base AS kindr_build
 ARG TARGETARCH
 WORKDIR /work
 
