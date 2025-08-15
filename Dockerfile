@@ -28,18 +28,20 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 # Cache apt archives only, avoid /var/lib/apt lock issues
-RUN --mount=type=cache,target=/var/cache/apt/archives \
-    apt-get update && apt-get install -y locales apt-utils \
+RUN --mount=type=cache,target=/var/cache/apt/archives-base \
+    apt-get update && apt-get install -y \
+    locales \
+    apt-utils \
+    curl \
+    lsb-release \
+    gnupg2 \
+    libc6-dev \
+    software-properties-common \
+    iproute2 \
+    busybox \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
-
-# Base packages
-RUN --mount=type=cache,target=/var/cache/apt/archives \
-    apt-get update && apt-get install -y --no-install-recommends \
-        curl lsb-release gnupg2 libc6-dev software-properties-common \
-        iproute2 busybox && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ROS 2 repo
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
@@ -49,7 +51,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
     > /etc/apt/sources.list.d/ros2.list
 
 # Install ROS 2 base
-RUN --mount=type=cache,target=/var/cache/apt/archives \
+RUN --mount=type=cache,target=/var/cache/apt/archives-base \
     apt-get update && apt-get install -y --no-install-recommends \
         python3-dev python3-pip ros-humble-ros-base && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -65,7 +67,7 @@ FROM ros2_humble-base AS ros2_humble-rosdeps
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
-RUN --mount=type=cache,target=/var/cache/apt/archives \
+RUN --mount=type=cache,target=/var/cache/apt/archives-rosdeps \
     apt-get update && apt-get install -y python3-rosdep && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -79,7 +81,7 @@ RUN rosdep init && rosdep update && \
 ############################
 FROM base AS ros2_humble-gstreamer
 
-RUN --mount=type=cache,target=/var/cache/apt/archives \
+RUN --mount=type=cache,target=/var/cache/apt/archives-gst \
     apt-get update && apt-get install -y \
         zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip \
         flex bison libglib2.0-dev libmount-dev libsrt-openssl-dev \
@@ -133,7 +135,7 @@ CMD ["/bin/bash"]
 # Stage 5: Dev Environment
 ############################
 FROM runtime AS dev
-RUN --mount=type=cache,target=/var/cache/apt/archives \
+RUN --mount=type=cache,target=/var/cache/apt/archives-runtime \
     apt-get update && apt-get install -y --no-install-recommends \
         git x11-apps ros-humble-desktop ros-dev-tools \
         ros-humble-ament-cmake python3-colcon-common-extensions \
