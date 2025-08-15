@@ -48,23 +48,41 @@ RUN --mount=type=cache,target=/root/.cache/pip,id=pip-${TARGETARCH},sharing=lock
 # Stage 2: ROS deps scan
 ############################
 FROM ros2_humble-base AS ros2_humble-rosdeps
+FROM ros2_humble-base AS ros2_humble-depsplan
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG TARGETARCH
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
 
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
-    apt-get update && apt-get install -y python3-rosdep \
-    && rm -rf /var/lib/apt/lists/*
+# rosdep tooling only here
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-rosdeps,sharing=locked \
+    apt-get update && apt-get install -y python3-rosdep && rm -rf /var/lib/apt/lists/*
 
-# Cache rosdep/rosdistro metadata across builds
+# prime rosdep caches once
 RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
     --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    rosdep init && rosdep update
+    rosdep init || true && rosdep update
 
+# bring manifests for resolution
 COPY src/**/package.xml src/**/setup.py src/**/CMakeLists.txt ./src
-ARG FILE=/opt/rosdeps.sh
+
+# Compute, don't install: write apt/pip lists that runtime can consume
+# Skip unresolved keys (add more if needed)
+ENV ROSDEP_SKIP_KEYS="kindr_ros"
 RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
     --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    rosdep install -i -r -y --from-paths src -s > ${FILE}
+    rosdep install -i -r -y --rosdistro humble --from-paths src -s --skip-keys="$ROSDEP_SKIP_KEYS" \
+    | tee /opt/rosdep.plan && \
+    awk '/apt(-get)? install/ {
+           for (i=1;i<=NF;i++) {
+             if ($i !~ /^(sudo|apt(-get)?|install|-y|--no-install-recommends)$/) print $i
+           }
+         }' /opt/rosdep.plan | sort -u > /opt/apt-packages.txt && \
+    awk '/^pip3? install/ {
+           for (i=1;i<=NF;i++) {
+             if ($i !~ /^(sudo|pip3?|install|-r)$/) print $i
+           }
+         }' /opt/rosdep.plan | sort -u > /opt/pip-requirements.txt || true
 
 ############################
 # Stage 3: GStreamer Build
@@ -111,18 +129,25 @@ RUN --mount=type=cache,target=/root/.cargo,id=cargo-home-${TARGETARCH} \
 # Stage 4: Minimal Runtime Base
 ############################
 FROM ros2_humble-base AS runtime
-ARG ROSDEP_FILE=/opt/rosdeps.sh
-COPY --from=ros2_humble-rosdeps ${ROSDEP_FILE} ${ROSDEP_FILE}
+ARG TARGETARCH
+# Copy just the lists produced above
+COPY --from=ros2_humble-depsplan /opt/apt-packages.txt /opt/apt-packages.txt
+COPY --from=ros2_humble-depsplan /opt/pip-requirements.txt /opt/pip-requirements.txt
 COPY --from=ros2_humble-gstreamer /target /
+
 ENV PATH=/opt/gstreamer/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
 
-# Execute rosdep install script with apt cache
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
-    chmod +x ${ROSDEP_FILE} && apt-get update && ${ROSDEP_FILE}
+# Ensure repos are visible; then install the exact packages, no rosdep needed
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-runtime,sharing=locked \
+    apt-get update && \
+    xargs -r -a /opt/apt-packages.txt apt-get install -y && \
+    rm -rf /var/lib/apt/lists/*
 
-CMD ["/bin/bash"]
+# Optional: if pip requirements were found
+RUN --mount=type=cache,target=/root/.cache/pip,id=pip-${TARGETARCH},sharing=locked \
+    if [ -s /opt/pip-requirements.txt ]; then pip3 install -r /opt/pip-requirements.txt; fi
 
 ############################
 # Stage 5: Dev Environment
@@ -162,6 +187,7 @@ COPY src/ ${DIR}/src/
 RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
     --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
     source /opt/ros/humble/setup.bash && \
+    apt-get update && \
     rosdep init && rosdep update && \
     rosdep install -i -r -y --from-paths src
 
