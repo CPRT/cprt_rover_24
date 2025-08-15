@@ -44,12 +44,14 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
+          build-args: |
+            BASE_IMAGE=ubuntu:22.04
+            TARGETARCH=amd64
           tags: |
             ${{ env.IMAGE_NAME }}:amd64
             ${{ env.IMAGE_NAME }}:${{ github.sha }}-amd64
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:amd64-cache
           cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:amd64-cache,mode=max
-          # Expose the pushed image digest for the manifest job
           provenance: false
 
   build-arm64:
@@ -83,6 +85,9 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm64
           push: true
+          build-args: |
+            BASE_IMAGE=nvcr.io/nvidia/l4t-jetpack:r36.4.0
+            TARGETARCH=arm64
           tags: |
             ${{ env.IMAGE_NAME }}:arm64
             ${{ env.IMAGE_NAME }}:${{ github.sha }}-arm64
@@ -102,7 +107,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build the multi-arch manifest from pushed image digests (recommended)
       - name: Create and push multi-arch manifest (latest + commit)
         run: |
           AMD64_DIGEST="${{ needs.build-amd64.outputs.digest }}"

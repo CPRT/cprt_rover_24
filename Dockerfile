@@ -1,21 +1,11 @@
 # syntax=docker/dockerfile:1.5
 
 ############################
-# Pick the Base Image
-# This Dockerfile supports both amd64 and Jetson (arm64) architectures.
-############################
-ARG TARGETARCH
-ARG UBUNTU_BASE=ubuntu:22.04
-ARG L4T_BASE=nvcr.io/nvidia/l4t-jetpack:r36.4.0
-
-############################
 # Stage 0: Base Image per Arch
 ############################
-FROM ${UBUNTU_BASE} AS base_amd64
-FROM ${L4T_BASE}    AS base_arm64
-# Select the correct base
+ARG BASE_IMAGE=ubuntu:22.04
 ARG TARGETARCH
-FROM base_${TARGETARCH} AS base
+FROM ${BASE_IMAGE} AS base
 
 ############################
 # Stage 1: Minimal ROS 2 Base
