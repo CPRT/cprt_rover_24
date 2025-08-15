@@ -134,7 +134,8 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-kindr,sharing=
     && rm -rf /var/lib/apt/lists/*
 
 # build & "install" into a staging dir (/target)
-RUN git clone --depth=1 https://github.com/ANYbotics/kindr.git src && \
+RUN source /opt/ros/humble/setup.bash && \
+    git clone --depth=1 https://github.com/ANYbotics/kindr.git src && \
     cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF && \
     cmake --build build -j"$(nproc)" && \
     DESTDIR=/kindr-out cmake --install build --prefix /usr/local && \
