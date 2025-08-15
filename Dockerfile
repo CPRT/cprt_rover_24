@@ -120,7 +120,7 @@ ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
 
 # Execute rosdep install script with apt cache
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
-    chmod +x ${ROSDEP_FILE} && ${ROSDEP_FILE}
+    chmod +x ${ROSDEP_FILE} && apt-get update && ${ROSDEP_FILE}
 
 CMD ["/bin/bash"]
 
@@ -159,7 +159,7 @@ COPY src/ ${DIR}/src/
 # Cache rosdep metadata during install
 RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
     --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    rosdep init && rosdep update && \
+    apt-get update && rosdep init && rosdep update && \
     rosdep install -i -r -y --from-paths src
 
 # Use ccache for compiles and persist its contents across builds
