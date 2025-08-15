@@ -6,7 +6,7 @@
 ############################
 ARG TARGETARCH
 ARG UBUNTU_BASE=ubuntu:22.04
-ARG L4T_BASE=nvcr.io/nvidia/l4t-jetpack:r35.3.1
+ARG L4T_BASE=nvcr.io/nvidia/l4t-jetpack:r36.4.0
 
 ############################
 # Stage 0: Base Image per Arch
