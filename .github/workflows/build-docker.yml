@@ -1,0 +1,73 @@
+name: Docker CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.arch }}-${{ hashFiles('Dockerfile', 'requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.arch }}-
+
+      - name: Build base image
+        run: |
+          docker buildx build \
+            --platform linux/${{ matrix.arch }} \
+            --target ros2_humble-base \
+            --build-arg TARGETARCH=${{ matrix.arch }} \
+            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            -t cprtsoftware/ros2_humble-base:latest \
+            -t cprtsoftware/ros2_humble-base:${{ github.sha }} \
+            .
+
+      - name: Build dev image
+        run: |
+          docker buildx build \
+            --platform linux/${{ matrix.arch }} \
+            --target dev \
+            --build-arg TARGETARCH=${{ matrix.arch }} \
+            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            -t cprtsoftware/ros2_humble-dev:latest \
+            -t cprtsoftware/ros2_humble-dev:${{ github.sha }} \
+            .
+
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push images
+        if: github.event_name == 'push'
+        run: |
+          docker push cprtsoftware/ros2_humble-base:latest
+          docker push cprtsoftware/ros2_humble-base:${{ github.sha }}
+          docker push cprtsoftware/ros2_humble-dev:latest
+          docker push cprtsoftware/ros2_humble-dev:${{ github.sha }}
