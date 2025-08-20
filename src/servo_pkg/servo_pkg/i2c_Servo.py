@@ -13,7 +13,10 @@ from config import Config
 class i2c_Servo(Config):
     def __init__(self):
         super().__init__("i2c_servo")
-        self.sub = self.create_subscription(Float32, "servo0.name", self.set_position)
+
+        self.sub = self.create_subscription(
+            Float32, f"servo{self.servo_num}.name", self.set_position
+        )
 
         self.i2c = board.I2C()
         self.pca = PCA9685(self.i2c)
@@ -22,13 +25,13 @@ class i2c_Servo(Config):
         self.maxrom = math.pi  # max range of motion of the servo, default pi
 
     def set_position(self, msg):
-        if self.servo_list[self.servo - 1] == None:
-            self.servo_list[self.servo] = servo.Servo(
-                self.pca.channels[self.servo], actuation_range=self.maxrom
+        if self.servo_list[self.servo_num - 1] == None:
+            self.servo_list[self.servo_num] = servo.Servo(
+                self.pca.channels[self.servo_num], actuation_range=self.maxrom
             )
-        s = self.servo_list[self.servo]
+        s = self.servo_list[self.servo_num]
         s.angle = msg.data
-        self.get_logger().info(f"Servo {request.port} moving to {request.pos} degrees")
+        self.get_logger().info(f"Servo {self.servo_num} moving to {s.angle} degrees")
 
 
 def main(args=None):

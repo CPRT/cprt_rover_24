@@ -7,11 +7,6 @@ from servo_pkg import maestro
 from config import Config
 from config import Servo_Info
 
-NUM_PORTS = 12
-DEFAULT_MIN = 512.0
-DEFAULT_MAX = 2400.0
-DEFAULT_MAX_ANGLE = 3.1415
-
 
 def convert_from_radians(angle: float, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
@@ -21,7 +16,6 @@ def convert_from_radians(angle: float, servo_info: Servo_Info) -> int:
 def convert_to_radians(value: int, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
     return servo_info.rom * (value - servo_info.min) / total_range
-    
 
 
 class USB_Servo(Config):
