@@ -10,19 +10,18 @@ from config import Servo_Info
 NUM_PORTS = 12
 DEFAULT_MIN = 512.0
 DEFAULT_MAX = 2400.0
-DEFAULT_MAX_DEGREES = 180
+DEFAULT_MAX_ANGLE = 3.1415
 
 
 def convert_from_radians(angle: float, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
-    return convert_deg_to_rad(servo_info.min + (total_range * degrees / servo_info.rom))
+    return servo_info.min + (total_range * angle / servo_info.rom)
 
 
 def convert_to_radians(value: int, servo_info: Servo_Info) -> int:
     total_range = servo_info.max - servo_info.min
-    return self.convert_deg_to_rad(
-        servo_info.rom * (value - servo_info.min) / total_range
-    )
+    return servo_info.rom * (value - servo_info.min) / total_range
+    
 
 
 class USB_Servo(Config):

@@ -7,17 +7,17 @@ Parent_config:
       name: "tilt"
       min: 350.0
       max: 2500.0
-      rom: 360
+      rom: 6.2832
     # PAN
     servo1:
       name: "pan"
       min: 350.0
       max: 2500.0
-      rom: 360
+      rom: 6.2832
     # GRIPPER
     servo3:
       name: "gripper"
       min: 500.0
       max: 2500.0
-      rom: 180
+      rom: 3.1415
       
