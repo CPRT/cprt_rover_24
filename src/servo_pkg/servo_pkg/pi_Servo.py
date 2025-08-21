@@ -1,11 +1,10 @@
 import rclpy
-from rclpy.node import Node
 from interfaces.srv import MoveServo
 import math
 from rpi_hardware_pwm import HardwarePWM
-from config import Config
+from servo_pkg.parent_config import Parent_Config
 from std_msgs.msg import Float32
-from config import Servo_Info
+from servo_pkg.parent_config import Servo_Info
 
 
 def to_channel(pin: int) -> int:
@@ -32,7 +31,7 @@ class Servo:
 
     def convert_to_pwm(self, angle: float) -> float:
         return float(
-            convert_rad_to_deg(angle) / (self.rom / (self.max_pos - self.min_pos))
+            angle / (self.rom / (self.max_pos - self.min_pos))
             + self.min_pos
         )
 
@@ -40,7 +39,7 @@ class Servo:
         self.pwm_pin.stop()
 
 
-class pi_Servo(Config):
+class pi_Servo(Parent_Config):
     def __init__(self):
         super().__init__("pi_servo")
         # self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
@@ -53,16 +52,14 @@ class pi_Servo(Config):
         self.load_config()
         for i in range(num_servos):
             self.declare_parameter(f"servo{i}.frequency", 50)
-            self.declare_parameter(f"servo{i}.rom", 180)
+            self.declare_parameter(f"servo{i}.rom", 3,1415)
             self.declare_parameter(f"servo{i}.out_pin", 0)
             frequency = (
                 self.get_parameter(f"servo{i}.frequency")
                 .get_parameter_value()
                 .integer_value
             )
-            rom = self.convert_deg_to_rad(
-                self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
-            )
+            rom = self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
             outpin = (
                 self.get_parameter(f"servo{i}.out_pin")
                 .get_parameter_value()

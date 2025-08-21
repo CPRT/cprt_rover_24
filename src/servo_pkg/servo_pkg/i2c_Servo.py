@@ -1,16 +1,15 @@
 import rclpy
 import rclpy.logging
-from rclpy.node import Node
 import rclpy.time
 from interfaces.srv import MoveServo
 import math
 import board
 from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
-from config import Config
+from servo_pkg.parent_config import Parent_Config
 
 
-class i2c_Servo(Config):
+class i2c_Servo(Parent_Config):
     def __init__(self):
         super().__init__("i2c_servo")
 

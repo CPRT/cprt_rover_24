@@ -1,11 +1,10 @@
 import rclpy
-from rclpy.node import Node
 from interfaces.srv import MoveServo
 import math
 from std_msgs.msg import Float32
 from servo_pkg import maestro
-from config import Config
-from config import Servo_Info
+from servo_pkg.parent_config import Parent_Config
+from servo_pkg.parent_config import Servo_Info
 
 
 def convert_from_radians(angle: float, servo_info: Servo_Info) -> int:
@@ -18,7 +17,7 @@ def convert_to_radians(value: int, servo_info: Servo_Info) -> int:
     return servo_info.rom * (value - servo_info.min) / total_range
 
 
-class USB_Servo(Config):
+class USB_Servo(Parent_Config):
     def __init__(self):
         super().__init__("usb_servo")
 

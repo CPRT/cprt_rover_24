@@ -1,4 +1,5 @@
 import math
+from rclpy.node import Node
 
 NUM_SERVOS = 12
 DEFAULT_MIN = 512.0
@@ -14,9 +15,9 @@ class Servo_Info:
         self.rom = max_deg
 
 
-class Config(Node):  # one motor per port
-    def __init__(self):
-        super().__init__("Parent")
+class Parent_Config(Node):  # one motor per port
+    def __init__(self, name):
+        super().__init__(name)
         self.servo_info = {}
         self.load_config()
 
@@ -30,23 +31,23 @@ class Config(Node):  # one motor per port
             self.get_parameter("servos_used").get_parameter_value().integer_value
         )
         for servo in range(self.num_servos):
-            self.declare_parameter("servo{servo}.name", "")
+            self.declare_parameter(f"servo{servo}.name", "")
             motor_name = (
-                self.get_parameter("servo{servo}.name")
+                self.get_parameter(f"servo{servo}.name")
                 .get_parameter_value()
                 .string_value
             )
-            self.declare_parameter("servo{servo}.min", DEFAULT_MIN)
+            self.declare_parameter(f"servo{servo}.min", DEFAULT_MIN)
             min_pwm = (
-                self.get_parameter("servo{servo}.min")
+                self.get_parameter(f"servo{servo}.min")
                 .get_parameter_value()
                 .double_value
             )
-            self.declare_parameter("servo{servo}.max", DEFAULT_MAX)
-            max_pwm = self.get_parameter("max").get_parameter_value().double_value
-            self.declare_parameter("servo{servo}.rom", DEFAULT_MAX_ANGLE)
+            self.declare_parameter(f"servo{servo}.max", DEFAULT_MAX)
+            max_pwm = self.get_parameter(f"servo{servo}.max").get_parameter_value().double_value
+            self.declare_parameter(f"servo{servo}.rom", DEFAULT_MAX_ANGLE)
             rom = (
-                self.get_parameter("servo{servo}.rom")
+                self.get_parameter(f"servo{servo}.rom")
                 .get_parameter_value()
                 .double_value
             )

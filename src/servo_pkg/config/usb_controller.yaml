@@ -13,7 +13,7 @@ USB_Servo_node:
       name: "pan"
       min: 350.0
       max: 2500.0
-      rom: 360
+      rom: 6.2832
     # GRIPPER
     servo3:
       name: "gripper"
