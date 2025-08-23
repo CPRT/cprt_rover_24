@@ -38,15 +38,15 @@ docker buildx build \
   --load \
   .
 
-# # --- APP (rover) image ---
-# docker buildx build \
-#   --build-arg BASE_IMAGE=$BASE_IMAGE \
-#   --build-arg TARGETARCH=$TARGETARCH \
-#   -f Dockerfile \
-#   --target builder \
-#   -t ${IMAGE_NAME}:${TARGETARCH} \
-#   -t ${IMAGE_NAME}:${GIT_SHA}-${TARGETARCH} \
-#   --cache-from=type=registry,ref=${IMAGE_NAME}:${TARGETARCH}-cache \
-#   --cache-to=type=registry,ref=${IMAGE_NAME}:${TARGETARCH}-cache,mode=max \
-#   --load \
-#   .
+# --- APP (rover) image ---
+docker buildx build \
+  --build-arg BASE_IMAGE=$BASE_IMAGE \
+  --build-arg TARGETARCH=$TARGETARCH \
+  -f Dockerfile \
+  --target builder \
+  -t ${IMAGE_NAME}:${TARGETARCH} \
+  -t ${IMAGE_NAME}:${GIT_SHA}-${TARGETARCH} \
+  --cache-from=type=registry,ref=${IMAGE_NAME}:${TARGETARCH}-cache \
+  --cache-to=type=registry,ref=${IMAGE_NAME}:${TARGETARCH}-cache,mode=max \
+  --load \
+  .

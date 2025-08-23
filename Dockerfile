@@ -17,15 +17,20 @@ ENV ROS_DISTRO=humble
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
+ENV TZ=UTC
 
 # Per-arch APT cache (mount to the real apt cache path; keep per-arch id)
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         locales apt-utils curl lsb-release gnupg2 \
-        software-properties-common build-essential python3-dev python3-pip \
+        software-properties-common build-essential \
+        python3-dev tzdata python3-pip \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime \
+    && echo "UTC" > /etc/timezone
 
 # ROS 2 repo
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
@@ -134,7 +139,18 @@ RUN source /opt/ros/humble/setup.bash && \
 RUN mv /target/usr/include/kindr/kindr/* /target/usr/include/kindr/ && rmdir /target/usr/include/kindr/kindr
 
 ############################
-# Stage 6: Minimal Runtime Base
+# Stage 6: Collect package.xml files
+############################
+FROM alpine AS package_xml_collector
+WORKDIR /src
+COPY src/ . 
+
+# Create a directory to hold all package.xml files with relative paths
+RUN find . -name 'package.xml' -exec mkdir -p /collected/{} \; \
+    && find . -name 'package.xml' -exec cp {} /collected/{} \;
+
+############################
+# Stage 7: Minimal Runtime Base
 ############################
 FROM ros2_humble-base AS runtime
 COPY --from=ros2_humble-gstreamer /target /
@@ -143,49 +159,53 @@ COPY --from=kindr_build /target/usr/ /usr/
 ENV PATH=/opt/gstreamer/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN mkdir -p /cprt_rover_24/src
+
+COPY --from=package_xml_collector /collected /tmp/src/
+WORKDIR /tmp
 
 # rosdep with ROS env loaded (uses cached rosdep/rosdistro)
-RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
-    --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     source /opt/ros/humble/setup.bash && \
     apt-get update && \
     rosdep init && rosdep update && \
-    rosdep install -i -r -y --from-paths src -c /var/cache/rosdep
+    rosdep install -i -r -y --from-paths src
 
 ############################
-# Stage 7: Dev Environment
+# Stage 8: Dev Environment
 ############################
 FROM runtime AS dev
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         git x11-apps ros-humble-desktop ros-dev-tools \
         ros-humble-ament-cmake python3-colcon-common-extensions \
-        python3-colcon-ros clang-format ccache \
+        python3-colcon-ros clang-format ccache nvidia-cuda-toolkit \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable compiler caching
 ENV CCACHE_DIR=/root/.cache/ccache
 ENV PATH="/usr/lib/ccache:${PATH}"
 
-# Entrypoint
-RUN echo '#!/bin/bash\nsource /opt/ros/humble/setup.bash\nif [ -f /cprt_rover_24/install/setup.bash ]; then source /cprt_rover_24/install/setup.bash; fi\nexec "$@"' > /entrypoint.sh \
-    && chmod +x /entrypoint.sh
-
 RUN useradd -ms /bin/bash -u 1000 vscode && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-ENTRYPOINT ["/entrypoint.sh"]
+WORKDIR /
 CMD ["/bin/bash"]
 
 ############################
-# Stage 8: Builder
+# Stage 9: Builder
 ############################
 FROM dev AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG TARGETARCH
 ARG DIR=/cprt_rover_24
+ARG CUDA_DIR=/usr/local/cuda-12
 WORKDIR ${DIR}
 ENV CMAKE_PREFIX_PATH=/usr/share/eigen3/cmake:$CMAKE_PREFIX_PATH
 ENV CMAKE_INCLUDE_PATH=/usr/include/eigen3:$CMAKE_INCLUDE_PATH
 ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+ENV CUDA_TOOLKIT_ROOT_DIR=${CUDA_DIR}
+ENV PATH=${CUDA_DIR}/bin:$PATH
+ENV LD_LIBRARY_PATH=${CUDA_DIR}/lib64:$LD_LIBRARY_PATH
 
 COPY src/ ${DIR}/src/
 
@@ -195,7 +215,7 @@ RUN --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharin
     colcon build --symlink-install
 
 ############################
-# Stage 9: Runtime Application
+# Stage 10: Runtime Application
 ############################
 FROM runtime AS rover
 ARG DIR=/cprt_rover_24
