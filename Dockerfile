@@ -180,7 +180,7 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked
     apt-get update && apt-get install -y --no-install-recommends \
         git x11-apps ros-humble-desktop ros-dev-tools \
         ros-humble-ament-cmake python3-colcon-common-extensions \
-        python3-colcon-ros clang-format ccache nvidia-cuda-toolkit \
+        python3-colcon-ros clang-format ccache cuda-toolkit-12 \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable compiler caching
