@@ -36,7 +36,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-        ros-humble-ros-base python3-setuptools python3-wheel \
+        ros-humble-ros-base python3-setuptools python3-wheel python3-rosdep \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies (per-arch pip cache)
@@ -44,58 +44,49 @@ COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip,id=pip-${TARGETARCH},sharing=locked \
     pip3 install -r requirements.txt
 
+
 ############################
-# Stage 2: ROS deps scan
+# Stage 2: Rust Setup
 ############################
-FROM ros2_humble-base AS ros2_humble-rosdeps
-FROM ros2_humble-base AS ros2_humble-depsplan
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG TARGETARCH
-ARG DIR=/cprt_rover_24
-WORKDIR ${DIR}
+FROM ros2_humble-base AS rust-builder
+ENV PATH="/root/.cargo/bin:${PATH}"
+ENV CARGO_HOME=/root/.cargo
+ENV RUSTUP_HOME=/root/.rustup
+SHELL ["/bin/bash", "-c"]
 
-# rosdep tooling only here
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-rosdeps,sharing=locked \
-    apt-get update && apt-get install -y python3-rosdep && rm -rf /var/lib/apt/lists/*
 
-# prime rosdep caches once
-RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
-    --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    rosdep init || true && rosdep update
-
-# bring manifests for resolution
-COPY src/**/package.xml src/**/setup.py src/**/CMakeLists.txt ./src
-
-# Compute, don't install: write apt/pip lists that runtime can consume
-# Skip unresolved keys (add more if needed)
-ENV ROSDEP_SKIP_KEYS="kindr_ros"
-RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
-    --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    rosdep install -i -r -y --rosdistro humble --from-paths src -s --skip-keys="$ROSDEP_SKIP_KEYS" \
-    | tee /opt/rosdep.plan && \
-    awk '/apt(-get)? install/ {for (i=1;i<=NF;i++) {if ($i !~ /^(sudo|apt(-get)?|install|-y|--no-install-recommends)$/) print $i}}' /opt/rosdep.plan \
-      | sort -u > /opt/apt-packages.txt && \
-    awk '/^pip3? install/ {for (i=1;i<=NF;i++) {if ($i !~ /^(sudo|pip3?|install|-r)$/) print $i}}' /opt/rosdep.plan \
-      | sort -u > /opt/pip-requirements.txt || true
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    . "$HOME/.cargo/env" && \
+    cargo install cargo-c
 
 
 ############################
 # Stage 3: GStreamer Build
 ############################
-FROM base AS ros2_humble-gstreamer
+FROM rust-builder AS ros2_humble-gstreamer
+ARG TARGETARCH
+
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y \
         zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip \
         flex bison libglib2.0-dev libmount-dev libsrt-openssl-dev \
-        git ninja-build curl \
+        build-essential git ninja-build curl ccache \
     && rm -rf /var/lib/apt/lists/*
+
+# Enable compiler caching
+ENV CCACHE_DIR=/root/.cache/ccache
+ENV PATH="/usr/lib/ccache:${PATH}"
+ENV CC="ccache gcc"
+ENV CXX="ccache g++"
+
 
 RUN python3 -m pip install --upgrade --user pip meson
 
 WORKDIR /gstreamer
 RUN --mount=type=cache,target=/root/.cache/gstreamer,id=gst-${TARGETARCH} \
     --mount=type=cache,target=/root/.cache/meson,id=meson-${TARGETARCH} \
+    --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharing=locked \
     git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git . && \
     git checkout 1.24 && \
     ~/.local/bin/meson setup builddir --prefix=/opt/gstreamer --libdir=lib && \
@@ -107,14 +98,9 @@ WORKDIR /gst-plugins-rs
 ENV LD_LIBRARY_PATH=/target/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV LIBRARY_PATH=/target/opt/gstreamer/lib:$LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/target/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
+SHELL ["/bin/bash", "-c"]
 
-RUN --mount=type=cache,target=/root/.cargo,id=cargo-home-${TARGETARCH} \
-    --mount=type=cache,target=/root/.cargo/registry,id=cargo-registry-${TARGETARCH},sharing=locked \
-    --mount=type=cache,target=/root/.cargo/git,id=cargo-git-${TARGETARCH},sharing=locked \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-    . "$HOME/.cargo/env" && \
-    git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git . && \
-    cargo install cargo-c && \
+RUN git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git . && \
     cargo cbuild -p gst-plugin-webrtc --prefix=/opt/gstreamer --release && \
     cargo cbuild -p gst-plugin-rtp    --prefix=/opt/gstreamer --release && \
     cargo cinstall -p gst-plugin-webrtc --prefix=/opt/gstreamer --destdir /target --libdir=lib --release && \
@@ -127,6 +113,9 @@ FROM ros2_humble-base AS kindr_build
 ARG TARGETARCH
 WORKDIR /work
 
+# use bash so we can source setup.bash
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # deps: cmake + toolchain + Eigen
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-kindr,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
@@ -136,38 +125,35 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-kindr,sharing=
 # build & "install" into a staging dir (/target)
 RUN source /opt/ros/humble/setup.bash && \
     git clone --depth=1 https://github.com/ANYbotics/kindr.git src && \
-    cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF && \
+    cmake -S src -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_TESTS=OFF \
+          -DBUILD_EXAMPLES=OFF && \
     cmake --build build -j"$(nproc)" && \
-    DESTDIR=/kindr-out cmake --install build --prefix /usr/local && \
-    mkdir -p /target && cp -a /kindr-out/usr/local /target/usr/local
+    cmake --install build --prefix /target/usr
+RUN mv /target/usr/include/kindr/kindr/* /target/usr/include/kindr/ && rmdir /target/usr/include/kindr/kindr
 
 ############################
-# Stage 5: Minimal Runtime Base
+# Stage 6: Minimal Runtime Base
 ############################
 FROM ros2_humble-base AS runtime
-ARG TARGETARCH
-# Copy just the lists produced above
-COPY --from=ros2_humble-depsplan /opt/apt-packages.txt /opt/apt-packages.txt
-COPY --from=ros2_humble-depsplan /opt/pip-requirements.txt /opt/pip-requirements.txt
 COPY --from=ros2_humble-gstreamer /target /
-COPY --from=kindr_build /target/usr/local/ /usr/local/
+COPY --from=kindr_build /target/usr/ /usr/
 
 ENV PATH=/opt/gstreamer/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
 
-# Ensure repos are visible; then install the exact packages, no rosdep needed
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-runtime,sharing=locked \
+# rosdep with ROS env loaded (uses cached rosdep/rosdistro)
+RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
+    --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
+    source /opt/ros/humble/setup.bash && \
     apt-get update && \
-    xargs -r -a /opt/apt-packages.txt apt-get install -y && \
-    rm -rf /var/lib/apt/lists/*
-
-# Optional: if pip requirements were found
-RUN --mount=type=cache,target=/root/.cache/pip,id=pip-${TARGETARCH},sharing=locked \
-    if [ -s /opt/pip-requirements.txt ]; then pip3 install -r /opt/pip-requirements.txt; fi
+    rosdep init && rosdep update && \
+    rosdep install -i -r -y --from-paths src -c /var/cache/rosdep
 
 ############################
-# Stage 6: Dev Environment
+# Stage 7: Dev Environment
 ############################
 FROM runtime AS dev
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
@@ -190,23 +176,18 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/bin/bash"]
 
 ############################
-# Stage 7: Builder
+# Stage 8: Builder
 ############################
 FROM dev AS builder
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]   # <-- ensure we have 'source'
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG TARGETARCH
 ARG DIR=/cprt_rover_24
 WORKDIR ${DIR}
+ENV CMAKE_PREFIX_PATH=/usr/share/eigen3/cmake:$CMAKE_PREFIX_PATH
+ENV CMAKE_INCLUDE_PATH=/usr/include/eigen3:$CMAKE_INCLUDE_PATH
+ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
 
 COPY src/ ${DIR}/src/
-
-# rosdep with ROS env loaded (uses cached rosdep/rosdistro)
-RUN --mount=type=cache,target=/var/cache/rosdistro,id=rosdistro \
-    --mount=type=cache,target=/var/cache/rosdep,id=rosdep \
-    source /opt/ros/humble/setup.bash && \
-    apt-get update && \
-    rosdep init && rosdep update && \
-    rosdep install -i -r -y --from-paths src
 
 # colcon build with ROS env + ccache
 RUN --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharing=locked \
@@ -214,7 +195,7 @@ RUN --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharin
     colcon build --symlink-install
 
 ############################
-# Stage 8: Runtime Application
+# Stage 9: Runtime Application
 ############################
 FROM runtime AS rover
 ARG DIR=/cprt_rover_24
