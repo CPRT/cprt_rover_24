@@ -24,7 +24,7 @@ class ScienceReader(Node):
     def __init__(self):
         super().__init__("science_reader")
 
-        self.declare_parameter("sensors", ["ozone", "hydrogen"])
+        self.declare_parameter("sensors", ["ozone_sensor", "hydrogen_sensor"])
         self.sensors = self.get_parameter("sensors").value
 
         self.sensor_dict = {}
