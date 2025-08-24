@@ -258,13 +258,13 @@ class IncrementalGpsCommander(Node):
         Resets previous state and sets the mission to NAV_TO_GOAL.
         """
         self.get_logger().info(f"Received a new GPS goal: {request.goal}")
+        self.reset()  # Reset any previous state, including Aruco buffer and triggered ID
         self.final_lat_lon = (
             request.goal.position.latitude,
             request.goal.position.longitude,
             request.goal.position.altitude,
             request.goal.orientation,
         )
-        self.reset()  # Reset any previous state, including Aruco buffer and triggered ID
         self.mission_state = (
             MissionState.NAV_TO_GOAL
         )  # Set state to navigate to the final goal

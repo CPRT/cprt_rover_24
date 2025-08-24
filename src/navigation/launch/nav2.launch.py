@@ -70,7 +70,7 @@ def generate_launch_description():
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {
         "use_sim_time": use_sim_time,
-        "default_nav_to_pose_bt_xml": default_bt_xml_filename,
+        # "default_nav_to_pose_bt_xml": default_bt_xml_filename,
         "autostart": autostart,
         "use_intra_process_comms": use_intra_process_comms,
     }
