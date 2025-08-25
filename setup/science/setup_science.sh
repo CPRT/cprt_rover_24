@@ -3,6 +3,15 @@ SCRIPT_DIR="$(dirname "$0")"
 CURRENT_DIR="$(pwd)"
 CURRENT_USER=$(whoami)
 VERSION="science-1.0.0"
+AARCH=$(uname -m)
+if [ "$AARCH" = "aarch64" ]; then
+    echo "Detected ARM architecture."
+    AARCH="arm64"
+else
+    echo "Detected AMD64 architecture."
+    AARCH="amd64"
+fi
+echo "Using architecture: $AARCH"
 
 # Check if the script is being run from its own directory
 if [ "$SCRIPT_DIR" == "$CURRENT_DIR" ] || [ "$SCRIPT_DIR" == "." ]; then
@@ -54,7 +63,7 @@ fi
 
 # Build the Docker image for the project
 echo "Pulling Docker image..."
-docker pull cprtsoftware/cprt_rover_24:${VERSION}
+docker pull cprtsoftware/cprt_rover_24-science:$AARCH
 
 # Setup science service
 sudo cp start_science.service /etc/systemd/system/start_science.service
