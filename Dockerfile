@@ -87,7 +87,7 @@ ENV CC="ccache gcc"
 ENV CXX="ccache g++"
 
 
-RUN python3 -m pip install --upgrade pip meson
+RUN python3 -m pip install --upgrade --user pip meson
 
 WORKDIR /gstreamer
 RUN --mount=type=cache,target=/root/.cache/gstreamer,id=gst-${TARGETARCH} \
@@ -162,17 +162,17 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked
     && rm -rf /var/lib/apt/lists/*
 
 # Enable compiler caching
-ENV CCACHE_DIR=/root/.cache/ccache
 ENV PATH="/usr/lib/ccache:${PATH}"
 
 RUN useradd -ms /bin/bash -u 1000 vscode && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN chown -R vscode:vscode /usr/local/lib/python3.10/dist-packages
 WORKDIR /
 CMD ["/bin/bash"]
 
 ############################
 # Stage 9: Builder
 ############################
-FROM dev AS builder
+FROM runtime AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG TARGETARCH
 ARG DIR=/cprt_rover_24
@@ -184,6 +184,14 @@ ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
 ENV CUDA_TOOLKIT_ROOT_DIR=${CUDA_DIR}
 ENV PATH=${CUDA_DIR}/bin:$PATH
 ENV LD_LIBRARY_PATH=${CUDA_DIR}/lib64:$LD_LIBRARY_PATH
+ENV CCACHE_DIR=/root/.cache/ccache
+
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+        ros-humble-desktop ros-humble-ament-cmake python3-colcon-common-extensions \
+        python3-colcon-ros ccache cuda-toolkit-12 \
+    && rm -rf /var/lib/apt/lists/*
+
 
 COPY src/ ${DIR}/src/
 

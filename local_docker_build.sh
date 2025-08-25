@@ -9,11 +9,11 @@ ARCH=$(uname -m)
 case "$ARCH" in
   x86_64)
     TARGETARCH=amd64
-    BASE_IMAGE="stereolabs/zed:5.0-runtime-cuda12.8-ubuntu22.04"
+    BASE_IMAGE="stereolabs/zed:4.2-runtime-cuda12.1-ubuntu22.04"
     ;;
   aarch64)
     TARGETARCH=arm64
-    BASE_IMAGE="stereolabs/zed:5.0-runtime-l4t-r36.4"
+    BASE_IMAGE="stereolabs/zed:4.2-runtime-l4t-r36.4"
     ;;
   *)
     echo "Unsupported architecture: $ARCH"
