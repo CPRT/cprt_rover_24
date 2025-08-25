@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked
     apt-get update && apt-get install -y --no-install-recommends \
         locales apt-utils curl lsb-release gnupg2 \
         software-properties-common build-essential \
-        python3-dev tzdata python3-pip \
+        python3-dev tzdata python3-pip git \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
@@ -41,7 +41,8 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-        ros-humble-ros-base python3-setuptools python3-wheel python3-rosdep \
+        ros-humble-ros-base python3-setuptools python3-wheel \
+        libeigen3-dev python3-rosdep \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies (per-arch pip cache)
@@ -86,7 +87,7 @@ ENV CC="ccache gcc"
 ENV CXX="ccache g++"
 
 
-RUN python3 -m pip install --upgrade --user pip meson
+RUN python3 -m pip install --upgrade pip meson
 
 WORKDIR /gstreamer
 RUN --mount=type=cache,target=/root/.cache/gstreamer,id=gst-${TARGETARCH} \
@@ -112,33 +113,6 @@ RUN git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git . && \
     cargo cinstall -p gst-plugin-rtp    --prefix=/opt/gstreamer --destdir /target --libdir=lib --release
 
 ############################
-# Stage 4: kindr
-############################
-FROM ros2_humble-base AS kindr_build
-ARG TARGETARCH
-WORKDIR /work
-
-# use bash so we can source setup.bash
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# deps: cmake + toolchain + Eigen
-RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH}-kindr,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
-      git cmake build-essential libeigen3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# build & "install" into a staging dir (/target)
-RUN source /opt/ros/humble/setup.bash && \
-    git clone --depth=1 https://github.com/ANYbotics/kindr.git src && \
-    cmake -S src -B build \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DBUILD_TESTS=OFF \
-          -DBUILD_EXAMPLES=OFF && \
-    cmake --build build -j"$(nproc)" && \
-    cmake --install build --prefix /target/usr
-RUN mv /target/usr/include/kindr/kindr/* /target/usr/include/kindr/ && rmdir /target/usr/include/kindr/kindr
-
-############################
 # Stage 6: Collect package.xml files
 ############################
 FROM alpine AS package_xml_collector
@@ -154,16 +128,14 @@ RUN find . -name 'package.xml' -exec mkdir -p /collected/{} \; \
 ############################
 FROM ros2_humble-base AS runtime
 COPY --from=ros2_humble-gstreamer /target /
-COPY --from=kindr_build /target/usr/ /usr/
 
 ENV PATH=/opt/gstreamer/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/gstreamer/lib:$LD_LIBRARY_PATH
 ENV PKG_CONFIG_PATH=/opt/gstreamer/lib/pkgconfig:$PKG_CONFIG_PATH
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN mkdir -p /cprt_rover_24/src
-
-COPY --from=package_xml_collector /collected /tmp/src/
-WORKDIR /tmp
+RUN mkdir -p /temporary
+WORKDIR /temporary
+COPY --from=package_xml_collector /collected /temporary/src/
 
 # rosdep with ROS env loaded (uses cached rosdep/rosdistro)
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
@@ -171,6 +143,12 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked
     apt-get update && \
     rosdep init && rosdep update && \
     rosdep install -i -r -y --from-paths src
+
+RUN git clone https://github.com/ANYbotics/kindr.git && \
+    cd kindr && \
+    mkdir build && cd build && \
+    cmake .. -DUSE_CMAKE=true && \
+    make install
 
 ############################
 # Stage 8: Dev Environment
@@ -212,7 +190,7 @@ COPY src/ ${DIR}/src/
 # colcon build with ROS env + ccache
 RUN --mount=type=cache,target=/root/.cache/ccache,id=ccache-${TARGETARCH},sharing=locked \
     source /opt/ros/humble/setup.bash && \
-    colcon build --symlink-install
+    colcon build --symlink-install --continue-on-error
 
 ############################
 # Stage 10: Runtime Application
