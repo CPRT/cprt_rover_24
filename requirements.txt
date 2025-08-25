@@ -7,8 +7,9 @@ adafruit-circuitpython-bme280
 adafruit-circuitpython-ens160
 adafruit-circuitpython-busdevice
 adafruit-circuitpython-register
+adafruit-circuitpython-neopixel
 pyubx2
-black
 RPi.GPIO
 rpi-hardware-pwm
 Jetson.GPIO
+python-can

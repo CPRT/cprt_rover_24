@@ -156,13 +156,12 @@ RUN git clone https://github.com/ANYbotics/kindr.git && \
 FROM runtime AS dev
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-        git x11-apps ros-humble-desktop ros-dev-tools \
+        git x11-apps ros-humble-desktop ros-dev-tools black pylint \
         ros-humble-ament-cmake python3-colcon-common-extensions \
-        python3-colcon-ros clang-format ccache cuda-toolkit-12 \
+        python3-colcon-ros clang-format cuda-toolkit-12 \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable compiler caching
-ENV PATH="/usr/lib/ccache:${PATH}"
 
 RUN useradd -ms /bin/bash -u 1000 vscode && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN chown -R vscode:vscode /usr/local/lib/python3.10/dist-packages
