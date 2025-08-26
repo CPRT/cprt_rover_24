@@ -19,17 +19,9 @@ find_package(geographic_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/SixFloats.msg"
-  "msg/LiveTune.msg"
-  "msg/PIDmsg.msg"
   "msg/ArucoMarkers.msg"
-  "msg/PointArray.msg"
-  "msg/ArmCmd.msg"
   "msg/VideoSource.msg"
   "msg/SystemTelemetry.msg"
-  "srv/ArmPos.srv"
-  "srv/ArmCmd.srv"
-  "msg/GPIOmsg.msg" #ik its goofy the actual gpio package is GPIO
   "msg/GasSensorReading.msg"
   "srv/NavToGPSGeopose.srv"
   "srv/VideoOut.srv"

@@ -142,39 +142,3 @@ jobs:
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:arm64-cache
           cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:arm64-cache,mode=max
           provenance: false
-
-  push-manifest:
-    runs-on: ubuntu-latest
-    needs: [build-amd64, build-arm64, setup]
-    env:
-      IMAGE_NAME: ${{ needs.setup.outputs.IMAGE_NAME }}
-    steps:
-      - name: Docker login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Create multi-arch manifest for APP image (latest + commit)
-      - name: Create and push APP manifest
-        run: |
-          APP_AMD64_DIGEST="${{ needs.build-amd64.outputs.app_digest }}"
-          APP_ARM64_DIGEST="${{ needs.build-arm64.outputs.app_digest }}"
-
-          docker buildx imagetools create \
-            -t "$IMAGE_NAME:latest" \
-            -t "$IMAGE_NAME:${{ github.sha }}" \
-            "$IMAGE_NAME@${APP_AMD64_DIGEST}" \
-            "$IMAGE_NAME@${APP_ARM64_DIGEST}"
-
-      # Create multi-arch manifest for DEV image (dev + dev-${sha})
-      - name: Create and push DEV manifest
-        run: |
-          DEV_AMD64_DIGEST="${{ needs.build-amd64.outputs.dev_digest }}"
-          DEV_ARM64_DIGEST="${{ needs.build-arm64.outputs.dev_digest }}"
-
-          docker buildx imagetools create \
-            -t "$IMAGE_NAME:dev" \
-            -t "$IMAGE_NAME:dev-${{ github.sha }}" \
-            "$IMAGE_NAME@${DEV_AMD64_DIGEST}" \
-            "$IMAGE_NAME@${DEV_ARM64_DIGEST}"

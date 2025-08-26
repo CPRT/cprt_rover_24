@@ -1,3 +1,0 @@
-int8 arm_motor_number
-string command
-float32 value
