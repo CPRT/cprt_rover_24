@@ -21,13 +21,13 @@ ENV TZ=UTC
 
 # Per-arch APT cache (mount to the real apt cache path; keep per-arch id)
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,id=apt-lists-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         locales apt-utils curl lsb-release gnupg2 \
         software-properties-common build-essential \
         python3-dev tzdata python3-pip git \
     && locale-gen en_US.UTF-8 \
-    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/*
+    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
 RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime \
     && echo "UTC" > /etc/timezone
@@ -40,10 +40,10 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
     > /etc/apt/sources.list.d/ros2.list
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,id=apt-lists-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         ros-humble-ros-base python3-setuptools python3-wheel \
-        libeigen3-dev python3-rosdep \
-    && rm -rf /var/lib/apt/lists/*
+        libeigen3-dev python3-rosdep
 
 # Python dependencies (per-arch pip cache)
 COPY requirements.txt .
@@ -74,11 +74,11 @@ ARG TARGETARCH
 
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,id=apt-lists-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y \
         zlib1g-dev libffi-dev libssl-dev python3-dev python3-pip \
         flex bison libglib2.0-dev libmount-dev libsrt-openssl-dev \
         build-essential git ninja-build curl ccache \
-    && rm -rf /var/lib/apt/lists/*
 
 # Enable compiler caching
 ENV CCACHE_DIR=/root/.cache/ccache
@@ -139,6 +139,7 @@ COPY --from=package_xml_collector /collected /temporary/src/
 
 # rosdep with ROS env loaded (uses cached rosdep/rosdistro)
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,id=apt-lists-${TARGETARCH},sharing=locked \
     source /opt/ros/humble/setup.bash && \
     apt-get update && \
     rosdep init && rosdep update && \
@@ -155,11 +156,11 @@ RUN git clone https://github.com/ANYbotics/kindr.git && \
 ############################
 FROM runtime AS dev
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,id=apt-lists-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         git x11-apps ros-humble-desktop ros-dev-tools black pylint \
         ros-humble-ament-cmake python3-colcon-common-extensions \
-        python3-colcon-ros clang-format cuda-toolkit-12 \
-    && rm -rf /var/lib/apt/lists/*
+        python3-colcon-ros clang-format cuda-toolkit-12
 
 # Enable compiler caching
 
@@ -186,10 +187,10 @@ ENV LD_LIBRARY_PATH=${CUDA_DIR}/lib64:$LD_LIBRARY_PATH
 ENV CCACHE_DIR=/root/.cache/ccache
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-${TARGETARCH},sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,id=apt-lists-${TARGETARCH},sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
         ros-humble-desktop ros-humble-ament-cmake python3-colcon-common-extensions \
-        python3-colcon-ros ccache cuda-toolkit-12 \
-    && rm -rf /var/lib/apt/lists/*
+        python3-colcon-ros ccache cuda-toolkit-12
 
 
 COPY src/ ${DIR}/src/

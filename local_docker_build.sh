@@ -45,7 +45,6 @@ docker buildx build \
   -f Dockerfile \
   --target builder \
   -t ${IMAGE_NAME}:${TARGETARCH} \
-  -t ${IMAGE_NAME}:${GIT_SHA}-${TARGETARCH} \
   --cache-from=type=registry,ref=${IMAGE_NAME}:${TARGETARCH}-cache \
   --cache-to=type=registry,ref=${IMAGE_NAME}:${TARGETARCH}-cache,mode=max \
   --load \
