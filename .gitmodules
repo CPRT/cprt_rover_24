@@ -6,3 +6,6 @@
 	path = src/third-party/ouster-ros
 	url = https://github.com/ouster-lidar/ouster-ros.git
 	branch = ros2
+[submodule "src/third-party/zed-ros2-wrapper"]
+	path = src/third-party/zed-ros2-wrapper
+	url = https://github.com/stereolabs/zed-ros2-wrapper.git
