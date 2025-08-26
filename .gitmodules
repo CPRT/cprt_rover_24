@@ -1,7 +1,3 @@
-[submodule "src/third-party/zed-ros2-wrapper"]
-	path = src/third-party/zed-ros2-wrapper
-	url = https://github.com/stereolabs/zed-ros2-wrapper.git
-	branch = Humble-v4.2.5
 [submodule "src/third-party/ublox"]
 	path = src/third-party/ublox
 	url = https://github.com/KumarRobotics/ublox.git
