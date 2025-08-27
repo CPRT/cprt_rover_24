@@ -29,7 +29,7 @@ class USB_Servo(Parent_Config):
 
         # self.srv = self.create_service(MoveServo, "servo_service", self.set_position)
         self.sub = self.create_subscription(
-            Float32, f"servo{self.servo}.name", self.set_position
+            Float32, f"{self.servo_info[]}", self.set_position, 3
         )
 
         self.load_port_config()

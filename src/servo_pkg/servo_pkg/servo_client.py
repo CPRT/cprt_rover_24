@@ -9,22 +9,21 @@ import random
 class Servo_Client(Node):
     def __init__(self):
         super().__init__("servo_Client")
-        self.declare_parameter("servo", 0)
-        self.servo = self.get_parameter("servo").get_parameter_value().integer_value
-        self.declare_parameter("servos_used", 0)
+        self.servo_num = (
+            self.get_parameter("servo_num").get_parameter_value().integer_value
+        )
         self.servos = (
             self.get_parameter("servos_used").get_parameter_value().integer_value
         )
         self.get_logger().info(f"# of servos: {self.servos}")
 
-        self.declare_parameter(f"servo{self.servo}", f"servo{self.servo}")
-        self.motor_names = (
-            self.get_parameter(f"servo{self.servo}.name")
+        self.motor_name = (
+            self.get_parameter(f"servo{self.servo_num}.name")
             .get_parameter_value()
             .string_value
         )
         self.pub = self.create_publisher(
-            Float32, f"servo{self.servo}.name", 1
+            Float32, f"{self.motor_name}", 3
         )  # publishes pwm signal integer
         timer_period = 0.5
         self.timer = self.create_timer(timer_period, self.servo_tester)

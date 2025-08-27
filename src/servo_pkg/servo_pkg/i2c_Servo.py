@@ -14,7 +14,7 @@ class i2c_Servo(Parent_Config):
         super().__init__("i2c_servo")
 
         self.sub = self.create_subscription(
-            Float32, f"servo{self.servo_num}.name", self.set_position
+            Float32, f"servo{self.servo_num}.name", self.set_position, 3
         )
 
         self.i2c = board.I2C()

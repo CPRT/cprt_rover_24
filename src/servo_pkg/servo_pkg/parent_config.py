@@ -8,8 +8,8 @@ DEFAULT_MAX_ANGLE = 3.1415
 
 
 class Servo_Info:
-    def __init__(self, channel, min_pwm, max_pwm, max_deg):
-        self.channel = channel
+    def __init__(self, motor_name, min_pwm, max_pwm, max_deg):
+        self.motor_name = motor_name
         self.min = min_pwm
         self.max = max_pwm
         self.rom = max_deg
@@ -31,7 +31,7 @@ class Parent_Config(Node):  # one motor per port
             self.get_parameter("servos_used").get_parameter_value().integer_value
         )
         for servo in range(self.num_servos):
-            self.declare_parameter(f"servo{servo}.name", "")
+            self.declare_parameter(f"servo{servo}.name", f"{servo}")
             motor_name = (
                 self.get_parameter(f"servo{servo}.name")
                 .get_parameter_value()
@@ -44,14 +44,18 @@ class Parent_Config(Node):  # one motor per port
                 .double_value
             )
             self.declare_parameter(f"servo{servo}.max", DEFAULT_MAX)
-            max_pwm = self.get_parameter(f"servo{servo}.max").get_parameter_value().double_value
+            max_pwm = (
+                self.get_parameter(f"servo{servo}.max")
+                .get_parameter_value()
+                .double_value
+            )
             self.declare_parameter(f"servo{servo}.rom", DEFAULT_MAX_ANGLE)
             rom = (
                 self.get_parameter(f"servo{servo}.rom")
                 .get_parameter_value()
                 .double_value
             )
-            self.servo_info[motor_name] = Servo_Info(servo, min_pwm, max_pwm, rom)
+            self.servo_info[servo] = Servo_Info(motor_name, min_pwm, max_pwm, rom)
 
     def check_valid_servo(self, channel):
         if self.num_servos <= 0:
