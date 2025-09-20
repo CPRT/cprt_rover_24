@@ -27,7 +27,7 @@
         <param name="can_id">11</param>
         <param name="kP">10.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">10.0</param>
+        <param name="kD">0.0</param>
         <param name="kF">100</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
@@ -41,10 +41,10 @@
       </joint>
       <joint name="Joint_3">
         <param name="can_id">14</param>
-        <param name="kP">30.0</param>
+        <param name="kP">10.0</param>
         <param name="kI">0.0</param>
-        <param name="kD">3.0</param>
-        <param name="kF">125</param>
+        <param name="kD">0.0</param>
+        <param name="kF">60.0</param>
         <param name="sensor_type">absolute</param> <!-- or "quadrature" -->
         <param name="sensor_ticks">4096</param>
         <param name="sensor_offset">2.85</param>
