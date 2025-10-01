@@ -1,7 +1,7 @@
 import rclpy
 import rclpy.logging
 import rclpy.time
-from interfaces.srv import MoveServo
+from std_msgs.msg import Float32
 import math
 import board
 from adafruit_motor import servo
@@ -28,9 +28,11 @@ class i2c_Servo(Parent_Config):
             self.servo_list[self.servo_num] = servo.Servo(
                 self.pca.channels[self.servo_num], actuation_range=self.maxrom
             )
-        s = self.servo_list[self.servo_num]
-        s.angle = msg.data
-        self.get_logger().info(f"Servo {self.servo_num} moving to {s.angle} degrees")
+        cur_servo = self.servo_list[self.servo_num]
+        cur_servo.angle = msg.data
+        self.get_logger().info(
+            f"Servo {self.servo_num} moving to {cur_servo.angle} degrees"
+        )
 
 
 def main(args=None):

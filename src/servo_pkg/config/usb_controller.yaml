@@ -1,6 +1,7 @@
 USB_Servo_node:
   ros__parameters:
-    servos_used: 3
+    # this is the highest servo number
+    max_num_servo: 3
     serial_port: "/dev/serial/by-id/usb-Pololu_Corporation_Pololu_Mini_Maestro_12-Channel_USB_Servo_Controller_00460938-if00"
     # Tilt
     servo0:

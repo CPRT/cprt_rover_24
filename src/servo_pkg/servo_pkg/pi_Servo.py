@@ -1,6 +1,4 @@
 import rclpy
-from interfaces.srv import MoveServo
-import math
 from rpi_hardware_pwm import HardwarePWM
 from servo_pkg.parent_config import Parent_Config
 from std_msgs.msg import Float32
@@ -15,8 +13,8 @@ def to_channel(pin: int) -> int:
     raise ValueError(f"Entered non PWM pin: {pin}")
 
 
-class Servo:
-    def __init__(self, channel, servo_info, frequency: int, rom: float):
+class pi_Servo_info:
+    def __init__(self, channel: int, servo_info: Servo_Info, frequency: int):
         self.servo_info = servo_info
         self.channel = channel
         self.frequency = frequency
@@ -24,14 +22,14 @@ class Servo:
         self.pwm_pin.start(0)
 
     def set_position(self, angle: float):
-        if angle < 0 or angle > self.rom:
+        if angle < 0 or angle > self.servo_info.rom:
             raise ValueError(f"Angle out of range: {angle}")
 
         duty_cycle = self.convert_to_pwm(angle)
         self.pwm_pin.change_duty_cycle(duty_cycle)
 
     def convert_to_pwm(self, angle: float) -> float:
-        return float(angle / (self.rom / (self.max_pos - self.min_pos)) + self.min_pos)
+        return float(angle / (self.servo_info.rom / (self.max_pos - self.min_pos)) + self.min_pos)
 
     def stop(self):
         self.pwm_pin.stop()
@@ -48,31 +46,31 @@ class pi_Servo(Parent_Config):
             self.set_position,
             3,
         )
+        self.servo_list = {}
         self.load_params()
 
     def load_params(self):
-        for i in range(self.num_servos):
-            self.declare_parameter(f"servo{i}.frequency", 50)
-            self.declare_parameter(f"servo{i}.out_pin", 0)
+        for servo in self.servo_info:
+            self.declare_parameter(f"servo{servo}.frequency", 50)
             frequency = (
-                self.get_parameter(f"servo{i}.frequency")
+                self.get_parameter(f"servo{servo}.frequency")
                 .get_parameter_value()
                 .integer_value
             )
-            rom = (
-                self.get_parameter(f"servo{i}.rom").get_parameter_value().integer_value
-            )
+            self.declare_parameter(f"servo{servo}.out_pin", 0)
             outpin = (
-                self.get_parameter(f"servo{i}.out_pin")
+                self.get_parameter(f"servo{servo}.out_pin")
                 .get_parameter_value()
                 .integer_value
             )
             if outpin < 0:
-                self.get_logger().error(f"Invalid pin number for port {i}")
-                raise ValueError(f"Invalid pin number for port {i}")
-            
-            self.servo_list[i] = Servo(
-                channel= to_channel(outpin), servo_info=self.servo_info[i], frequency=frequency, rom=rom
+                self.get_logger().error(f"Invalid pin number for port {servo}")
+                raise ValueError(f"Invalid pin number for port {servo}")
+
+            self.servo_list[servo] = pi_Servo_info(
+                channel=to_channel(outpin),
+                servo_info=self.servo_info[servo],
+                frequency=frequency
             )
 
     def set_position(self, msg):
@@ -86,7 +84,7 @@ class pi_Servo(Parent_Config):
         self.get_logger().info(f"Moved to angle: {angle}")
 
     def destroy_node(self):
-        for servo in self.servos.values():
+        for servo in self.servo_info.values():
             servo.stop()
         super().destroy_node()
 

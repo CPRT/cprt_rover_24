@@ -1,6 +1,7 @@
 pi_Servo_node:
   ros__parameters:
-    servos_used: 2
+    # this is the highest servo number
+    max_num_servo: 1
     # Microscope Servo
     servo0:
       name: "microscope"

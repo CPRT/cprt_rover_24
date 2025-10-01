@@ -1,6 +1,7 @@
 Parent_config:
     ros__parameters:
-      servos_used: 3
+      # this is the highest servo number
+      max_num_servo: 3
       servo_num: 0
       # Tilt
       servo0:

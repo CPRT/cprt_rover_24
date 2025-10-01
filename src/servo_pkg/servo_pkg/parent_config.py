@@ -1,36 +1,36 @@
-import math
 from rclpy.node import Node
 
-NUM_SERVOS = 12
 DEFAULT_MIN = 512.0
 DEFAULT_MAX = 2400.0
 DEFAULT_MAX_ANGLE = 3.1415
 
 
 class Servo_Info:
-    def __init__(self, motor_name, min_pwm, max_pwm, max_deg):
+    def __init__(self, motor_name: str, min_pwm: float, max_pwm: float, max_angle: float):
         self.motor_name = motor_name
         self.min = min_pwm
         self.max = max_pwm
-        self.rom = max_deg
+        self.rom = max_angle
 
-
-class Parent_Config(Node):  # one motor per port
+# Parent class for all 3 types of servos
+class Parent_Config(Node):
     def __init__(self, name):
         super().__init__(name)
         self.servo_info = {}
         self.load_config()
 
+    # Set class attributes based on yaml config
     def load_config(self):
         self.declare_parameter("servo_num", 0)
         self.servo_num = (
             self.get_parameter("servo_num").get_parameter_value().integer_value
         )
-        self.declare_parameter("servos_used", NUM_SERVOS)
-        self.num_servos = (
-            self.get_parameter("servos_used").get_parameter_value().integer_value
+        # This should be the highest number servo
+        self.declare_parameter("max_num_servo", 1)
+        self.max_num_servo = (
+            self.get_parameter("max_num_servo").get_parameter_value().integer_value
         )
-        for servo in range(self.num_servos):
+        for servo in range(self.max_num_servo + 1):
             self.declare_parameter(f"servo{servo}.name", f"{servo}")
             motor_name = (
                 self.get_parameter(f"servo{servo}.name")
@@ -57,10 +57,9 @@ class Parent_Config(Node):  # one motor per port
             )
             self.servo_info[servo] = Servo_Info(motor_name, min_pwm, max_pwm, rom)
 
-    def check_valid_servo(self, channel):
-        if self.num_servos <= 0:
-            self.get_logger().error("Invalid number of ports")
-            raise ValueError("Invalid number of ports")
+    def check_valid_servo(self, channel: int) -> bool:
+        if self.max_num_servo < 0:
+            raise ValueError("Invalid max servo number")
         if channel not in self.servo_info:
             self.get_logger().error("Invalid servo")
             return False
