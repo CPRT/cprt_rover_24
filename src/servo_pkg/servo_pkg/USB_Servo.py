@@ -5,12 +5,12 @@ from servo_pkg.parent_config import Parent_Config
 from servo_pkg.parent_config import Servo_Info
 
 
-def convert_from_radians(angle: float, servo_info: Servo_Info) -> float:
+def convert_from_radians(angle, servo_info):
     total_range = servo_info.max - servo_info.min
-    return servo_info.min + (total_range * angle / servo_info.rom)
+    return int(servo_info.min + (total_range * angle / servo_info.rom))
 
 
-def convert_to_radians(value: int, servo_info: Servo_Info) -> float:
+def convert_to_radians(value, servo_info):
     total_range = servo_info.max - servo_info.min
     return servo_info.rom * (value - servo_info.min) / total_range
 
@@ -18,13 +18,14 @@ def convert_to_radians(value: int, servo_info: Servo_Info) -> float:
 class USB_Servo(Parent_Config):
     def __init__(self):
         super().__init__("usb_servo")
-        
+
         # port parameter
         self.declare_parameter("serial_port", "/dev/ttyACM0")
         serial_port = (
             self.get_parameter("serial_port").get_parameter_value().string_value
         )
         self.servo_controller = maestro.Controller(serial_port)
+        self.get_logger().info(f"{self.servo_info[self.servo_num].motor_name}")
         self.sub = self.create_subscription(
             Float32,
             f"{self.servo_info[self.servo_num].motor_name}",
@@ -45,24 +46,22 @@ class USB_Servo(Parent_Config):
             self.servo_controller.setRange(port, min_qus, max_qus)
 
     def set_position(self, msg):
-        port = self.port
-        self.get_logger(self).info(f"Port is {port}")
+        port = self.servo_num
+        self.get_logger().info(f"Port is {port}")
         self.check_valid_servo(port)
         servo_info = self.servo_info[port]
         total_range = servo_info.max - servo_info.min
-        self.get_logger(self).info(f"Float is {msg.data}")
-        self.get_logger(self).info(f"Total Range: {total_range}")
+        self.get_logger().info(f"Float is {msg.data}")
+        self.get_logger().info(f"Total Range: {total_range}")
         target_value = convert_from_radians(msg.data, servo_info)
-        self.get_logger(self).info(f"PWM target is {target_value}")
-        self.get_logger(self).info(f"Target value: {target_value}")
+        self.get_logger().info(f"PWM target is {target_value}")
+        self.get_logger().info(f"Target value: {target_value}")
         current_position = convert_to_radians(
             self.servo_controller.getPosition(port), servo_info
         )
 
-        self.get_logger(self).info(f"Total Range: {total_range}")
-        self.get_logger(self).info(
-            f"Radian value: {current_position}"
-    )
+        self.get_logger().info(f"Total Range: {total_range}")
+        self.get_logger().info(f"Radian value: {current_position}")
 
         if not (servo_info.min <= target_value <= servo_info.max):
             self.get_logger().warning(

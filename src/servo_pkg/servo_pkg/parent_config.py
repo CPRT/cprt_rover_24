@@ -6,11 +6,14 @@ DEFAULT_MAX_ANGLE = 3.1415
 
 
 class Servo_Info:
-    def __init__(self, motor_name: str, min_pwm: float, max_pwm: float, max_angle: float):
+    def __init__(
+        self, motor_name: str, min_pwm: float, max_pwm: float, max_angle: float
+    ):
         self.motor_name = motor_name
         self.min = min_pwm
         self.max = max_pwm
         self.rom = max_angle
+
 
 # Parent class for all 3 types of servos
 class Parent_Config(Node):
@@ -26,7 +29,7 @@ class Parent_Config(Node):
             self.get_parameter("servo_num").get_parameter_value().integer_value
         )
         # This should be the highest number servo
-        self.declare_parameter("max_num_servo", 1)
+        self.declare_parameter("max_num_servo", 0)
         self.max_num_servo = (
             self.get_parameter("max_num_servo").get_parameter_value().integer_value
         )
@@ -57,7 +60,7 @@ class Parent_Config(Node):
             )
             self.servo_info[servo] = Servo_Info(motor_name, min_pwm, max_pwm, rom)
 
-    def check_valid_servo(self, channel: int) -> bool:
+    def check_valid_servo(self, channel):
         if self.max_num_servo < 0:
             raise ValueError("Invalid max servo number")
         if channel not in self.servo_info:

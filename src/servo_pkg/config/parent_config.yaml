@@ -2,7 +2,7 @@ Parent_config:
     ros__parameters:
       # this is the highest servo number
       max_num_servo: 3
-      servo_num: 0
+      servo_num: 1
       # Tilt
       servo0:
         name: "tilt"
@@ -21,4 +21,3 @@ Parent_config:
         min: 500.0
         max: 2500.0
         rom: 3.1415
-      

@@ -5,7 +5,7 @@ from std_msgs.msg import Float32
 from servo_pkg.parent_config import Servo_Info
 
 
-def to_channel(pin: int) -> int:
+def to_channel(pin):
     if pin == 18:
         return 0
     elif pin == 19:
@@ -14,7 +14,7 @@ def to_channel(pin: int) -> int:
 
 
 class pi_Servo_info:
-    def __init__(self, channel: int, servo_info: Servo_Info, frequency: int):
+    def __init__(self, channel, servo_info, frequency):
         self.servo_info = servo_info
         self.channel = channel
         self.frequency = frequency
@@ -28,8 +28,10 @@ class pi_Servo_info:
         duty_cycle = self.convert_to_pwm(angle)
         self.pwm_pin.change_duty_cycle(duty_cycle)
 
-    def convert_to_pwm(self, angle: float) -> float:
-        return float(angle / (self.servo_info.rom / (self.max_pos - self.min_pos)) + self.min_pos)
+    def convert_to_pwm(self, angle):
+        return float(
+            angle / (self.servo_info.rom / (self.max_pos - self.min_pos)) + self.min_pos
+        )
 
     def stop(self):
         self.pwm_pin.stop()
@@ -70,7 +72,7 @@ class pi_Servo(Parent_Config):
             self.servo_list[servo] = pi_Servo_info(
                 channel=to_channel(outpin),
                 servo_info=self.servo_info[servo],
-                frequency=frequency
+                frequency=frequency,
             )
 
     def set_position(self, msg):
